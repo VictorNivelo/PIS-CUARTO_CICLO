@@ -15,9 +15,9 @@ Proyecto desarrollado para facilitar la gestion de un sistema academico en el am
 Este proyecto tiene como objetivo principal desarrollar herramientas predictivas para identificar posibles casos de deserción estudiantil en entornos universitarios.
 
 ### Características del TDA:
-- **Modelo Matemático: Implementación de un modelo matemático para predecir casos de deserción estudiantil.
-- **Cálculo de Materias por Ciclo: Funcionalidad para calcular la cantidad de materias que un estudiante debe cursar en cada ciclo de la carrera.
-- **Interfaz de Usuario Amigable: Diseño de una interfaz de usuario intuitiva y fácil de usar para interactuar con el modelo de predicción y las herramientas de cálculo.
-- **El sistema contara con caracteristicas de filtrado como genero, factores economicos, sociales y emocionales.
+- Modelo Matemático: Implementación de un modelo matemático para predecir casos de deserción estudiantil.
+- Cálculo de Materias por Ciclo: Funcionalidad para calcular la cantidad de materias que un estudiante debe cursar en cada ciclo de la carrera.
+- Interfaz de Usuario Amigable: Diseño de una interfaz de usuario intuitiva y fácil de usar para interactuar con el modelo de predicción y las herramientas de cálculo.
+- El sistema contara con caracteristicas de filtrado como genero, factores economicos, sociales y emocionales.
 
 
