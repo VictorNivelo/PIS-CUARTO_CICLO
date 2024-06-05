@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .Vistas import PaginaPrincipal, Hola, p, gallery, full_width, sidebar_left, sidebar_right, basic_grid
+from .Vistas import PaginaPrincipal, Hola, p, gallery, full_width, sidebar_left, sidebar_right, basic_grid, Grafico
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -12,4 +12,5 @@ urlpatterns = [
     path('sidebar-left/', sidebar_left, name='sidebar_left'),
     path('sidebar-right/', sidebar_right, name='sidebar_right'),
     path('basic-grid/', basic_grid, name='basic_grid'),
+    path('grafico/', Grafico, name='grafico'),
 ]

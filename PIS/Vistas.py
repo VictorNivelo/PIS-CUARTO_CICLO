@@ -24,3 +24,6 @@ def sidebar_right(request):
 
 def basic_grid(request):
     return render(request, 'basic-grid.html')
+
+def Grafico(request):
+    return render(request, 'Graficos.html')
