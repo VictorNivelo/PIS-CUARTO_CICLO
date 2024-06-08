@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="es-es">
 
 {% load static %}
 
 <head>
-<title>Home</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link href="../static/layout/styles/layout.css" rel="stylesheet" type="text/css" media="all">
+  <title>Inicio</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="../Static/styles/layout.css" rel="stylesheet" type="text/css" media="all">
 </head>
 <body id="top">
-<div class="bgded overlay" style="background-image:url('../static/images/E.png');"> 
+<div class="bgded overlay" style="background-image:url('../Static/Imagen/c.png');"> 
   <div id="pageintro" class="hoc clear"> 
     <div class="flexslider basicslider">
       <ul class="slides">
@@ -21,10 +21,10 @@
             <p>Programa 1</p>
             <p class="font-x1 uppercase bold">Explicacion 1</p>
             <footer>
-              <ul class="nospace inline pushright">
-                <li><a class="btn" href="#">Iniciar sesion</a></li>
-                <li><a class="btn inverse" href="#">Registrarse</a></li>
-              </ul>
+              <!-- <ul class="nospace inline pushright">
+                <li><a class="btn" href="#">Iniciar sesion0</a></li>
+                <li><a class="btn inverse" href="#">Registrarse0</a></li> 
+              </ul> -->
             </footer>
           </article>
         </li>
@@ -34,10 +34,10 @@
             <p>p2</p>
             <p class="font-x1 uppercase bold">e2</p>
             <footer>
-              <ul class="nospace inline pushright">
+              <!-- <ul class="nospace inline pushright">
                 <li><a class="btn" href="#">is</a></li>
                 <li><a class="btn inverse" href="#">r</a></li>
-              </ul>
+              </ul> -->
             </footer>
           </article>
         </li>
@@ -47,10 +47,10 @@
             <p>p3</p>
             <p class="font-x1 uppercase bold">e3</p>
             <footer>
-              <ul class="nospace inline pushright">
+              <!-- <ul class="nospace inline pushright">
                 <li><a class="btn" href="#">is</a></li>
                 <li><a class="btn inverse" href="#">r</a></li>
-              </ul>
+              </ul> -->
             </footer>
           </article>
         </li>
@@ -68,8 +68,8 @@
       <div class="fl_right">
         <ul>
           <li><a href="{% url 'index' %}"><i class="fa fa-lg fa-home"></i></a></li>
-          <li><a href="#">Iniciar secion</a></li>
-          <li><a href="#">Registrarse</a></li>
+          <li><a href="{% url 'iniciar_sesion' %}">Iniciar sesion</a></li>
+          <li><a href="{% url 'registrar_usuario' %}">Registrarse</a></li>
         </ul>
       </div>
     </div>
@@ -86,11 +86,12 @@
         <li class="active"><a href="{% url 'index' %}">Home</a></li>
         <li><a class="drop" href="#">Paginas</a>
           <ul>
-            <li><a href="{% url 'gallery' %}">Galeria</a></li>
-            <li><a href="{% url 'full_width' %}">Apartado 1</a></li>
-            <li><a href="{% url 'sidebar_left' %}">Apartado 2</a></li>
-            <li><a href="{% url 'sidebar_right' %}">Apartado 2</a></li>
-            <li><a href="{% url 'basic_grid' %}">Apartado 3</a></li>
+            <!-- <li><a href="{% url 'gallery' %}">Galeria</a></li> -->
+
+            <li><a href="{% url 'Informacion1' %}">Informacion del modelo</a></li>
+            <li><a href="{% url 'Informacion2' %}">Informacion de las graficas</a></li>
+            <li><a href="{% url 'Informacion3' %}">Informacion de la seguridad</a></li>
+            <li><a href="{% url 'Informacion4' %}">Informacion del proyecto</a></li>
           </ul>
         </li>
         <li><a class="drop" href="#">Niveles</a>
@@ -140,12 +141,12 @@
         </li>
       </ul>
     </div>
-    <div class="one_third"><a href="#"><img src="../static/images/W.png" alt=""></a></div>
+    <div class="one_third"><a href="#"><img src="../Static/Imagen/W.png" alt=""></a></div>
     <!-- / main body -->
     <div class="clear"></div>
   </main>
 </div>
-<div class="wrapper bgded overlay" style="background-image:url('images/demo/backgrounds/02.png');">
+<div class="wrapper bgded overlay" style="background-image:url('../Static/Imagen/demo/backgrounds/02.png');">
   <article class="hoc cta clear"> 
     <div class="three_quarter first">
       <h6 class="header nospace">Mas informacion</h6>
@@ -161,28 +162,28 @@
       <p>Lider: Walter Yaguana</p>
     </div>
     <div class="group team element btmspace-80">
-      <article class="one_quarter first"><img src="../static/images/demo/320x320.png" alt="">
+      <article class="one_quarter first"><img src="../Static/Imagen/demo/320x320.png" alt="">
         <div class="txtwrap">
           <h6 class="heading">Elias</h6>
           <em>Secretaria</em>
           <footer><a href="#">Visitar perfil</a></footer>
         </div>
       </article>
-      <article class="one_quarter"><img src="../static/images/demo/320x320.png" alt="">
+      <article class="one_quarter"><img src="../Static/Imagen/emilio.png" alt="">
         <div class="txtwrap">
           <h6 class="heading">Emilio</h6>
           <em>Apostador</em>
           <footer><a href="#">Visitar perfil</a></footer>
         </div>
       </article>
-      <article class="one_quarter"><img src="../static/images/demo/320x320.png" alt="">
+      <article class="one_quarter"><img src="../Static/Imagen/walter.png" alt="">
         <div class="txtwrap">
           <h6 class="heading">Walter</h6>
           <em>Prostituta</em>
           <footer><a href="#">Visitar perfil</a></footer>
         </div>
       </article>
-      <article class="one_quarter"><img src="../static/images/demo/320x320.png" alt="">
+      <article class="one_quarter"><img src="../Static/Imagen/demo/320x320.png" alt="">
         <div class="txtwrap">
           <h6 class="heading">Santiago</h6>
           <em>Sin grupo</em>
@@ -196,7 +197,7 @@
 
 <div class="wrapper row4">
   <footer id="footer" class="hoc clear"> 
-    <h3 class="heading">SEXO?</h3>
+    <h3 class="heading">Inicio</h3>
     <ul class="nospace inline pushright uppercase">
       <li><a href="{% url 'index' %}"><i class="fa fa-lg fa-home"></i></a></li>
       <li><a href="#">Acerca de nosotros</a></li>
@@ -208,10 +209,11 @@
     <ul class="faico clear">
       <li><a class="faicon-facebook" href="#"><i class="fa fa-facebook"></i></a></li>
       <li><a class="faicon-twitter" href="#"><i class="fa fa-twitter"></i></a></li>
-      <li><a class="faicon-dribble" href="#"><i class="fa fa-dribbble"></i></a></li>
+
       <li><a class="faicon-linkedin" href="#"><i class="fa fa-linkedin"></i></a></li>
+      <!-- <li><a class="faicon-dribble" href="#"><i class="fa fa-dribbble"></i></a></li>
       <li><a class="faicon-google-plus" href="#"><i class="fa fa-google-plus"></i></a></li>
-      <li><a class="faicon-vk" href="#"><i class="fa fa-vk"></i></a></li>
+      <li><a class="faicon-vk" href="#"><i class="fa fa-vk"></i></a></li> -->
     </ul>
     <div id="copyright">
       <p>Copyright &copy; 2024 - All Rights Reserved - <a href="#">Domain Name</a></p>
@@ -220,9 +222,9 @@
 </div>
 <a id="backtotop" href="#top"><i class="fa fa-chevron-up"></i></a>
 <!-- JAVASCRIPTS -->
-<script src="../static/layout/scripts/jquery.min.js"></script>
-<script src="../static/layout/scripts/jquery.backtotop.js"></script>
-<script src="../static/layout/scripts/jquery.mobilemenu.js"></script>
-<script src="../static/layout/scripts/jquery.flexslider-min.js"></script>
+<script src="../Static/scripts/jquery.min.js"></script>
+<script src="../Static/scripts/jquery.backtotop.js"></script>
+<script src="../Static/scripts/jquery.mobilemenu.js"></script>
+<script src="../Static/scripts/jquery.flexslider-min.js"></script>
 </body>
 </html>

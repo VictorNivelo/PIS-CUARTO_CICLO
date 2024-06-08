@@ -1,12 +1,10 @@
 @charset "utf-8";
 
-
 /* Browser Resets
 --------------------------------------------------------------------------------------------------------------- */
 .flex-container a:hover, .flex-slider a:hover{outline:none;}
 .slides, .slides > li, .flex-control-nav, .flex-direction-nav{margin:0; padding:0; list-style:none;}
 .flex-direction-nav a{font-family:"FontAwesome";}
-
 
 /* Necessary Styles
 --------------------------------------------------------------------------------------------------------------- */
@@ -19,7 +17,6 @@
 /* Modern Clear fix for the .slides element */
 .slides::before, .slides::after{display:table; content:"";}
 .slides, .slides::after{clear:both;}
-
 
 /* Default Theme
 --------------------------------------------------------------------------------------------------------------- */
@@ -43,7 +40,6 @@
 .flex-control-nav li{display:block; margin:5px 0;}
 .flex-control-paging li a{display:block; width:11px; height:11px; cursor:pointer; text-indent:-9999px; border:2px solid; border-radius:20px;}
 .flex-control-paging li a.flex-active{cursor:default;}
-
 
 /* Responsive
 --------------------------------------------------------------------------------------------------------------- */

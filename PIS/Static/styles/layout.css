@@ -4,7 +4,6 @@
 @import url("custom.flexslider.css");
 @import url("framework.css");
 
-
 /* Rows
 --------------------------------------------------------------------------------------------------------------- */
 .row0, .row0 a{}
@@ -12,7 +11,6 @@
 .row2, .row2 a{}
 .row3, .row3 a{}
 .row4{border-top:5px solid;}
-
 
 /* Page Intro
 --------------------------------------------------------------------------------------------------------------- */
@@ -24,7 +22,6 @@
 #pageintro li p:first-of-type{display:block; max-width:75%; margin:0 auto 30px;}
 #pageintro li footer{margin-top:80px;}
 
-
 /* Top Bar
 --------------------------------------------------------------------------------------------------------------- */
 #topbar{padding:80px 0 15px; font-size:.8rem; text-transform:uppercase;}
@@ -34,14 +31,12 @@
 #topbar ul li:last-child{margin-right:0; padding-right:0; border-right:none;}
 #topbar i{margin:0 5px 0 0; line-height:normal;}
 
-
 /* Header
 --------------------------------------------------------------------------------------------------------------- */
 #header{}
 
 #header #logo{margin:30px 0 0 0;}
 #header #logo h1{margin:0; padding:0; font-size:22px; text-transform:uppercase;}
-
 
 /* Content Area
 --------------------------------------------------------------------------------------------------------------- */
@@ -102,14 +97,12 @@
 .sidebar .sdb_holder{margin-bottom:50px;}
 .sidebar .sdb_holder:last-child{margin-bottom:0;}
 
-
 /* Click to Action
 --------------------------------------------------------------------------------------------------------------- */
 .cta{padding:80px 0;}
 
 .cta > :first-child{}
 .cta > :last-child{margin-bottom:0;}/* Used when elements stack in smaller viewports */
-
 
 /* Footer
 --------------------------------------------------------------------------------------------------------------- */
@@ -122,19 +115,10 @@
 #footer #copyright{}
 #footer #copyright *{margin:0; padding:0;}
 
-
 /* Transition Fade
 --------------------------------------------------------------------------------------------------------------- */
 *, *::before, *::after{transition:all .3s ease-in-out;}
 #mainav form *{transition:none !important;}
-
-
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-
 
 /* Navigation
 --------------------------------------------------------------------------------------------------------------- */
@@ -197,7 +181,6 @@ nav ul, nav ol{margin:0; padding:0; list-style:none;}
 #backtotop.visible{visibility:visible; opacity:.5;}
 #backtotop:hover{opacity:1;}
 
-
 /* Tables
 --------------------------------------------------------------------------------------------------------------- */
 table, th, td{border:1px solid; border-collapse:collapse; vertical-align:top;}
@@ -206,13 +189,11 @@ table{width:100%; margin-bottom:15px;}
 th, td{padding:5px 8px;}
 td{border-width:0 1px;}
 
-
 /* Gallery
 --------------------------------------------------------------------------------------------------------------- */
 #gallery{display:block; width:100%; margin-bottom:50px;}
 #gallery figure figcaption{display:block; width:100%; clear:both;}
 #gallery li{margin-bottom:30px;}
-
 
 /* Font Awesome Social Icons
 --------------------------------------------------------------------------------------------------------------- */
@@ -231,14 +212,6 @@ td{border-width:0 1px;}
 .faicon-twitter:hover{background-color:#00ACEE;}
 .faicon-vk:hover{background-color:#4E658E;}
 
-
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-
-
 /* Colours
 --------------------------------------------------------------------------------------------------------------- */
 body{color:#CBCBCB; background-color:#252525;}
@@ -253,7 +226,6 @@ input:focus, textarea:focus, *:required:focus{border-color:#03BDD2;}
 .btn, .btn.inverse:hover, a .icon.fa, a.inverse:hover .icon.fa{color:#FFFFFF; background-color:#03BDD2; border-color:#03BDD2;}
 .btn:hover, .btn.inverse, a:hover .icon.fa, a.inverse .icon.fa{color:inherit; background-color:transparent; border-color:inherit;}
 
-
 /* Rows */
 .row0, .row0 a{color:#FFFFFF;}
 .row1{color:#474747; background-color:#FFFFFF; box-shadow:0 10px 10px rgba(0,0,0,.05);}
@@ -261,15 +233,12 @@ input:focus, textarea:focus, *:required:focus{border-color:#03BDD2;}
 .row3{color:#474747; background-color:#FFFFFF;}
 .row4{color:#CBCBCB; background-color:#252525; border-color:#03BDD2;}
 
-
 /* Top Bar */
 #topbar, #topbar ul li{border-color:rgba(255,255,255,.3);}
 #topbar > div:last-of-type li:first-child a{color:#03BDD2;}
 
-
 /* Header */
 #header #logo a{color:inherit;}
-
 
 /* Content Area */
 .element figure figcaption time{color:#474747; background-color:#F7F7F7;}
@@ -279,11 +248,9 @@ input:focus, textarea:focus, *:required:focus{border-color:#03BDD2;}
 
 .team.element .txtwrap{color:inherit; background-color:#F7F7F7; border-color:#03BDD2;}
 
-
 /* Footer */
 #footer .heading{color:#FFFFFF;}
 #footer #copyright a{color:inherit; background-color:inherit;}
-
 
 /* Navigation */
 #mainav li a{color:inherit;}
@@ -303,7 +270,6 @@ input:focus, textarea:focus, *:required:focus{border-color:#03BDD2;}
 
 #backtotop{color:#FFFFFF; background-color:#03BDD2;}
 
-
 /* Tables + Comments */
 table, th, td, #comments .avatar, #comments input, #comments textarea{border-color:#D7D7D7;}
 #comments input:focus, #comments textarea:focus, #comments *:required:focus{border-color:#03BDD2;}
@@ -312,25 +278,15 @@ tr, #comments li, #comments input[type="submit"], #comments input[type="reset"]{
 tr:nth-child(even), #comments li:nth-child(even){color:inherit; background-color:#F7F7F7;}
 table a, #comments a{background-color:inherit;}
 
-
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------ */
-
-
 /* Media Queries
 --------------------------------------------------------------------------------------------------------------- */
 @-ms-viewport{width:device-width;}
-
 
 /* Max Wrapper Width - Laptop, Desktop etc.
 --------------------------------------------------------------------------------------------------------------- */
 @media screen and (min-width:978px){
 	.hoc{max-width:978px;}
 }
-
 
 /* Mobile Devices
 --------------------------------------------------------------------------------------------------------------- */
@@ -358,7 +314,6 @@ table a, #comments a{background-color:inherit;}
 	#copyright p:first-of-type{margin-bottom:10px;}
 }
 
-
 @media screen and (max-width:750px){
 	.imgl, .imgr{display:inline-block; float:none; margin:0 0 10px 0;}
 	.fl_left, .fl_right{display:block; float:none;}
@@ -377,11 +332,9 @@ table a, #comments a{background-color:inherit;}
 	#footer{padding-bottom:50px;}/* Not neccessary - just looks better */
 }
 
-
 @media screen and (max-width:450px){
 	#topbar ul li{margin-bottom:2px; padding-right:0; border-right:none;}
 }
-
 
 /* Other
 --------------------------------------------------------------------------------------------------------------- */

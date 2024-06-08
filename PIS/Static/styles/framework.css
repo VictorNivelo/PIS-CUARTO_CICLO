@@ -40,12 +40,10 @@ img{width:auto; max-width:100%; height:auto; margin:0; padding:0; border:none; l
 .imgl{margin:0 15px 10px 0; clear:left;}
 .imgr{margin:0 0 10px 15px; clear:right;}
 
-
 /* Fonts
 --------------------------------------------------------------------------------------------------------------- */
 body, input, textarea, select{font-family:Verdana, Geneva, sans-serif;}
 h1, h2, h3, h4, h5, h6, .heading{font-family:Georgia, "Times New Roman", Times, serif;}
-
 
 /* Forms
 --------------------------------------------------------------------------------------------------------------- */
@@ -54,7 +52,6 @@ legend{display:none;}
 label, input, textarea, select, button{display:block; resize:none; outline:none; color:inherit; font-size:inherit; font-family:inherit; vertical-align:middle;}
 label{margin-bottom:5px;}
 :required, :invalid{outline:none; box-shadow:none;}
-
 
 /* Generalise
 --------------------------------------------------------------------------------------------------------------- */
@@ -76,11 +73,9 @@ It should be used in conjunction with a second class or ID
 */
 .hoc{display:block; margin:0 auto;}
 
-
 /* HTML 5 Overrides
 --------------------------------------------------------------------------------------------------------------- */
 address, article, aside, figcaption, figure, footer, header, main, nav, section{display:block; margin:0; padding:0;}
-
 
 /* Grid
 --------------------------------------------------------------------------------------------------------------- */
@@ -93,7 +88,6 @@ address, article, aside, figcaption, figure, footer, header, main, nav, section{
 .one_half, .two_quarter{width:48.46625766871166%;}
 .two_third{width:65.6441717791411%;}
 .three_quarter{width:74.23312883435584%;}
-
 
 /* Spacing
 --------------------------------------------------------------------------------------------------------------- */

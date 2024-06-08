@@ -5,14 +5,14 @@
 {% load static %}
 
 <head>
-<title>Nubumous | Pages | Sidebar Left</title>
+<title>Nubumous | Pages | Full Width</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link href="../static/layout/styles/layout.css" rel="stylesheet" type="text/css" media="all">
+<link href="../Static/styles/layout.css" rel="stylesheet" type="text/css" media="all">
 </head>
 <body id="top">
 <!-- Top Background Image Wrapper -->
-<div class="bgded overlay" style="background-image:url('../images/demo/backgrounds/01.png');"> 
+<div class="bgded overlay" style="background-image:url('../Static/Imagen/c.png');"> 
   <div class="wrapper row0">
     <div id="topbar" class="hoc clear"> 
       <div class="fl_left">
@@ -24,8 +24,8 @@
       <div class="fl_right">
         <ul>
           <li><a href="{% url 'index' %}"><i class="fa fa-lg fa-home"></i></a></li>
-          <li><a href="#">Login</a></li>
-          <li><a href="#">Register</a></li>
+          <li><a href="{% url 'iniciar_sesion' %}">Iniciar sesion</a></li>
+          <li><a href="{% url 'registrar_usuario' %}">Registrarse</a></li>
         </ul>
       </div>
     </div>
@@ -42,11 +42,12 @@
         <li><a href="{% url 'index' %}">Home</a></li>
         <li class="active"><a class="drop" href="#">Pages</a>
           <ul>
-            <li><a href="{% url 'gallery' %}">Galeria</a></li>
-            <li><a href="{% url 'full_width' %}">Apartado 1</a></li>
-            <li><a href="{% url 'sidebar_left' %}">Apartado 2</a></li>
-            <li><a href="{% url 'sidebar_right' %}">Apartado 2</a></li>
-            <li><a href="{% url 'basic_grid' %}">Apartado 3</a></li>
+            {% comment %} <li><a href="{% url 'gallery' %}">Galeria</a></li> {% endcomment %}
+
+            <li><a href="{% url 'Informacion1' %}">Informacion del modelo</a></li>
+            <li><a href="{% url 'Informacion2' %}">Informacion de las graficas</a></li>
+            <li><a href="{% url 'Informacion3' %}">Informacion de la seguridad</a></li>
+            <li><a href="{% url 'Informacion4' %}">Informacion del proyecto</a></li>
           </ul>
         </li>
         <li><a class="drop" href="#">Dropdown</a>
@@ -71,74 +72,20 @@
 <div class="wrapper row2">
   <div id="breadcrumb" class="hoc clear"> 
     <ul>
-      <li><a href="#">Home</a></li>
-      <li><a href="#">Lorem</a></li>
-      <li><a href="#">Ipsum</a></li>
-      <li><a href="#">Dolor</a></li>
+      <li><a href="#">Inicio</a></li>
+      <li><a href="#">Informacion 1</a></li>
     </ul>
   </div>
 </div>
 <div class="wrapper row3">
   <main class="hoc container clear"> 
     <!-- main body -->
-    <div class="sidebar one_quarter first"> 
-      <h6>Lorem ipsum dolor</h6>
-      <nav class="sdb_holder">
-        <ul>
-          <li><a href="#">Navigation - Level 1</a></li>
-          <li><a href="#">Navigation - Level 1</a>
-            <ul>
-              <li><a href="#">Navigation - Level 2</a></li>
-              <li><a href="#">Navigation - Level 2</a></li>
-            </ul>
-          </li>
-          <li><a href="#">Navigation - Level 1</a>
-            <ul>
-              <li><a href="#">Navigation - Level 2</a></li>
-              <li><a href="#">Navigation - Level 2</a>
-                <ul>
-                  <li><a href="#">Navigation - Level 3</a></li>
-                  <li><a href="#">Navigation - Level 3</a></li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li><a href="#">Navigation - Level 1</a></li>
-        </ul>
-      </nav>
-      <div class="sdb_holder">
-        <h6>Lorem ipsum dolor</h6>
-        <address>
-        Full Name<br>
-        Address Line 1<br>
-        Address Line 2<br>
-        Town/City<br>
-        Postcode/Zip<br>
-        <br>
-        Tel: xxxx xxxx xxxxxx<br>
-        Email: <a href="#">contact@domain.com</a>
-        </address>
-      </div>
-      <div class="sdb_holder">
-        <article>
-          <h6>Lorem ipsum dolor</h6>
-          <p>Nuncsed sed conseque a at quismodo tris mauristibus sed habiturpiscinia sed.</p>
-          <ul>
-            <li><a href="#">Lorem ipsum dolor sit</a></li>
-            <li>Etiam vel sapien et</li>
-            <li><a href="#">Etiam vel sapien et</a></li>
-          </ul>
-          <p>Nuncsed sed conseque a at quismodo tris mauristibus sed habiturpiscinia sed. Condimentumsantincidunt dui mattis magna intesque purus orci augue lor nibh.</p>
-          <p class="more"><a href="#">Continue Reading &raquo;</a></p>
-        </article>
-      </div>
-    </div>
-    <div class="content three_quarter"> 
+    <div class="content"> 
       <h1>&lt;h1&gt; to &lt;h6&gt; - Headline Colour and Size Are All The Same</h1>
-      <img class="imgr borderedbox inspace-5" src="../images/demo/imgr.gif" alt="">
+      <img class="imgr borderedbox inspace-5" src="../Static/Imagen/demo/imgr.gif" alt="">
       <p>Aliquatjusto quisque nam consequat doloreet vest orna partur scetur portortis nam. Metadipiscing eget facilis elit sagittis felisi eger id justo maurisus convallicitur.</p>
       <p>Dapiensociis <a href="#">temper donec auctortortis cumsan</a> et curabitur condis lorem loborttis leo. Ipsumcommodo libero nunc at in velis tincidunt pellentum tincidunt vel lorem.</p>
-      <img class="imgl borderedbox inspace-5" src="../images/demo/imgl.gif" alt="">
+      <img class="imgl borderedbox inspace-5" src="../Static/Imagen/demo/imgl.gif" alt="">
       <p>This is a W3C compliant free website template from <a href="http://www.os-templates.com/" title="Free Website Templates">OS Templates</a>. For full terms of use of this template please read our <a href="http://www.os-templates.com/template-terms">website template licence</a>.</p>
       <p>You can use and modify the template for both personal and commercial use. You must keep all copyright information and credit links in the template and associated files. For more website templates visit our <a href="http://www.os-templates.com/">free website templates</a> section.</p>
       <p>Portortornec condimenterdum eget consectetuer condis consequam pretium pellus sed mauris enim. Puruselit mauris nulla hendimentesque elit semper nam a sapien urna sempus.</p>
@@ -187,7 +134,7 @@
           <li>
             <article>
               <header>
-                <figure class="avatar"><img src="../static/images/demo/avatar.png" alt=""></figure>
+                <figure class="avatar"><img src="../Static/Imagen/demo/avatar.png" alt=""></figure>
                 <address>
                 By <a href="#">A Name</a>
                 </address>
@@ -201,7 +148,7 @@
           <li>
             <article>
               <header>
-                <figure class="avatar"><img src="../static/images/demo/avatar.png" alt=""></figure>
+                <figure class="avatar"><img src="../Static/Imagen/demo/avatar.png" alt=""></figure>
                 <address>
                 By <a href="#">A Name</a>
                 </address>
@@ -215,7 +162,7 @@
           <li>
             <article>
               <header>
-                <figure class="avatar"><img src="../static/images/demo/avatar.png" alt=""></figure>
+                <figure class="avatar"><img src="../Static/Imagen/demo/avatar.png" alt=""></figure>
                 <address>
                 By <a href="#">A Name</a>
                 </address>
@@ -281,11 +228,10 @@
     </div>
   </footer>
 </div>
-
 <a id="backtotop" href="#top"><i class="fa fa-chevron-up"></i></a>
 <!-- JAVASCRIPTS -->
-<script src="../static/layout/scripts/jquery.min.js"></script>
-<script src="../static/layout/scripts/jquery.backtotop.js"></script>
-<script src="../static/layout/scripts/jquery.mobilemenu.js"></script>
+<script src="../Static/scripts/jquery.min.js"></script>
+<script src="../Static/scripts/jquery.backtotop.js"></script>
+<script src="../Static/scripts/jquery.mobilemenu.js"></script>
 </body>
 </html>
