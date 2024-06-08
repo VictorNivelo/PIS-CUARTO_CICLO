@@ -56,6 +56,9 @@ def Reporte(request):
 def Prediccion(request):
     return render(request, 'Prediccion.html')
 
+def PrediccionPresente(request):
+    return render(request, 'PrediccionPresente.html')
+
 def registrar_usuario(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)

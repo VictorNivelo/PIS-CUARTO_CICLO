@@ -4,7 +4,7 @@ from .Vistas import (Hola, PaginaPrincipal,
                      Pagina_Administrador, iniciar_sesion, Recuperar, registrar_usuario, signin, signup,
                      InformeMateria, InformeCiclo, InformeCarrera,
                      Informacion1, Informacion2, Informacion3, Informacion4, 
-                     Grafico, Galeria, Prediccion, Reporte
+                     Grafico, Galeria, Prediccion, PrediccionPresente, Reporte
                      )
 
 urlpatterns = [
@@ -27,5 +27,6 @@ urlpatterns = [
     path('Grafico/', Grafico, name='grafico'),
     path('Galeria/', Galeria, name='gallery'),
     path('Prediccion/', Prediccion, name='Prediccion'),
+    path('PP/',PrediccionPresente, name='PrediccionPresente'),
     path('Reporte-Generado/', Reporte, name='ReporteGenerado'),
 ]
