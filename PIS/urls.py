@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from .Vistas import (Hola, PaginaPrincipal, 
                      Pagina_Administrador, iniciar_sesion, Recuperar, registrar_usuario, signin, signup,
-                     InformeMateria, InformeCarrera, InformeCiclo, 
+                     InformeMateria, InformeCiclo, InformeCarrera,
                      Informacion1, Informacion2, Informacion3, Informacion4, 
                      Grafico, Galeria, Prediccion, Reporte
                      )
@@ -18,8 +18,8 @@ urlpatterns = [
     path('signin/', signin, name='signin'),
     path('signup/', signup, name='signup'),
     path('Informe-Materia/', InformeMateria, name='InformeMateria'),
-    path('Informe-Carrera/', InformeCarrera, name='InformeCarrera'),
     path('Informe-Ciclo/', InformeCiclo, name='InformeCiclo'),
+    path('Informe-Carrera/', InformeCarrera, name='InformeCarrera'),
     path('Informacion-1/', Informacion1, name='Informacion1'),
     path('Informacion-2/', Informacion2, name='Informacion2'),
     path('Informacion-3/', Informacion3, name='Informacion3'),
