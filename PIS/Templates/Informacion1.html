@@ -35,36 +35,38 @@
 <div class="wrapper row1">
   <header id="header" class="hoc clear"> 
     <div id="logo" class="fl_left">
-      <h1><a href="{% url 'index' %}">Nubumous</a></h1>
+      <h1><a href="{% url 'index' %}">PIS</a></h1>
     </div>
     <nav id="mainav" class="fl_right">
       <ul class="clear">
-        <li><a href="{% url 'index' %}">Home</a></li>
-        <li class="active"><a class="drop" href="#">Pages</a>
+        <li class="active"><a href="{% url 'index' %}">Inicio</a></li>
+        <li><a class="drop" href="#">Informacion</a>
           <ul>
             {% comment %} <li><a href="{% url 'gallery' %}">Galeria</a></li> {% endcomment %}
-
+            
             <li><a href="{% url 'Informacion1' %}">Informacion del modelo</a></li>
             <li><a href="{% url 'Informacion2' %}">Informacion de las graficas</a></li>
             <li><a href="{% url 'Informacion3' %}">Informacion de la seguridad</a></li>
             <li><a href="{% url 'Informacion4' %}">Informacion del proyecto</a></li>
           </ul>
         </li>
-        <!-- <li><a class="drop" href="#">Dropdown</a>
+        <li><a class="drop" href="#">Informes</a>
           <ul>
-            <li><a href="#">Level 2</a></li>
-            <li><a class="drop" href="#">Level 2 + Drop</a>
+            <li><a href="{% url 'InformeMateria' %}">Informe Materia</a></li>
+            <li><a href="{% url 'InformeCiclo' %}">Informe Ciclo</a></li>
+            <li><a href="{% url 'InformeCarrera' %}">Informe Carrera</a></li>
+            <!-- <li><a href="#">Level 1</a></li>
+            <li><a class="drop" href="#">Level 2</a>
               <ul>
-                <li><a href="#">Level 3</a></li>
-                <li><a href="#">Level 3</a></li>
-                <li><a href="#">Level 3</a></li>
+                <li><a href="#">Level a</a></li>
+                <li><a href="#">Level b</a></li>
+                <li><a href="#">Level c</a></li>
               </ul>
             </li>
-            <li><a href="#">Level 2</a></li>
+            <li><a href="#">Level 3</a></li> -->
           </ul>
-        </li> -->
-        <li><a href="#">Link Text</a></li>
-        <li><a href="#">Link Text</a></li>
+        </li>
+        <li><a href="{% url 'Prediccion' %}">Realizar prediccion</a></li>
       </ul>
     </nav>
   </header>

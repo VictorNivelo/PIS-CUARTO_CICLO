@@ -119,5 +119,3 @@ def signin(request):
 #         return render(request, 'PaginaAdministrador.html')
 #     else:
 #         return redirect('iniciar_sesion')
-
-    
