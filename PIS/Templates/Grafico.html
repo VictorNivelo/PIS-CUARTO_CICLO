@@ -48,7 +48,9 @@
                         </div>
                     </div>
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% url 'index' %}" class="btn btn-warning me-md-2">Regresar</a>
+                        <!-- <a href="{% url 'Index' %}" class="btn btn-warning me-md-2">Regresar</a> -->
+                        <!-- <a id="backButton" href="#" class="btn btn-primary">Regresar</a> -->
+                        <a id="backButton" href="#" onclick="history.back()" class="btn btn-primary">Regresar</a>
                         <button type="button" class="btn btn-secondary" onclick="agregarDato()">Agregar</button>
                         <button type="button" class="btn btn-success" onclick="cargarGrafico()">Crear Gráfico</button>
                     </div>

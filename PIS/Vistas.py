@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
-from .forms import UserRegistrationForm
+from .forms import RegistrarUsuarioForm
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.db import IntegrityError
 
@@ -78,10 +78,10 @@ def PrediccionPresente(request):
 
 def registrar_usuario(request):
     if request.method == "POST":
-        form = UserRegistrationForm(request.POST)
+        form = RegistrarUsuarioForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.set_password(form.cleaned_data["password"])
+            user.set_password(form.cleaned_data["Contrasenia"])
             user.save()
             login(request, user)
             messages.success(request, "Usuario creado exitosamente.")
@@ -89,7 +89,7 @@ def registrar_usuario(request):
         else:
             messages.error(request, "Error en la creación del usuario.")
     else:
-        form = UserRegistrationForm()
+        form = RegistrarUsuarioForm()
     return render(request, "RegistrarUsuario.html", {"form": form})
 
 
@@ -108,56 +108,56 @@ def iniciar_sesion(request):
         return render(request, "IniciarSesion.html")
 
 
-def signup(request):
-    if request.method == "GET":
-        return render(request, "RegistrarUsuario.html", {"form": UserCreationForm})
-    else:
-        if request.POST["password1"] == request.POST["password2"]:
-            try:
-                user = User.objects.create_user(
-                    request.POST["username"], password=request.POST["password1"]
-                )
-                user.save()
-                login(request, user)
-                messages.success(request, "Usuario creado exitosamente.")
-                return redirect("tasks")
-            except IntegrityError:
-                return render(
-                    request,
-                    "RegistrarUsuario.html",
-                    {
-                        "form": UserCreationForm,
-                        "error": "El nombre de usuario ya existe.",
-                    },
-                )
-        return render(
-            request,
-            "RegistrarUsuario.html",
-            {"form": UserCreationForm, "error": "La contraseña está incorrecta."},
-        )
+# def signup(request):
+#     if request.method == "GET":
+#         return render(request, "RegistrarUsuario.html", {"form": UserCreationForm})
+#     else:
+#         if request.POST["password1"] == request.POST["password2"]:
+#             try:
+#                 user = User.objects.create_user(
+#                     request.POST["username"], password=request.POST["password1"]
+#                 )
+#                 user.save()
+#                 login(request, user)
+#                 messages.success(request, "Usuario creado exitosamente.")
+#                 return redirect("tasks")
+#             except IntegrityError:
+#                 return render(
+#                     request,
+#                     "RegistrarUsuario.html",
+#                     {
+#                         "form": UserCreationForm,
+#                         "error": "El nombre de usuario ya existe.",
+#                     },
+#                 )
+#         return render(
+#             request,
+#             "RegistrarUsuario.html",
+#             {"form": UserCreationForm, "error": "La contraseña está incorrecta."},
+#         )
 
 
-def signin(request):
-    if request.method == "GET":
-        return render(request, "IniciarSesion.html", {"form": AuthenticationForm})
-    else:
-        user = authenticate(
-            request,
-            username=request.POST["username"],
-            password=request.POST["password"],
-        )
-        if user is None:
-            return render(
-                request,
-                "IniciarSesion.html",
-                {
-                    "form": AuthenticationForm,
-                    "error": "Usuario o contraseña incorrectos.",
-                },
-            )
+# def signin(request):
+#     if request.method == "GET":
+#         return render(request, "IniciarSesion.html", {"form": AuthenticationForm})
+#     else:
+#         user = authenticate(
+#             request,
+#             username=request.POST["username"],
+#             password=request.POST["password"],
+#         )
+#         if user is None:
+#             return render(
+#                 request,
+#                 "IniciarSesion.html",
+#                 {
+#                     "form": AuthenticationForm,
+#                     "error": "Usuario o contraseña incorrectos.",
+#                 },
+#             )
 
-        login(request, user)
-        return redirect("tasks")
+#         login(request, user)
+#         return redirect("tasks")
 
 
 # def pagina_administrador(request):
@@ -165,3 +165,20 @@ def signin(request):
 #         return render(request, 'PaginaAdministrador.html')
 #     else:
 #         return redirect('iniciar_sesion')
+
+
+# def registrar_usuario(request):
+#     if request.method == "POST":
+#         form = RegistrarUsuarioForm(request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             user.set_password(form.cleaned_data["password"])
+#             user.save()
+#             login(request, user)
+#             messages.success(request, "Usuario creado exitosamente.")
+#             return redirect("pagina_administrador")
+#         else:
+#             messages.error(request, "Error en la creación del usuario.")
+#     else:
+#         form = RegistrarUsuarioForm()
+#     return render(request, "RegistrarUsuario.html", {"form": form})

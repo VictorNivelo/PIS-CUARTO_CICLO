@@ -56,7 +56,7 @@
 <body>
     <div class="caja">
         <div class="form-wrapper">
-            <form action="{% url 'registrar_usuario' %}" method="post">
+            <form action="{% url 'Registrar_usuario' %}" method="post">
                 <h1 class="text-center t">Crear Usuario</h1>
                 {% csrf_token %}
                 <div class="form-group">
@@ -76,8 +76,9 @@
                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                 </div><br>
                 <div class="text-center">
-                    <a href="{% url 'index' %}" class="btn btn-warning">Regresar</a>
-                    <a href="{% url 'signup' %}" class="btn btn-success">Crear Usuario</a>
+                    <!-- <a href="{% url 'Index' %}" class="btn btn-warning">Regresar</a> -->
+                    <a href="#" onclick="window.history.back();" class="btn btn-warning">Regresar</a>
+                    <a href="{% url 'Iniciar_sesion' %}" class="btn btn-success">Crear Usuario</a>
                     {% comment %} <button type="submit" class="btn btn-success">Crear Usuario</button> {% endcomment %}
                 </div>
             </form>

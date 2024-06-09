@@ -59,7 +59,7 @@
 
     <div class="caja">
         <div class="form-wrapper">
-            <form action="{% url 'iniciar_sesion' %}" method="POST">
+            <form action="{% url 'Iniciar_sesion' %}" method="POST">
                 {% csrf_token %}
                 <h1 class="text-center t">Iniciar Sesión</h1>
                 {% if messages %}
@@ -80,9 +80,10 @@
                         name="txtPassword" required>
                 </div><br>
                 <div class="text-center">
-                    <a href="{% url 'index' %}" class="btn btn-warning">Regresar</a>
-                    <a href="{% url 'iniciar_sesion' %}" class="btn btn-success">Ingresar</a>
-                    {% comment %} <button type="submit" class="btn btn-success">Ingresar</button> {% endcomment %}
+                    <!-- <a href="{% url 'Index' %}" class="btn btn-warning">Regresar</a> -->
+                    <a href="#" onclick="window.history.back();" class="btn btn-warning">Regresar</a>
+                    <a href="{% url 'Iniciar_sesion' %}" class="btn btn-success">Ingresar</a>
+                    <!-- <button type="submit" class="btn btn-success">Ingresar</button> -->
                 </div>
                 <div class="text-center mt-3">
                     <a href="{% url 'RecuperarContrasenia' %}" class="btn btn-link">¿Olvidaste tu contraseña?</a>

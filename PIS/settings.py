@@ -55,7 +55,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = "PIS.CustomUser"
+AUTH_USER_MODEL = "PIS.UsuarioPersonalizado"
 
 
 AUTH_PASSWORD_VALIDATORS = [
