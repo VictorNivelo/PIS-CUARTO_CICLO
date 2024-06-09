@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Predicción de Deserción y Aprobación Estudiantil</title>
     <!-- Estilos Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <!-- Scripts Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
     <!-- Google Charts API -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
+
 <body>
     <div class="container mt-5">
         <div class="row mt-3">
@@ -32,7 +37,8 @@
             <div class="col">
                 <form id="predictionForm">
                     <div class="mb-3">
-                        <label for="parametroPrediccion" class="form-label">Selecciona el parámetro de predicción:</label>
+                        <label for="parametroPrediccion" class="form-label">Selecciona el parámetro de
+                            predicción:</label>
                         <select class="form-select" id="parametroPrediccion" required>
                             <option value="">Seleccionar...</option>
                             <option value="materia">Materia</option>
@@ -42,7 +48,8 @@
                     </div>
                     <div class="mb-3 d-flex justify-content-between">
                         <button type="submit" class="btn btn-primary">Predecir</button>
-                        <button type="button" class="btn btn-success" id="guardarPrediccion" style="display: none;">Guardar Predicción</button>
+                        <button type="button" class="btn btn-success" id="guardarPrediccion"
+                            style="display: none;">Guardar Predicción</button>
                     </div>
                 </form>
             </div>
@@ -80,10 +87,10 @@
         </div>
     </div>
 
-    
+
     <script>
-        google.charts.load('current', {'packages':['corechart', 'table']});
-            
+        google.charts.load('current', { 'packages': ['corechart', 'table'] });
+
         function drawPredictionChart() {
             // Este es el gráfico predeterminado
             var data = google.visualization.arrayToDataTable([
@@ -91,10 +98,10 @@
                 ['Estudiante 1', 0.8, 0.1, 0.1],
                 ['Estudiante 2', 0.6, 0.2, 0.2]
             ]);
-    
+
             var options = {
                 title: 'Predicción de Deserción y Aprobación Estudiantil',
-                chartArea: {width: '50%'},
+                chartArea: { width: '50%' },
                 hAxis: {
                     title: 'Estudiante',
                     minValue: 0
@@ -103,21 +110,21 @@
                     title: 'Probabilidad'
                 }
             };
-    
+
             var chart = new google.visualization.ColumnChart(document.getElementById('prediction_chart_div'));
             chart.draw(data, options);
         }
-    
+
         // Evento de envío del formulario de predicción
-        document.getElementById('predictionForm').addEventListener('submit', function(event) {
+        document.getElementById('predictionForm').addEventListener('submit', function (event) {
             event.preventDefault();
             var parametro = document.getElementById('parametroPrediccion').value;
-    
+
             // Mostrar los resultados
             document.getElementById('predictionResults').style.display = 'block';
             document.getElementById('reprobadosDesertores').style.display = 'block';
             document.getElementById('guardarPrediccion').style.display = 'block';
-    
+
             // Cambiar la información del gráfico según la opción seleccionada
             if (parametro === 'materia') {
                 drawPredictionChartMateria();
@@ -127,7 +134,7 @@
                 drawPredictionChartCarrera();
             }
         });
-    
+
         function drawPredictionChartMateria() {
             // Aquí se generaría el gráfico específico para la predicción por materia
             var data = google.visualization.arrayToDataTable([
@@ -136,10 +143,10 @@
                 ['Literatura', 0.7, 0.1, 0.2],
                 ['Ciencias', 0.8, 0.15, 0.05]
             ]);
-    
+
             var options = {
                 title: 'Predicción de Deserción y Aprobación Estudiantil - Por Materia',
-                chartArea: {width: '50%'},
+                chartArea: { width: '50%' },
                 hAxis: {
                     title: 'Materia',
                     minValue: 0
@@ -148,7 +155,7 @@
                     title: 'Probabilidad'
                 }
             };
-    
+
             var chart = new google.visualization.ColumnChart(document.getElementById('prediction_chart_div'));
             chart.draw(data, options);
         }
@@ -159,12 +166,12 @@
                 ['Ciclo 1', 0.85, 0.1, 0.05],
                 ['Ciclo 2', 0.75, 0.15, 0.1],
                 ['Ciclo 3', 0.6, 0.2, 0.2]
-                
+
             ]);
-        
+
             var options = {
                 title: 'Predicción de Deserción y Aprobación Estudiantil - Por Ciclo',
-                chartArea: {width: '50%'},
+                chartArea: { width: '50%' },
                 hAxis: {
                     title: 'Ciclo',
                     minValue: 0
@@ -173,11 +180,11 @@
                     title: 'Probabilidad'
                 }
             };
-        
+
             var chart = new google.visualization.ColumnChart(document.getElementById('prediction_chart_div'));
             chart.draw(data, options);
         }
-        
+
         function drawPredictionChartCarrera() {
             var data = google.visualization.arrayToDataTable([
                 ['Carrera', 'Probabilidad de Aprobar', 'Probabilidad de Retirarse', 'Probabilidad de Desertar'],
@@ -185,10 +192,10 @@
                 ['Medicina', 0.9, 0.05, 0.05],
                 ['Derecho', 0.7, 0.15, 0.15]
             ]);
-        
+
             var options = {
                 title: 'Predicción de Deserción y Aprobación Estudiantil - Por Carrera',
-                chartArea: {width: '50%'},
+                chartArea: { width: '50%' },
                 hAxis: {
                     title: 'Carrera',
                     minValue: 0
@@ -197,12 +204,13 @@
                     title: 'Probabilidad'
                 }
             };
-        
+
             var chart = new google.visualization.ColumnChart(document.getElementById('prediction_chart_div'));
             chart.draw(data, options);
         }
-            
+
     </script>
-    
+
 </body>
+
 </html>

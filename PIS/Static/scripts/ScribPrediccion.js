@@ -3,7 +3,7 @@ function resetForm() {
 }
 
 function cargarGrafico() {
-    google.charts.load('current', {'packages': ['corechart']});
+    google.charts.load('current', { 'packages': ['corechart'] });
     google.charts.setOnLoadCallback(drawChart);
 }
 
