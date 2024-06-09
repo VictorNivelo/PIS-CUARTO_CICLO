@@ -14,35 +14,35 @@ class UserRegistrationForm(forms.ModelForm):
 # Nuevos valores
 
 
-class RegistrarUsuarioForm(forms.ModelForm):
-    Correo = forms.EmailField()
-    Contrasenia = forms.charField(widget=forms.PasswordInput)
-    Confirmar_contrasenia = forms.charField(widget=forms.PasswordInput)
+# class RegistrarUsuarioForm(forms.ModelForm):
+#     Correo = forms.EmailField()
+#     Contrasenia = forms.charField(widget=forms.PasswordInput)
+#     Confirmar_contrasenia = forms.charField(widget=forms.PasswordInput)
 
 
-class UsuarioInicioSesionForm(forms.ModelForm):
-    Correo = forms.EmailField()
-    Contrasenia = forms.charField(widget=forms.PasswordInput)
+# class UsuarioInicioSesionForm(forms.ModelForm):
+#     Correo = forms.EmailField()
+#     Contrasenia = forms.charField(widget=forms.PasswordInput)
 
 
-class RecuperarContraseniaForm(forms.ModelForm):
-    Correo = forms.EmailField()
+# class RecuperarContraseniaForm(forms.ModelForm):
+#     Correo = forms.EmailField()
 
 
-class CambiarContraseniaForm(forms.ModelForm):
-    Contrasenia = forms.charField(widget=forms.PasswordInput)
-    Confirmar_contrasenia = forms.charField(widget=forms.PasswordInput)
+# class CambiarContraseniaForm(forms.ModelForm):
+#     Contrasenia = forms.charField(widget=forms.PasswordInput)
+#     Confirmar_contrasenia = forms.charField(widget=forms.PasswordInput)
 
 
-class ModificarCorreoForm(forms.ModelForm):
-    Correo = forms.EmailField()
+# class ModificarCorreoForm(forms.ModelForm):
+#     Correo = forms.EmailField()
 
 
-class ModidicarRolUsuarioForm(forms.ModelForm):
-    Rol = forms.ChoiceField(
-        choices=[
-            ("personal_Administrativo", "PersonalAdministrativo"),
-            ("secretaria", "Secretaria"),
-            ("docente", "Docente"),
-        ]
-    )
+# class ModidicarRolUsuarioForm(forms.ModelForm):
+#     Rol = forms.ChoiceField(
+#         choices=[
+#             ("personal_Administrativo", "PersonalAdministrativo"),
+#             ("secretaria", "Secretaria"),
+#             ("docente", "Docente"),
+#         ]
+#     )
