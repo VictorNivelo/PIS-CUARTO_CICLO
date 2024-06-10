@@ -35,3 +35,32 @@ class UsuarioPersonalizado(AbstractUser):
 
     def __str__(self):
         return self.NombreUsuario
+
+
+class InformeCarrera(models.Model):
+    carrera = models.CharField(max_length=100, verbose_name="Carrera")
+    numero_estudiantes = models.IntegerField(verbose_name="Número de Estudiantes")
+    aprobados = models.IntegerField(verbose_name="Aprobados")
+    reprobados = models.IntegerField(verbose_name="Reprobados")
+    desertores = models.IntegerField(verbose_name="Desertores")
+    retirados = models.IntegerField(verbose_name="Retirados")
+
+    def __str__(self):
+        return self.carrera
+
+    class Meta:
+        verbose_name = "Informe de Carrera"
+        verbose_name_plural = "Informes de Carreras"
+
+
+class InformeMateria(models.Model):
+    materia = models.CharField(max_length=100)
+    docente_encargado = models.CharField(max_length=100)
+    num_estudiantes = models.IntegerField()
+    aprobados = models.IntegerField()
+    reprobados = models.IntegerField()
+    desertores = models.IntegerField()
+    retirados = models.IntegerField()
+
+    def __str__(self):
+        return self.materia

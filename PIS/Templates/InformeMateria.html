@@ -19,34 +19,101 @@
             height: 100%;
             margin: 0;
             padding: 0;
-
+            
         }
 
         body {
-            background: url('../Static/Imagen/a.png') no-repeat center center fixed;
+            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
             background-size: cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .caja {
-            margin: 10%;
-            margin-left: 35%;
-            margin-right: 35%;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 20px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            padding: 30px;
+            margin: auto;
         }
 
         .form-wrapper {
-            background: rgba(255, 255, 255, 0.8);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         .t {
             font-family: 'Lobster', cursive;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        button[type="submit"],
+        .btn-regresar,
+        .btn-grafico {
+            width: calc(33.33% - 5px);
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .btn-regresar {
+            background-color: #f0ad4e;
+            color: white;
+        }
+
+        .btn-regresar:hover {
+            background-color: #eea236;
+        }
+
+        .btn-grafico {
+            background-color: #5bc0de;
+            color: white;
+        }
+
+        .btn-grafico:hover {
+            background-color: #46b8da;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -54,41 +121,46 @@
 <body>
     <div class="caja">
         <form class="form-wrapper" action="{% url 'InformeMateria' %}" method="post">
-            <h1 class="text-center t">Informe de Deserción Estudiantil</h1>
+            <h1 class="t">Informe de Deserción Estudiantil</h1>
             {% csrf_token %}
-            <div class="form-group">
-                <label for="materia">Materia:</label>
-                <input type="text" class="form-control" id="materia" name="materia" required>
-            </div><br>
-            <div class="form-group">
-                <label for="docente_encargado">Docente Encargado:</label>
-                <input type="text" class="form-control" id="docente_encargado" name="docente_encargado" required>
-            </div><br>
-            <div class="form-group">
-                <label for="num_estudiantes">Número de Estudiantes:</label>
-                <input type="number" class="form-control" id="num_estudiantes" name="num_estudiantes" required>
-            </div><br>
-            <div class="form-group">
-                <label for="aprobados">Aprobados:</label>
-                <input type="number" class="form-control" id="aprobados" name="aprobados" required>
-            </div><br>
-            <div class="form-group">
-                <label for="reprobados">Reprobados:</label>
-                <input type="number" class="form-control" id="reprobados" name="reprobados" required>
-            </div><br>
-            <div class="form-group">
-                <label for="desertores">Desertores:</label>
-                <input type="number" class="form-control" id="desertores" name="desertores" required>
-            </div><br>
-            <div class="form-group">
-                <label for="retirados">Retirados:</label>
-                <input type="number" class="form-control" id="retirados" name="retirados" required>
-            </div><br>
-            <div class="text-center">
-                <a href="{% url 'Index' %}" class="btn btn-warning">Regresar</a>
-                <a href="{% url 'ReporteGenerado' %}" class="btn btn-info">Generar Informe</a>
-                <a href="{% url 'Grafico' %}" class="btn btn-info">Generar gráfico</a>
-                {% comment %} <button type="submit" class="btn btn-success">Generar Informe</button> {% endcomment %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="materia">Materia:</label>
+                        <input type="text" class="form-control" id="materia" name="materia" required placeholder="Ingrese la materia">
+                    </div>
+                    <div class="form-group">
+                        <label for="docente_encargado">Docente Encargado:</label>
+                        <input type="text" class="form-control" id="docente_encargado" name="docente_encargado" required placeholder="Ingrese el docente encargado">
+                    </div>
+                    <div class="form-group">
+                        <label for="num_estudiantes">Número de Estudiantes:</label>
+                        <input type="number" class="form-control" id="num_estudiantes" name="num_estudiantes" required placeholder="Ingrese el número de estudiantes">
+                    </div>
+                    <div class="form-group">
+                        <label for="aprobados">Aprobados:</label>
+                        <input type="number" class="form-control" id="aprobados" name="aprobados" required placeholder="Ingrese el número de aprobados">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="reprobados">Reprobados:</label>
+                        <input type="number" class="form-control" id="reprobados" name="reprobados" required placeholder="Ingrese el número de reprobados">
+                    </div>
+                    <div class="form-group">
+                        <label for="desertores">Desertores:</label>
+                        <input type="number" class="form-control" id="desertores" name="desertores" required placeholder="Ingrese el número de desertores">
+                    </div>
+                    <div class="form-group">
+                        <label for="retirados">Retirados:</label>
+                        <input type="number" class="form-control" id="retirados" name="retirados" required placeholder="Ingrese el número de retirados">
+                    </div>
+                </div>
+            </div>
+            <div class="button-group">
+                <a href="{% url 'Index' %}" class="btn btn-regresar">Regresar</a>
+                <a href="{% url 'ReporteGenerado' %}" class="btn btn-grafico">Generar Informe</a>
+                <a href="{% url 'Grafico' %}" class="btn btn-grafico">Generar gráfico</a>
             </div>
         </form>
     </div>

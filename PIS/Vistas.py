@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 
 from PIS.models import UsuarioPersonalizado
-from .forms import InicioSesionForm, RecuperarContraseniaForm, RegistrarUsuarioForm
+from .forms import InformeCarreraForm, InformeCicloForm, InformeMateriaForm, InicioSesionForm, RecuperarContraseniaForm, RegistrarUsuarioForm
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
@@ -52,11 +52,47 @@ def InformeMateria(request):
 
 
 def InformeCiclo(request):
-    return render(request, "InformeCiclo.html")
-
+    if request.method == 'POST':
+        form = InformeCicloForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Informe de ciclo guardado exitosamente.')
+            return redirect('Index') 
+        else:
+            messages.error(request, 'Por favor, corrija los errores del formulario.')
+    else:
+        form = InformeCicloForm()
+    return render(request, 'InformeCiclo.html', {'form': form})
 
 def InformeCarrera(request):
-    return render(request, "InformeCarrera.html")
+    if request.method == 'POST':
+        form = InformeCarreraForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Informe de carrera guardado exitosamente.')
+            return redirect('Index') 
+        else:
+            messages.error(request, 'Por favor, corrija los errores del formulario.')
+    else:
+        form = InformeCarreraForm()
+    return render(request, 'InformeCarrera.html', {'form': form})
+
+
+def InformeMateria(request):
+    if request.method == 'POST':
+        form = InformeMateriaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Informe de deserción estudiantil guardado exitosamente.')
+            return redirect('Index') 
+        else:
+            messages.error(request, 'Por favor, corrija los errores del formulario.')
+    else:
+        form = InformeMateriaForm()
+    return render(request, 'InformeMateria.html', {'form': form})
+
+# def InformeCarrera(request):
+#     return render(request, "InformeCarrera.html")
 
 
 def Reporte(request):
