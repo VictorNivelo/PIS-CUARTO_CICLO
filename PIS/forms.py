@@ -3,14 +3,30 @@ from .models import UsuarioPersonalizado
 
 
 class RegistrarUsuarioForm(forms.ModelForm):
-    Contrasenia = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
+    Nombre = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su nombre"}),
+        label="Nombre de Usuario",
+    )
+    Apellido = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su apellido"}),
+        label="Apellido de Usuario",
+    )
+    Correo = forms.EmailField(
+        widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electrónico"}),
+        label="Correo Electrónico",
+    )
+    Contrasenia = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su constraseña"}),
+        label="Contraseña",
+    )
     Confirmar_Contrasenia = forms.CharField(
-        widget=forms.PasswordInput, label="Confirmar Contraseña"
+        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su constraseña"}),
+        label="Confirmar Contraseña",
     )
 
     class Meta:
         model = UsuarioPersonalizado
-        fields = ["username", "email", "Contrasenia"]
+        fields = ["Nombre", "Apellido", "Correo", "Contrasenia", "Confirmar_Contrasenia"]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -27,22 +43,47 @@ class RegistrarUsuarioForm(forms.ModelForm):
         return cleaned_data
 
 
-class UsuarioInicioSesionForm(forms.ModelForm):
-    Correo = forms.EmailField()
-    Contrasenia = forms.CharField(widget=forms.PasswordInput)
+class InicioSesionForm(forms.ModelForm):
+    Correo = forms.EmailField(
+        widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electronico"}),
+        label="Correo Electrónico",
+    )
+    Contrasenia = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su constraseña"}),
+        label="Contraseña",
+    )
+
+    class Meta:
+        model = UsuarioPersonalizado
+        fields = ["Correo", "Contrasenia"]
 
 
 class RecuperarContraseniaForm(forms.ModelForm):
-    Correo = forms.EmailField()
+    Correo = forms.EmailField(
+        widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electronico"}),
+        label="Correo Electrónico",
+    )
+
+    class Meta:
+        model = UsuarioPersonalizado
+        fields = ["Correo"]
 
 
 class CambiarContraseniaForm(forms.ModelForm):
     Contrasenia = forms.CharField(widget=forms.PasswordInput)
     Confirmar_contrasenia = forms.CharField(widget=forms.PasswordInput)
 
+    class Meta:
+        model = UsuarioPersonalizado
+        fields = ["Contrasenia", "Confirmar_contrasenia"]
+
 
 class ModificarCorreoForm(forms.ModelForm):
     Correo = forms.EmailField()
+
+    class Meta:
+        model = UsuarioPersonalizado
+        fields = ["Correo"]
 
 
 class ModificarRolUsuarioForm(forms.ModelForm):
@@ -54,21 +95,6 @@ class ModificarRolUsuarioForm(forms.ModelForm):
         ]
     )
 
-
-# class UserRegistrationForm(forms.ModelForm):
-#     password = forms.CharField(widget=forms.PasswordInput)
-#     confirm_password = forms.CharField(widget=forms.PasswordInput)
-
-#     class Meta:
-#         model = CustomUser
-#         fields = ["username", "email", "password", "confirm_password"]
-
-# class RegistrarUsuarioForm(forms.ModelForm):
-#     Usuario = forms.CharField()
-#     Correo = forms.EmailField()
-#     Contrasenia = forms.CharField(widget=forms.PasswordInput)
-#     Confirmar_contrasenia = forms.CharField(widget=forms.PasswordInput)
-
-#     class Meta:
-#         model = UsuarioPersonalizado
-#         fields = ["Usuario", "Correo", "Contrasenia", "Confirmar_Contrasenia"]
+    class Meta:
+        model = UsuarioPersonalizado
+        fields = ["Rol"]
