@@ -11,6 +11,8 @@ class UsuarioPersonalizado(AbstractUser):
     REQUIRED_FIELDS = ["Correo"]
 
     NombreUsuario = models.CharField(max_length=50, unique=True)
+    Nombre = models.CharField(max_length=60)
+    Apellido = models.CharField(max_length=60)
     Correo = models.EmailField(max_length=254, unique=True)
     Contrasenia = models.CharField(max_length=50)
     Confirmar_Contrasenia = models.CharField(max_length=50)
@@ -34,7 +36,7 @@ class UsuarioPersonalizado(AbstractUser):
     )
 
     def __str__(self):
-        return self.NombreUsuario
+        return self.Nombre + " " + self.Apellido
 
 
 class InformeCarrera(models.Model):
@@ -51,6 +53,20 @@ class InformeCarrera(models.Model):
     class Meta:
         verbose_name = "Informe de Carrera"
         verbose_name_plural = "Informes de Carreras"
+
+
+class InformeCiclo(models.Model):
+    ciclo = models.CharField(max_length=100)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    numero_estudiantes = models.IntegerField()
+    aprobados = models.IntegerField()
+    reprobados = models.IntegerField()
+    desertores = models.IntegerField()
+    retirados = models.IntegerField()
+
+    def __str__(self):
+        return self.ciclo
 
 
 class InformeMateria(models.Model):

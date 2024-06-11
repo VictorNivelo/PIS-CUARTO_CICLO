@@ -3,6 +3,10 @@ from .models import InformeCarrera, InformeMateria, UsuarioPersonalizado
 
 
 class RegistrarUsuarioForm(forms.ModelForm):
+    NombreUsuario = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su nombre"}),
+        label="Nombre de Usuario",
+    )
     Nombre = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Ingrese su nombre"}),
         label="Nombre de Usuario",
@@ -27,6 +31,7 @@ class RegistrarUsuarioForm(forms.ModelForm):
     class Meta:
         model = UsuarioPersonalizado
         fields = [
+            "NombreUsuario",
             "Nombre",
             "Apellido",
             "Correo",

@@ -105,12 +105,27 @@
     </style>
 </head>
 
-<body>
+<body onload="recordarPaginaAnterior()">
     <div class="caja">
         <div class="form-wrapper">
             <form action="{% url 'Registrar_usuario' %}" method="POST">
                 <h1 class="t">Crear Usuario</h1>
                 {% csrf_token %}
+
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-success" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+
                 <div class="form-group">
                     <label for="{{ form.Nombre.id_for_label }}">Nombre:</label>
                     {{ form.Nombre }}
@@ -132,12 +147,18 @@
                     {{ form.Confirmar_Contrasenia }}
                 </div>
                 <div class="button-group">
-                    <button type="button" class="btn-regresar" onclick="window.history.back();">Regresar</button>
+                    <button type="button" class="btn-regresar" onclick="window.location.href = localStorage.getItem('paginaAnterior') || '/';">Regresar</button>
                     <button type="submit">Crear Usuario</button>
                 </div>
             </form>
         </div>
     </div>
+
+    <script>
+        function recordarPaginaAnterior() {
+            localStorage.setItem('paginaAnterior', document.referrer);
+        }
+    </script>
 </body>
 
 </html>

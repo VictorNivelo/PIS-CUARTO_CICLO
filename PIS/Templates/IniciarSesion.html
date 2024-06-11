@@ -132,7 +132,8 @@
                     {{ form.Contrasenia }}
                 </div>
                 <div class="button-group">
-                    <a href="{% url 'Index' %}" class="btn-regresar">Regresar</a>
+                    <button type="button" class="btn-regresar" onclick="window.location.href = localStorage.getItem('paginaAnterior') || '/';">Regresar</button>
+                    <!-- <a href="{% url 'Index' %}" class="btn-regresar">Regresar</a> -->
                     <button type="submit">Ingresar</button>
                 </div>
                 <div class="text-center mt-3">

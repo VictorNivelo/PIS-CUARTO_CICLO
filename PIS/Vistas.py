@@ -1,12 +1,8 @@
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-
 from PIS.models import UsuarioPersonalizado
 from .forms import InformeCarreraForm, InformeCicloForm, InformeMateriaForm, InicioSesionForm, RecuperarContraseniaForm, RegistrarUsuarioForm
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 
@@ -117,22 +113,69 @@ def Pagina_Usuario(request):
     return render(request, "PaginaUsuario.html")
 
 
-def RegistarUsuario(request):
+# User = get_user_model()
+
+# def RegistarUsuario(request):
+#     if request.method == "POST":
+#         form = RegistrarUsuarioForm(request.POST)
+#         if form.is_valid():
+#             nombre = form.cleaned_data["Nombre"]
+#             apellido = form.cleaned_data["Apellido"]
+#             correo = form.cleaned_data["Correo"]
+#             contrasenia = form.cleaned_data["Contrasenia"]
+#             confirmar_contrasenia = form.cleaned_data["Confirmar_Contrasenia"]
+#             nombre_usuario = nombre.lower() + "_" + apellido.lower() 
+#             if contrasenia == confirmar_contrasenia:
+#                 try:
+#                     user = User.objects.create_user(
+#                         username=nombre_usuario,
+#                         email=correo,
+#                         password=contrasenia,
+#                         first_name=nombre,
+#                         last_name=apellido
+#                     )
+#                     messages.success(request, "Usuario creado exitosamente.")
+#                     return redirect("IniciarSesion")
+#                 except IntegrityError:
+#                     return render(
+#                         request,
+#                         "RegistrarUsuario.html",
+#                         {
+#                             "form": form,
+#                             "error": "El nombre de usuario o correo electrónico ya existe.",
+#                         },
+#                     )
+#             else:
+#                 return render(
+#                     request,
+#                     "RegistrarUsuario.html",
+#                     {
+#                         "form": form,
+#                         "error": "Las contraseñas no coinciden.",
+#                     },
+#                 )
+#     else:
+#         form = RegistrarUsuarioForm()
+#     return render(request, "RegistrarUsuario.html", {"form": form})
+
+def RegistrarUsuario(request):
     if request.method == "POST":
         form = RegistrarUsuarioForm(request.POST)
         if form.is_valid():
             nombre_usuario = form.cleaned_data["NombreUsuario"]
+            nombre = form.cleaned_data["Nombre"]
+            apellido = form.cleaned_data["Apellido"]
             correo = form.cleaned_data["Correo"]
             contrasenia = form.cleaned_data["Contrasenia"]
             confirmar_contrasenia = form.cleaned_data["Confirmar_Contrasenia"]
             if contrasenia == confirmar_contrasenia:
                 try:
                     user = UsuarioPersonalizado.objects.create_user(
-                        NombreUsuario=nombre_usuario, Correo=correo, Contrasenia=contrasenia
+                        nombre_usuario=nombre_usuario, nombre=nombre, apellido=apellido, correo=correo, contrasenia=contrasenia, confirmar_contrasenia=confirmar_contrasenia
                     )
                     login(request, user)
                     messages.success(request, "Usuario creado exitosamente.")
-                    return redirect("IniciarSesion")
+                    return redirect("iniciar_sesion")
                 except IntegrityError:
                     return render(
                         request,

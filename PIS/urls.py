@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from .Vistas import (
-    Hola, PaginaPrincipal, Pagina_Administrador, IniciarSesion, RegistarUsuario, Recuperar,
+    Hola, PaginaPrincipal, Pagina_Administrador, IniciarSesion, RegistrarUsuario, Recuperar,
     InformeMateria, InformeCiclo, InformeCarrera,
     Informacion1, Informacion2, Informacion3, Informacion4,
     Grafico, Galeria, Prediccion, PrediccionPresente, Reporte,
@@ -12,7 +12,7 @@ urlpatterns = [
     path("Hola/", Hola, name="Hola"),
     path("", PaginaPrincipal, name="Index"),
     path("Pagina-Administrador/", Pagina_Administrador, name="Pagina_administrador"),
-    path("Registrar-Usuario/", RegistarUsuario, name="Registrar_usuario"),
+    path("Registrar-Usuario/", RegistrarUsuario, name="Registrar_usuario"),
     path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_sesion"),
     path("Recuperar-Contrasenia/", Recuperar, name="RecuperarContrasenia"),
     # path("signin/", signin, name="signin"),
