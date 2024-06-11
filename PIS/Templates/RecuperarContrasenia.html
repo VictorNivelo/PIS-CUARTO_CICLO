@@ -20,18 +20,19 @@
             height: 100%;
             margin: 0;
             padding: 0;
-        }
-
-        body {
-            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
-            background-size: cover;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
+        body {
+            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+
         .caja {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -40,14 +41,69 @@
         }
 
         .form-wrapper {
-            background: rgba(255, 255, 255, 0.8);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         .t {
             font-family: 'Lobster', cursive;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        .btn-custom {
+            width: 48%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            display: inline-block;
+            line-height: normal;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-enviar {
+            background-color: #4CAF50;
+        }
+
+        .btn-enviar:hover {
+            background-color: #45a049;
+        }
+
+        .btn-regresar {
+            background-color: #f0ad4e;
+        }
+
+        .btn-regresar:hover {
+            background-color: #eea236;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -57,7 +113,7 @@
         <div class="form-wrapper">
             <form action="{% url 'RecuperarContrasenia' %}" method="post">
                 {% csrf_token %}
-                <h1 class="text-center t">Recuperar Contraseña</h1>
+                <h1 class="t">Recuperar Contraseña</h1>
                 {% if messages %}
                 <div class="alert alert-danger" role="alert">
                     {% for message in messages %}
@@ -66,13 +122,12 @@
                 </div>
                 {% endif %}
                 <div class="form-group">
-                    <label for="email">Correo Electrónico</label>
-                    <input type="email" class="form-control" id="email" placeholder="Ingrese su correo electrónico"
-                        name="email" required>
-                </div><br>
-                <div class="text-center">
-                    <a href="{% url 'Iniciar_sesion' %}" class="btn btn-warning">Regresar</a>
-                    <button type="submit" class="btn btn-success">Enviar Enlace</button>
+                    <label for="{{ form.Correo.id_for_label }}">Correo Electrónico</label>
+                    {{ form.Correo }}
+                </div>
+                <div class="button-group">
+                    <a href="{% url 'Iniciar_sesion' %}" class="btn-custom btn-regresar">Regresar</a>
+                    <button type="submit" class="btn-custom btn-enviar">Enviar Enlace</button>
                 </div>
             </form>
         </div>

@@ -1,11 +1,10 @@
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
-from .forms import RegistrarUsuarioForm
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import authenticate, login, logout
+from PIS.models import UsuarioPersonalizado
+from .forms import InformeCarreraForm, InformeCicloForm, InformeMateriaForm, InicioSesionForm, RecuperarContraseniaForm, RegistrarUsuarioForm
 from django.db import IntegrityError
+from django.contrib.auth.decorators import login_required
 
 
 def PaginaPrueba(request):
@@ -49,19 +48,47 @@ def InformeMateria(request):
 
 
 def InformeCiclo(request):
-    return render(request, "InformeCiclo.html")
-
+    if request.method == 'POST':
+        form = InformeCicloForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Informe de ciclo guardado exitosamente.')
+            return redirect('Index') 
+        else:
+            messages.error(request, 'Por favor, corrija los errores del formulario.')
+    else:
+        form = InformeCicloForm()
+    return render(request, 'InformeCiclo.html', {'form': form})
 
 def InformeCarrera(request):
-    return render(request, "InformeCarrera.html")
+    if request.method == 'POST':
+        form = InformeCarreraForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Informe de carrera guardado exitosamente.')
+            return redirect('Index') 
+        else:
+            messages.error(request, 'Por favor, corrija los errores del formulario.')
+    else:
+        form = InformeCarreraForm()
+    return render(request, 'InformeCarrera.html', {'form': form})
 
 
-def Recuperar(request):
-    return render(request, "RecuperarContrasenia.html")
+def InformeMateria(request):
+    if request.method == 'POST':
+        form = InformeMateriaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Informe de deserción estudiantil guardado exitosamente.')
+            return redirect('Index') 
+        else:
+            messages.error(request, 'Por favor, corrija los errores del formulario.')
+    else:
+        form = InformeMateriaForm()
+    return render(request, 'InformeMateria.html', {'form': form})
 
-
-def Pagina_Administrador(request):
-    return render(request, "PaginaAdministrador.html")
+# def InformeCarrera(request):
+#     return render(request, "InformeCarrera.html")
 
 
 def Reporte(request):
@@ -76,95 +103,170 @@ def PrediccionPresente(request):
     return render(request, "PrediccionPresente.html")
 
 
-def registrar_usuario(request):
+@login_required
+def Pagina_Administrador(request):
+    return render(request, "PaginaAdministrador.html")
+
+
+@login_required
+def Pagina_Usuario(request):
+    return render(request, "PaginaUsuario.html")
+
+
+# User = get_user_model()
+
+# def RegistarUsuario(request):
+#     if request.method == "POST":
+#         form = RegistrarUsuarioForm(request.POST)
+#         if form.is_valid():
+#             nombre = form.cleaned_data["Nombre"]
+#             apellido = form.cleaned_data["Apellido"]
+#             correo = form.cleaned_data["Correo"]
+#             contrasenia = form.cleaned_data["Contrasenia"]
+#             confirmar_contrasenia = form.cleaned_data["Confirmar_Contrasenia"]
+#             nombre_usuario = nombre.lower() + "_" + apellido.lower() 
+#             if contrasenia == confirmar_contrasenia:
+#                 try:
+#                     user = User.objects.create_user(
+#                         username=nombre_usuario,
+#                         email=correo,
+#                         password=contrasenia,
+#                         first_name=nombre,
+#                         last_name=apellido
+#                     )
+#                     messages.success(request, "Usuario creado exitosamente.")
+#                     return redirect("IniciarSesion")
+#                 except IntegrityError:
+#                     return render(
+#                         request,
+#                         "RegistrarUsuario.html",
+#                         {
+#                             "form": form,
+#                             "error": "El nombre de usuario o correo electrónico ya existe.",
+#                         },
+#                     )
+#             else:
+#                 return render(
+#                     request,
+#                     "RegistrarUsuario.html",
+#                     {
+#                         "form": form,
+#                         "error": "Las contraseñas no coinciden.",
+#                     },
+#                 )
+#     else:
+#         form = RegistrarUsuarioForm()
+#     return render(request, "RegistrarUsuario.html", {"form": form})
+
+def RegistrarUsuario(request):
     if request.method == "POST":
         form = RegistrarUsuarioForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data["Contrasenia"])
-            user.save()
-            login(request, user)
-            messages.success(request, "Usuario creado exitosamente.")
-            return redirect("pagina_administrador")
-        else:
-            messages.error(request, "Error en la creación del usuario.")
+            nombre_usuario = form.cleaned_data["NombreUsuario"]
+            nombre = form.cleaned_data["Nombre"]
+            apellido = form.cleaned_data["Apellido"]
+            correo = form.cleaned_data["Correo"]
+            contrasenia = form.cleaned_data["Contrasenia"]
+            confirmar_contrasenia = form.cleaned_data["Confirmar_Contrasenia"]
+            if contrasenia == confirmar_contrasenia:
+                try:
+                    user = UsuarioPersonalizado.objects.create_user(
+                        nombre_usuario=nombre_usuario, nombre=nombre, apellido=apellido, correo=correo, contrasenia=contrasenia, confirmar_contrasenia=confirmar_contrasenia
+                    )
+                    login(request, user)
+                    messages.success(request, "Usuario creado exitosamente.")
+                    return redirect("iniciar_sesion")
+                except IntegrityError:
+                    return render(
+                        request,
+                        "RegistrarUsuario.html",
+                        {
+                            "form": form,
+                            "error": "El nombre de usuario o correo electrónico ya existe.",
+                        },
+                    )
+            else:
+                return render(
+                    request,
+                    "RegistrarUsuario.html",
+                    {
+                        "form": form,
+                        "error": "Las contraseñas no coinciden.",
+                    },
+                )
     else:
         form = RegistrarUsuarioForm()
     return render(request, "RegistrarUsuario.html", {"form": form})
 
 
-def iniciar_sesion(request):
-    if request.method == "POST":
-        correo = request.POST["txtCorreo"]
-        password = request.POST["txtPassword"]
-        user = authenticate(request, username=correo, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect("pagina_administrador")
-        else:
-            messages.error(request, "Usuario o contraseña incorrectos.")
-            return redirect("iniciar_sesion")
-    else:
-        return render(request, "IniciarSesion.html")
-
-
-# def signup(request):
+# def RegistarUsuario(request):
 #     if request.method == "GET":
-#         return render(request, "RegistrarUsuario.html", {"form": UserCreationForm})
+#         return render(request, "RegistrarUsuario.html", {"form": RegistrarUsuarioForm})
 #     else:
-#         if request.POST["password1"] == request.POST["password2"]:
+#         if request.POST["Contrasenia"] == request.POST["Confirmar_Contrasenia"]:
 #             try:
 #                 user = User.objects.create_user(
-#                     request.POST["username"], password=request.POST["password1"]
+#                     request.POST["Correo"], password=request.POST["Contrasenia"]
 #                 )
 #                 user.save()
 #                 login(request, user)
 #                 messages.success(request, "Usuario creado exitosamente.")
-#                 return redirect("tasks")
+#                 return redirect("IniciarSesion")
 #             except IntegrityError:
 #                 return render(
 #                     request,
 #                     "RegistrarUsuario.html",
 #                     {
-#                         "form": UserCreationForm,
+#                         "form": RegistrarUsuarioForm,
 #                         "error": "El nombre de usuario ya existe.",
 #                     },
 #                 )
-#         return render(
-#             request,
-#             "RegistrarUsuario.html",
-#             {"form": UserCreationForm, "error": "La contraseña está incorrecta."},
-#         )
 
 
-# def signin(request):
-#     if request.method == "GET":
-#         return render(request, "IniciarSesion.html", {"form": AuthenticationForm})
-#     else:
-#         user = authenticate(
-#             request,
-#             username=request.POST["username"],
-#             password=request.POST["password"],
-#         )
-#         if user is None:
-#             return render(
-#                 request,
-#                 "IniciarSesion.html",
-#                 {
-#                     "form": AuthenticationForm,
-#                     "error": "Usuario o contraseña incorrectos.",
-#                 },
-#             )
+def IniciarSesion(request):
+    if request.method == "GET":
+        return render(request, "IniciarSesion.html", {"form": InicioSesionForm})
+    else:
+        user = authenticate(
+            request,
+            username=request.POST["Correo"],
+            password=request.POST["Contrasenia"],
+        )
+        if user is not None:
+            return render(
+                request,
+                "IniciarSesion.html",
+                {
+                    "form": InicioSesionForm,
+                    "error": "Usuario o contraseña incorrectos.",
+                },
+            )
 
-#         login(request, user)
-#         return redirect("tasks")
+        login(request, user)
+        return redirect("Pagina_Usuario")
 
 
-# def pagina_administrador(request):
-#     if request.session.get('logueado'):
-#         return render(request, 'PaginaAdministrador.html')
-#     else:
-#         return redirect('iniciar_sesion')
+@login_required
+def CerrarSesion(request):
+    logout(request)
+    return redirect("IniciarSesion")
+
+
+def Recuperar(request):
+    if request.method == "POST":
+        form = RecuperarContraseniaForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            messages.success(
+                request,
+                "Se ha enviado un enlace de recuperación a su correo electrónico.",
+            )
+            return redirect("iniciar_sesion")
+        else:
+            messages.error(request, "Error al enviar el enlace de recuperación.")
+    else:
+        form = RecuperarContraseniaForm()
+    return render(request, "RecuperarContrasenia.html", {"form": form})
 
 
 # def registrar_usuario(request):
@@ -172,7 +274,7 @@ def iniciar_sesion(request):
 #         form = RegistrarUsuarioForm(request.POST)
 #         if form.is_valid():
 #             user = form.save(commit=False)
-#             user.set_password(form.cleaned_data["password"])
+#             user.set_password(form.cleaned_data["Contrasenia"])
 #             user.save()
 #             login(request, user)
 #             messages.success(request, "Usuario creado exitosamente.")
@@ -182,3 +284,24 @@ def iniciar_sesion(request):
 #     else:
 #         form = RegistrarUsuarioForm()
 #     return render(request, "RegistrarUsuario.html", {"form": form})
+
+
+# def iniciar_sesion(request):
+#     if request.method == "POST":
+#         form = InicioSesionForm(request.POST)
+#         if form.is_valid():
+#             correo = form.cleaned_data["Correo"]
+#             password = form.cleaned_data["Contrasenia"]
+#             user = authenticate(request, username=correo, password=password)
+#             if user is not None:
+#                 login(request, user)
+#                 return redirect("pagina_administrador")
+#             else:
+#                 messages.error(request, "Usuario o contraseña incorrectos.")
+#                 return redirect("iniciar_sesion")
+#         else:
+#             messages.error(request, "Error en el formulario de inicio de sesión.")
+#             return redirect("iniciar_sesion")
+#     else:
+#         form = InicioSesionForm()
+#     return render(request, "IniciarSesion.html", {"form": form})

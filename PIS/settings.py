@@ -55,8 +55,6 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = "PIS.UsuarioPersonalizado"
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -73,7 +71,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "es-es"
 
 TIME_ZONE = "UTC"
 
@@ -83,4 +81,8 @@ USE_TZ = True
 
 STATIC_URL = "/Static/"
 
+LOGIN_URL = "/Iniciar-Sesion"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = "PIS.UsuarioPersonalizado"
