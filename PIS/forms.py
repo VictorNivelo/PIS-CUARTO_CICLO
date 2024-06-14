@@ -1,83 +1,86 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import InformeCarrera, InformeMateria, UsuarioPersonalizado
 
 
-class RegistrarUsuarioForm(forms.ModelForm):
-    NombreUsuario = forms.CharField(
-        widget=forms.TextInput(attrs={"placeholder": "Ingrese su nombre"}),
-        label="Nombre de Usuario",
-    )
-    Nombre = forms.CharField(
-        widget=forms.TextInput(attrs={"placeholder": "Ingrese su nombre"}),
-        label="Nombre de Usuario",
-    )
-    Apellido = forms.CharField(
-        widget=forms.TextInput(attrs={"placeholder": "Ingrese su apellido"}),
-        label="Apellido de Usuario",
-    )
-    Correo = forms.EmailField(
+class RegistrarUsuarioForm(UserCreationForm):
+
+    username = forms.EmailField(
         widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electrónico"}),
         label="Correo Electrónico",
     )
-    Contrasenia = forms.CharField(
-        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su constraseña"}),
+
+    first_name = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su nombre"}),
+        label="Nombre",
+    )
+
+    last_name = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su apellido"}),
+        label="Apellido",
+    )
+
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su contraseña"}),
         label="Contraseña",
     )
-    Confirmar_Contrasenia = forms.CharField(
-        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su constraseña"}),
+
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Confirme su contraseña"}),
         label="Confirmar Contraseña",
+    )
+
+    rol = forms.ChoiceField(
+        choices=[
+            ("personal_Administrativo", "Personal Administrativo"),
+            ("secretaria", "Secretaria"),
+            ("docente", "Docente"),
+        ],
+        initial="docente",
+        label="Rol",
     )
 
     class Meta:
         model = UsuarioPersonalizado
         fields = [
-            "NombreUsuario",
-            "Nombre",
-            "Apellido",
-            "Correo",
-            "Contrasenia",
-            "Confirmar_Contrasenia",
+            "username",
+            "first_name",
+            "last_name",
+            "password1",
+            "password2",
+            "rol",
         ]
-
-    def clean(self):
-        cleaned_data = super().clean()
-        Contrasenia = cleaned_data.get("Contrasenia")
-        Confirmar_Contrasenia = cleaned_data.get("Confirmar_Contrasenia")
-
-        if (
-            Contrasenia
-            and Confirmar_Contrasenia
-            and Contrasenia != Confirmar_Contrasenia
-        ):
-            raise forms.ValidationError("Las contraseñas no coinciden.")
-
-        return cleaned_data
+        widgets = {
+            "password1": forms.PasswordInput(),
+            "password2": forms.PasswordInput(),
+        }
 
 
-class InicioSesionForm(forms.ModelForm):
-    Correo = forms.EmailField(
-        widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electronico"}),
+class InicioSesionForm(AuthenticationForm):
+    username = forms.EmailField(
+        widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electrónico"}),
         label="Correo Electrónico",
     )
-    Contrasenia = forms.CharField(
-        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su constraseña"}),
+
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su contraseña"}),
         label="Contraseña",
     )
 
     class Meta:
         model = UsuarioPersonalizado
-        fields = ["Correo", "Contrasenia"]
+        fields = ["username", "password"]
 
 
-class RecuperarContraseniaForm(forms.ModelForm):
-    Correo = forms.EmailField(
-        widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electronico"}),
+class RecuperarContraseniaForm(forms.Form):
+    username = forms.EmailField(
+        widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electrónico"}),
         label="Correo Electrónico",
     )
 
     class Meta:
         model = UsuarioPersonalizado
-        fields = ["Correo"]
+        fields = ["username"]
 
 
 class CambiarContraseniaForm(forms.ModelForm):
@@ -87,6 +90,20 @@ class CambiarContraseniaForm(forms.ModelForm):
     class Meta:
         model = UsuarioPersonalizado
         fields = ["Contrasenia", "Confirmar_contrasenia"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        Contrasenia = cleaned_data.get("Contrasenia")
+        Confirmar_contrasenia = cleaned_data.get("Confirmar_contrasenia")
+
+        if (
+            Contrasenia
+            and Confirmar_contrasenia
+            and Contrasenia != Confirmar_contrasenia
+        ):
+            raise forms.ValidationError("Las contraseñas no coinciden.")
+
+        return cleaned_data
 
 
 class ModificarCorreoForm(forms.ModelForm):
@@ -98,7 +115,7 @@ class ModificarCorreoForm(forms.ModelForm):
 
 
 class ModificarRolUsuarioForm(forms.ModelForm):
-    Rol = forms.ChoiceField(
+    rol = forms.ChoiceField(
         choices=[
             ("personal_Administrativo", "Personal Administrativo"),
             ("secretaria", "Secretaria"),
@@ -108,7 +125,10 @@ class ModificarRolUsuarioForm(forms.ModelForm):
 
     class Meta:
         model = UsuarioPersonalizado
-        fields = ["Rol"]
+        fields = ["username", "rol"]
+        widgets = {
+            "username": forms.TextInput(attrs={"readonly": "readonly"}),
+        }
 
 
 # Formularios de informes
