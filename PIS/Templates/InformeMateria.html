@@ -120,7 +120,7 @@
 
 <body>
     <div class="caja">
-        <form class="form-wrapper" action="{% url 'InformeMateria' %}" method="post">
+        <form class="form-wrapper" action="{% url 'Informe_Materia' %}" method="post">
             <h1 class="t">Informe de Deserción Estudiantil</h1>
             {% csrf_token %}
             <div class="row">
@@ -159,7 +159,7 @@
             </div>
             <div class="button-group">
                 <a href="{% url 'Index' %}" class="btn btn-regresar">Regresar</a>
-                <a href="{% url 'ReporteGenerado' %}" class="btn btn-grafico">Generar Informe</a>
+                <a href="{% url 'Reporte_Generado' %}" class="btn btn-grafico">Generar Informe</a>
                 <a href="{% url 'Grafico' %}" class="btn btn-grafico">Generar gráfico</a>
             </div>
         </form>

@@ -15,7 +15,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "PIS.Apps.PISConfing",
+    "PIS.apps.PISConfing",
 ]
 
 MIDDLEWARE = [

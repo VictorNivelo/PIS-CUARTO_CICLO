@@ -111,7 +111,7 @@
 <body>
     <div class="caja">
         <div class="form-wrapper">
-            <form action="{% url 'RecuperarContrasenia' %}" method="post">
+            <form action="{% url 'Recuperar_Contrasenia' %}" method="post">
                 {% csrf_token %}
                 <h1 class="t">Recuperar Contraseña</h1>
                 {% if messages %}
@@ -126,7 +126,7 @@
                     {{ form.Correo }}
                 </div>
                 <div class="button-group">
-                    <a href="{% url 'Iniciar_sesion' %}" class="btn-custom btn-regresar">Regresar</a>
+                    <a href="{% url 'Iniciar_Sesion' %}" class="btn-custom btn-regresar">Regresar</a>
                     <button type="submit" class="btn-custom btn-enviar">Enviar Enlace</button>
                 </div>
             </form>

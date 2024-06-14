@@ -1,42 +1,35 @@
-from django.contrib.auth.models import Group
 from django.db import models
-from django.contrib.auth.models import Permission
-from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import AbstractUser
 
 
 class UsuarioPersonalizado(AbstractUser):
 
-    USERNAME_FIELD = "NombreUsuario"
-    REQUIRED_FIELDS = ["Correo"]
+    ROLES = [
+        ("personal_Administrativo", "Personal Administrativo"),
+        ("secretaria", "Secretaria"),
+        ("docente", "Docente"),
+    ]
 
-    NombreUsuario = models.CharField(max_length=50, unique=True)
-    Nombre = models.CharField(max_length=60)
-    Apellido = models.CharField(max_length=60)
-    Correo = models.EmailField(max_length=254, unique=True)
-    Contrasenia = models.CharField(max_length=50)
-    Confirmar_Contrasenia = models.CharField(max_length=50)
+    rol = models.CharField(max_length=30, choices=ROLES, default="docente")
+    first_name = models.CharField(max_length=100, verbose_name="Nombre")
+    last_name = models.CharField(max_length=100, verbose_name="Apellido")
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
 
-    groups = models.ManyToManyField(
-        "auth.Group",
-        related_name="custom_user_set",
-        blank=True,
-        verbose_name=_("groups"),
-        help_text=_(
-            "The groups this user belongs to. A user will get all permissions "
-            "granted to each of their groups."
-        ),
-    )
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = [
+        "first_name",
+        "last_name",
+    ]
 
-    user_permissions = models.ManyToManyField(
-        Permission,
-        verbose_name=_("user permissions"),
-        blank=True,
-        related_name="custom_user_set",
-    )
+    def save(self, *args, **kwargs):
+        self.email = self.username
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.Nombre + " " + self.Apellido
+        return f"{self.username}"
 
 
 class InformeCarrera(models.Model):
@@ -47,12 +40,12 @@ class InformeCarrera(models.Model):
     desertores = models.IntegerField(verbose_name="Desertores")
     retirados = models.IntegerField(verbose_name="Retirados")
 
-    def __str__(self):
-        return self.carrera
-
     class Meta:
         verbose_name = "Informe de Carrera"
         verbose_name_plural = "Informes de Carreras"
+
+    def __str__(self):
+        return self.carrera
 
 
 class InformeCiclo(models.Model):
