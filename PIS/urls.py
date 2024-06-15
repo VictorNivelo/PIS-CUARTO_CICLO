@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from .vistas import (
     PaginaPrincipal,
-    Pagina_Administrador,
+    PaginaAdministrador,
     IniciarSesion,
     RegistrarUsuario,
     RecuperarContrasenia,
@@ -19,14 +19,18 @@ from .vistas import (
     PrediccionPresente,
     Reporte,
     GestionUniversidad,
-    PaginaUsuario,
+    PaginaDocente,
+    PaginaSecretaria,
+    GestionUsuario,
+    ModificarUsuario,
 )
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", PaginaPrincipal, name="Index"),
-    path("Pagina-Administrador/", Pagina_Administrador, name="Pagina_Administrador"),
-    path("Pagina-Usuario/", PaginaUsuario, name="Pagina_Usuario"),
+    path("Pagina-Administrador/", PaginaAdministrador, name="Pagina_Administrador"),
+    path("Pagina-Docente/", PaginaDocente, name="Pagina_Docente"),
+    path("Pagina-Secretaria/", PaginaSecretaria, name="Pagina_Secretaria"),
     path("Registrar-Usuario/", RegistrarUsuario, name="Registrar_Usuario"),
     path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
     path("Recuperar-Contrasenia/", RecuperarContrasenia, name="Recuperar_Contrasenia"),
@@ -43,4 +47,5 @@ urlpatterns = [
     path("PrediccionP/", PrediccionPresente, name="Prediccion_Presente"),
     path("Reporte-Generado/", Reporte, name="Reporte_Generado"),
     path("Gestion-Universidad/", GestionUniversidad, name="Gestion_Univerisdad"),
+    path("Gestion-Usuarios/", GestionUsuario, name="Gestion_Usuario"),
 ]

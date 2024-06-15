@@ -23,9 +23,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-
-        body {
             background: url('../Static/Imagen/b.png') no-repeat center center fixed;
             background-size: cover;
             font-family: Arial, sans-serif;
@@ -122,8 +119,8 @@
                 </div>
                 {% endif %}
                 <div class="form-group">
-                    <label for="{{ form.Correo.id_for_label }}">Correo Electrónico</label>
-                    {{ form.Correo }}
+                    <label for="{{ form.username.id_for_label }}">Nombre de usuario o Correo Electrónico</label>
+                    {{ form.username }}
                 </div>
                 <div class="button-group">
                     <a href="{% url 'Iniciar_Sesion' %}" class="btn-custom btn-regresar">Regresar</a>

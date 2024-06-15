@@ -10,11 +10,14 @@
     <title>Crear Usuario</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
-        html, body {
+
+        html,
+        body {
             height: 100%;
             margin: 0;
             padding: 0;
         }
+
         body {
             background: url('../Static/Imagen/b.png') no-repeat center center fixed;
             background-size: cover;
@@ -23,32 +26,42 @@
             justify-content: center;
             align-items: center;
         }
+
         .caja {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 400px;
+            max-width: 600px;
             padding: 30px;
             margin: auto;
         }
+
         .form-wrapper {
             padding: 20px;
         }
+
         .t {
             font-family: 'Lobster', cursive;
             text-align: center;
             margin-bottom: 30px;
             color: #333;
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             color: #555;
             font-weight: bold;
         }
-        input[type="text"], input[type="email"], input[type="password"] {
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select,
+        input[type="date"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -56,7 +69,9 @@
             font-size: 16px;
             margin-top: 5px;
         }
-        button[type="submit"], .btn-regresar {
+
+        button[type="submit"],
+        .btn-regresar {
             width: 48%;
             padding: 10px;
             border: none;
@@ -65,20 +80,25 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
+
         button[type="submit"] {
             background-color: #4CAF50;
             color: white;
         }
+
         button[type="submit"]:hover {
             background-color: #45a049;
         }
+
         .btn-regresar {
             background-color: #f0ad4e;
             color: white;
         }
+
         .btn-regresar:hover {
             background-color: #eea236;
         }
+
         .button-group {
             display: flex;
             justify-content: space-between;
@@ -93,39 +113,62 @@
             <form action="{% url 'Registrar_Usuario' %}" method="POST">
                 <h1 class="t">Crear Usuario</h1>
                 {% csrf_token %}
-                
+
                 {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}" role="alert">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
                 {% endif %}
 
-                <div class="form-group">
-                    <label for="{{ form.username.id_for_label }}">Correo electrónico:</label>
-                    {{ form.username }}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.username.id_for_label }}">Correo electrónico:</label>
+                            {{ form.username }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.first_name.id_for_label }}">Nombre:</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.last_name.id_for_label }}">Apellido:</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.genero.id_for_label }}">Género:</label>
+                            {{ form.genero }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.telefono.id_for_label }}">Teléfono:</label>
+                            {{ form.telefono }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.tipo_dni.id_for_label }}">Tipo de DNI:</label>
+                            {{ form.tipo_dni }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.dni.id_for_label }}">Número de DNI:</label>
+                            {{ form.dni }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.fecha_nacimiento.id_for_label }}">Fecha de Nacimiento:</label>
+                            {{ form.fecha_nacimiento }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.password1.id_for_label }}">Contraseña:</label>
+                            {{ form.password1 }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.password2.id_for_label }}">Confirmar Contraseña:</label>
+                            {{ form.password2 }}
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="{{ form.first_name.id_for_label }}">Nombre:</label>
-                    {{ form.first_name }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.last_name.id_for_label }}">Apellido:</label>
-                    {{ form.last_name }}
-                </div>
-                <!-- <div class="form-group">
-                    <label for="{{ form.email.id_for_label }}">Correo electrónico:</label>
-                    {{ form.email }}
-                </div> -->
-                <div class="form-group">
-                    <label for="{{ form.password1.id_for_label }}">Contraseña:</label>
-                    {{ form.password1 }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.password2.id_for_label }}">Confirmar Contraseña:</label>
-                    {{ form.password2 }}
-                </div>
+
                 <div class="button-group">
                     <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
                     <button type="submit">Crear Usuario</button>
@@ -135,7 +178,7 @@
     </div>
 
     <script>
-        document.getElementById('btnRegresar').addEventListener('click', function() {
+        document.getElementById('btnRegresar').addEventListener('click', function () {
             var paginaAnterior = localStorage.getItem('paginaAnterior');
             if (paginaAnterior) {
                 window.location.href = paginaAnterior;

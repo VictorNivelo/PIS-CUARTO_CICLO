@@ -1,9 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import login_required
+from PIS.models import UsuarioPersonalizado
+from datetime import datetime
+from django.db.models import Q
 from .forms import (
     InformeCarreraForm,
     InformeCicloForm,
@@ -20,13 +23,18 @@ def PaginaPrincipal(request):
 
 
 @login_required
-def Pagina_Administrador(request):
+def PaginaAdministrador(request):
     return render(request, "PaginaAdministrador.html")
 
 
 @login_required
-def PaginaUsuario(request):
+def PaginaDocente(request):
     return render(request, "PaginaDocente.html")
+
+
+@login_required
+def PaginaSecretaria(request):
+    return render(request, "PaginaSecretaria.html")
 
 
 # Informacion del programa
@@ -149,7 +157,8 @@ def RegistrarUsuario(request):
         form = RegistrarUsuarioForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.rol = "docente"
+            rol = form.cleaned_data.get("rol") or "docente"
+            # user.rol = "docente"
             user.set_password(form.cleaned_data["password1"])
             user.save()
             login(request, user)
@@ -184,7 +193,15 @@ def IniciarSesion(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect("Pagina_Usuario")
+                if user.rol == "personal_Administrativo":
+                    return redirect("Pagina_Administrador")
+                elif user.rol == "docente":
+                    return redirect("Pagina_Docente")
+                elif user.rol == "secretaria":
+                    return redirect("Pagina_Secretaria")
+                else:
+                    messages.error(request, "Rol de usuario no reconocido.")
+                # return redirect("Pagina_Usuario")
     else:
         form = AuthenticationForm()
 
@@ -212,3 +229,87 @@ def RecuperarContrasenia(request):
     else:
         form = RecuperarContraseniaForm()
     return render(request, "RecuperarContrasenia.html", {"form": form})
+
+
+def GestionUsuario(request):
+    query = request.GET.get("search_query", "")
+    filter_rol = request.GET.get("rol", "")
+    filter_genero = request.GET.get("genero", "")
+    filter_tipo_dni = request.GET.get("tipo_dni", "")
+
+    usuarios = UsuarioPersonalizado.objects.all()
+
+    if query:
+        usuarios = usuarios.filter(
+            Q(username__icontains=query) | Q(dni__icontains=query)
+        )
+    if filter_rol:
+        usuarios = usuarios.filter(rol=filter_rol)
+    if filter_genero:
+        usuarios = usuarios.filter(genero=filter_genero)
+    if filter_tipo_dni:
+        usuarios = usuarios.filter(tipo_dni=filter_tipo_dni)
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            user_id = request.POST.get("user_id")
+            usuario = UsuarioPersonalizado.objects.get(id=user_id)
+            usuario.username = request.POST.get("username")
+            usuario.first_name = request.POST.get("first_name")
+            usuario.last_name = request.POST.get("last_name")
+            usuario.rol = request.POST.get("rol")
+            usuario.genero = request.POST.get("genero")
+            usuario.tipo_dni = request.POST.get("tipo_dni")
+            usuario.dni = request.POST.get("dni")
+            fecha_nacimiento_str = request.POST.get("fecha_nacimiento")
+            try:
+                fecha_nacimiento = datetime.strptime(
+                    fecha_nacimiento_str, "%d/%m/%Y"
+                ).date()
+                usuario.fecha_nacimiento = fecha_nacimiento
+            except ValueError:
+                messages.error(
+                    request,
+                    "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
+                )
+                return redirect("Gestion_Usuario")
+            usuario.telefono = request.POST.get("telefono")
+            usuario.save()
+            messages.success(
+                request, "Información del usuario actualizada correctamente."
+            )
+        elif "delete" in request.POST:
+            user_id = request.POST.get("user_id")
+            usuario = UsuarioPersonalizado.objects.get(id=user_id)
+            usuario.delete()
+            messages.success(request, "Usuario eliminado correctamente.")
+        return redirect("Gestion_Usuario")
+
+    return render(
+        request,
+        "GestionUsuario.html",
+        {
+            "usuarios": usuarios,
+            "query": query,
+            "filter_rol": filter_rol,
+            "filter_genero": filter_genero,
+            "filter_tipo_dni": filter_tipo_dni,
+        },
+    )
+
+
+def ModificarUsuario(request, user_id):
+    user = get_object_or_404(UsuarioPersonalizado, id=user_id)
+
+    if request.method == "POST":
+        form = RegistrarUsuarioForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Usuario {user.email} modificado exitosamente.")
+            return redirect("Gestion_Usuario")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = RegistrarUsuarioForm(instance=user)
+
+    return render(request, "GU-ModificarUsuario.html", {"form": form, "user": user})

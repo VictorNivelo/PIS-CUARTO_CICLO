@@ -30,12 +30,44 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="Confirmar Contraseña",
     )
 
+    genero = forms.ChoiceField(
+        choices=UsuarioPersonalizado.GENERO_OPCIONES, required=False, label="Género"
+    )
+
+    fecha_nacimiento = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "Placeholder": "Ingrese su fecha de nacimiento",
+            }
+        ),
+        required=False,
+        label="Fecha de Nacimiento",
+    )
+
+    tipo_dni = forms.ChoiceField(
+        choices=UsuarioPersonalizado.TIPO_DNI_OPCIONES,
+        required=False,
+        label="Tipo de identificacion",
+    )
+
+    dni = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su DNI"}),
+        max_length=10,
+        required=False,
+        label="DNI",
+    )
+
+    telefono = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
+        max_length=10,
+        required=False,
+        label="Numero de teléfono",
+    )
+
     rol = forms.ChoiceField(
-        choices=[
-            ("personal_Administrativo", "Personal Administrativo"),
-            ("secretaria", "Secretaria"),
-            ("docente", "Docente"),
-        ],
+        choices=UsuarioPersonalizado.ROLES,
+        required=False,
         initial="docente",
         label="Rol",
     )
@@ -48,7 +80,11 @@ class RegistrarUsuarioForm(UserCreationForm):
             "last_name",
             "password1",
             "password2",
-            "rol",
+            "genero",
+            "fecha_nacimiento",
+            "tipo_dni",
+            "dni",
+            "telefono",
         ]
         widgets = {
             "password1": forms.PasswordInput(),
@@ -120,15 +156,14 @@ class ModificarRolUsuarioForm(forms.ModelForm):
             ("personal_Administrativo", "Personal Administrativo"),
             ("secretaria", "Secretaria"),
             ("docente", "Docente"),
-        ]
+        ],
+        label="Rol",
     )
 
     class Meta:
         model = UsuarioPersonalizado
-        fields = ["username", "rol"]
-        widgets = {
-            "username": forms.TextInput(attrs={"readonly": "readonly"}),
-        }
+        fields = ["rol"]
+        widgets = {"rol": forms.Select(choices=UsuarioPersonalizado.ROLES)}
 
 
 # Formularios de informes
