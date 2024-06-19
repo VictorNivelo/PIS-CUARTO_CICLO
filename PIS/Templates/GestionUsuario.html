@@ -158,7 +158,7 @@
         td {
             border: 1px solid #ccc;
             padding: 10px;
-            text-align: left;
+            text-align: center;
         }
 
         th {
@@ -305,8 +305,6 @@
                             <td><input type="text" name="telefono" value="{{ usuario.telefono }}"></td>
                             <td>
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
-                                <br>
-                                <br>
                                 <form method="POST" style="display: inline-block; margin-left: 5px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="user_id" value="{{ usuario.id }}">

@@ -158,7 +158,7 @@
         td {
             border: 1px solid #ccc;
             padding: 10px;
-            text-align: left;
+            text-align: center;
         }
 
         th {
@@ -252,8 +252,6 @@
                                     value="{{ universidad.fecha_fundacion|date:'d/m/Y' }}"></td>
                             <td>
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
-                                <br>
-                                <br>
                                 <form method="POST" style="display: inline-block; margin-left: 5px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="universidad_id" value="{{ universidad.id }}">

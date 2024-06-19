@@ -198,7 +198,9 @@ class UniversidadForm(forms.ModelForm):
         label="Correo",
     )
     fecha_fundacion = forms.DateField(
-        widget=forms.DateInput(attrs={"placeholder": "Ingrese la fecha de fundacion"}),
+        widget=forms.DateInput(
+            attrs={"type": "date", "placeholder": "Ingrese la fecha de fundacion"}
+        ),
         label="Fecha de Creación",
     )
 
@@ -221,10 +223,11 @@ class FacultadForm(forms.ModelForm):
         label="Nombre de la Facultad",
     )
     fecha_fundacion = forms.DateField(
-        widget=forms.DateInput(attrs={"placeholder": "Ingrese la fecha de fundacion"}),
+        widget=forms.DateInput(attrs={"type": "date", "placeholder": "Ingrese la fecha de fundacion"}),
         label="Fecha de Creación",
     )
     universidad = forms.ModelChoiceField(
+        initial='',
         queryset=Universidad.objects.all(),
         widget=forms.Select(attrs={"placeholder": "Seleccione la universidad"}),
         label="Universidad",

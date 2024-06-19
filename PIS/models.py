@@ -18,8 +18,8 @@ class UsuarioPersonalizado(AbstractUser):
     ]
 
     TIPO_DNI_OPCIONES = [
-        ("Pasaporte", "Pasaporte"),
         ("Cedula", "Cédula"),
+        ("Pasaporte", "Pasaporte"),
     ]
 
     genero = models.CharField(

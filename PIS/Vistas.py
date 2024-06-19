@@ -317,7 +317,7 @@ def GestionUniversidad(request):
     query = request.GET.get("search_query", "")
 
     universidades = Universidad.objects.all()
-    
+
     if query:
         universidades = universidades.filter(
             Q(nombre_universidad__icontains=query)
@@ -384,18 +384,28 @@ def GestionFacultad(request):
     query = request.GET.get("search_query", "")
 
     facultades = Facultad.objects.all()
-    
+
     if query:
-        facultades = facultades.filter(
-            Q(nombre_facultad__icontains=query)
-        )
+        facultades = facultades.filter(Q(nombre_facultad__icontains=query))
 
     if request.method == "POST":
         if "modify" in request.POST:
             facultad_id = request.POST.get("facultad_id")
             facultad = Facultad.objects.get(id=facultad_id)
             facultad.nombre_facultad = request.POST.get("nombre_facultad")
-            facultad.fecha_fundacion = request.POST.get("fecha_fundacion")
+            # facultad.fecha_fundacion = request.POST.get("fecha_fundacion")
+            fecha_fundacion_str = request.POST.get("fecha_fundacion")
+            try:
+                fecha_fundacion = datetime.strptime(
+                    fecha_fundacion_str, "%d/%m/%Y"
+                ).date()
+                facultad.fecha_fundacion = fecha_fundacion
+            except ValueError:
+                messages.error(
+                    request,
+                    "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
+                )
+                return redirect("Gestion_Usuario")
             universidad_id = request.POST.get("universidad_id")
             universidad = Universidad.objects.get(id=universidad_id)
             facultad.universidad = universidad

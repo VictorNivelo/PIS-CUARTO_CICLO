@@ -158,7 +158,7 @@
         td {
             border: 1px solid #ccc;
             padding: 10px;
-            text-align: left;
+            text-align: center;
         }
 
         th {
@@ -241,8 +241,6 @@
                             <td><input type="text" name="fecha_fundacion_facultad"
                                     value="{{ facultad.fecha_fundacion }}"></td>
 
-                            
-
                             <!-- <td>
                                 <select name="universidad">
                                     {% for universidad in universidades %}
@@ -253,26 +251,10 @@
                                     {% endfor %}
                                 </select>
                             </td> -->
-                            
 
-                            <td><input type="text" name="universidad" value="{{ facultad.universidad }}"></td> 
-
-
-
-                            <!-- <td>
-                                <select name="universidad_id">
-                                    {% for uni in universidades %}
-                                        <option value="{{ uni.id }}" {% if uni.id == facultad.universidad.id %}selected{% endif %}>
-                                            {{ universidad.nombre_universidad }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </td> -->
-
+                            <td><input type="text" name="universidad" value="{{ facultad.universidad }}"></td>
                             <td>
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
-                                <br>
-                                <br>
                                 <form method="POST" style="display: inline-block; margin-left: 5px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="facultad_id" value="{{ facultad.id }}">
