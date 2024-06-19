@@ -1,6 +1,12 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import InformeCarrera, InformeMateria, UsuarioPersonalizado
+from .models import (
+    InformeCarrera,
+    InformeMateria,
+    UsuarioPersonalizado,
+    Universidad,
+    Facultad,
+)
 
 
 class RegistrarUsuarioForm(UserCreationForm):
@@ -68,7 +74,7 @@ class RegistrarUsuarioForm(UserCreationForm):
     rol = forms.ChoiceField(
         choices=UsuarioPersonalizado.ROLES,
         required=False,
-        initial="docente",
+        initial="Docente",
         label="Rol",
     )
 
@@ -153,9 +159,9 @@ class ModificarCorreoForm(forms.ModelForm):
 class ModificarRolUsuarioForm(forms.ModelForm):
     rol = forms.ChoiceField(
         choices=[
-            ("personal_Administrativo", "Personal Administrativo"),
-            ("secretaria", "Secretaria"),
-            ("docente", "Docente"),
+            ("Personal Administrativo", "Personal Administrativo"),
+            ("Secretaria", "Secretaria"),
+            ("Docente", "Docente"),
         ],
         label="Rol",
     )
@@ -164,6 +170,73 @@ class ModificarRolUsuarioForm(forms.ModelForm):
         model = UsuarioPersonalizado
         fields = ["rol"]
         widgets = {"rol": forms.Select(choices=UsuarioPersonalizado.ROLES)}
+
+
+class UniversidadForm(forms.ModelForm):
+    nombre_universidad = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese el nombre de la universidad"}
+        ),
+        label="Nombre de la Universidad",
+    )
+    direccion_universidad = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese la dirección de la universidad"}
+        ),
+        label="Dirección",
+    )
+    telefono_universidad = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese el teléfono de la universidad"}
+        ),
+        label="Teléfono",
+    )
+    correo_universidad = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={"placeholder": "Ingrese el correo de la universidad"}
+        ),
+        label="Correo",
+    )
+    fecha_fundacion = forms.DateField(
+        widget=forms.DateInput(attrs={"placeholder": "Ingrese la fecha de fundacion"}),
+        label="Fecha de Creación",
+    )
+
+    class Meta:
+        model = Universidad
+        fields = [
+            "nombre_universidad",
+            "direccion_universidad",
+            "telefono_universidad",
+            "correo_universidad",
+            "fecha_fundacion",
+        ]
+
+
+class FacultadForm(forms.ModelForm):
+    nombre_facultad = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese el nombre de la facultad"}
+        ),
+        label="Nombre de la Facultad",
+    )
+    fecha_fundacion = forms.DateField(
+        widget=forms.DateInput(attrs={"placeholder": "Ingrese la fecha de fundacion"}),
+        label="Fecha de Creación",
+    )
+    universidad = forms.ModelChoiceField(
+        queryset=Universidad.objects.all(),
+        widget=forms.Select(attrs={"placeholder": "Seleccione la universidad"}),
+        label="Universidad",
+    )
+
+    class Meta:
+        model = Facultad
+        fields = [
+            "nombre_facultad",
+            "fecha_fundacion",
+            "universidad",
+        ]
 
 
 # Formularios de informes

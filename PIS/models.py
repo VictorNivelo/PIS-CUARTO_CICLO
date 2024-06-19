@@ -6,33 +6,36 @@ from django.contrib.auth.models import AbstractUser
 class UsuarioPersonalizado(AbstractUser):
 
     ROLES = [
-        ("personal_Administrativo", "Personal Administrativo"),
-        ("secretaria", "Secretaria"),
-        ("docente", "Docente"),
+        ("Personal Administrativo", "Personal Administrativo"),
+        ("Secretaria", "Secretaria"),
+        ("Docente", "Docente"),
     ]
 
     GENERO_OPCIONES = [
-        ("M", "Masculino"),
-        ("F", "Femenino"),
-        ("O", "Otro"),
+        ("Masculino", "Masculino"),
+        ("Femenino", "Femenino"),
+        ("Otro", "Otro"),
     ]
 
     TIPO_DNI_OPCIONES = [
         ("Pasaporte", "Pasaporte"),
-        ("Cedula", "Cédula de Identidad"),
+        ("Cedula", "Cédula"),
     ]
 
     genero = models.CharField(
-        max_length=1,
+        max_length=10,
         choices=GENERO_OPCIONES,
         blank=True,
         null=True,
         verbose_name="Género",
     )
+
     fecha_nacimiento = models.DateField(
         null=True, blank=True, verbose_name="Fecha de Nacimiento"
     )
+
     dni = models.CharField(max_length=10, blank=True, null=True, verbose_name="DNI")
+
     tipo_dni = models.CharField(
         max_length=20,
         choices=TIPO_DNI_OPCIONES,
@@ -40,10 +43,13 @@ class UsuarioPersonalizado(AbstractUser):
         null=True,
         verbose_name="Tipo de DNI",
     )
+
     telefono = models.CharField(
         max_length=10, blank=True, null=True, verbose_name="Teléfono"
     )
-    rol = models.CharField(max_length=50, choices=ROLES, default="docente")
+    rol = models.CharField(
+        max_length=50, choices=ROLES, default="Docente", verbose_name="Rol"
+    )
     # rol = models.CharField(max_length=30, choices=ROLES, blank=True, null=True, verbose_name="Rol")
     first_name = models.CharField(max_length=100, verbose_name="Nombre")
     last_name = models.CharField(max_length=100, verbose_name="Apellido")
@@ -66,55 +72,18 @@ class UsuarioPersonalizado(AbstractUser):
         return f"{self.username}"
 
 
-class InformeCarrera(models.Model):
-    carrera = models.CharField(max_length=100, verbose_name="Carrera")
-    numero_estudiantes = models.IntegerField(verbose_name="Número de Estudiantes")
-    aprobados = models.IntegerField(verbose_name="Aprobados")
-    reprobados = models.IntegerField(verbose_name="Reprobados")
-    desertores = models.IntegerField(verbose_name="Desertores")
-    retirados = models.IntegerField(verbose_name="Retirados")
-
-    class Meta:
-        verbose_name = "Informe de Carrera"
-        verbose_name_plural = "Informes de Carreras"
-
-    def __str__(self):
-        return self.carrera
-
-
-class InformeCiclo(models.Model):
-    ciclo = models.CharField(max_length=100)
-    fecha_inicio = models.DateField()
-    fecha_fin = models.DateField()
-    numero_estudiantes = models.IntegerField()
-    aprobados = models.IntegerField()
-    reprobados = models.IntegerField()
-    desertores = models.IntegerField()
-    retirados = models.IntegerField()
-
-    def __str__(self):
-        return self.ciclo
-
-
-class InformeMateria(models.Model):
-    materia = models.CharField(max_length=100)
-    docente_encargado = models.CharField(max_length=100)
-    num_estudiantes = models.IntegerField()
-    aprobados = models.IntegerField()
-    reprobados = models.IntegerField()
-    desertores = models.IntegerField()
-    retirados = models.IntegerField()
-
-    def __str__(self):
-        return self.materia
-
-
 class Universidad(models.Model):
-    nombre_universidad = models.CharField(max_length=100, verbose_name="Nombre")
-    direccion = models.CharField(max_length=100, verbose_name="Dirección")
-    telefono = models.CharField(max_length=10, verbose_name="Teléfono")
-    correo = models.EmailField(max_length=100, verbose_name="Correo Electrónico")
-    fecha_fundacion = models.DateField(verbose_name="Fecha de Fundación")
+    nombre_universidad = models.CharField(
+        max_length=100, verbose_name="Nombre universidad"
+    )
+    direccion_universidad = models.CharField(max_length=100, verbose_name="Dirección")
+    telefono_universidad = models.CharField(max_length=10, verbose_name="Teléfono")
+    correo_universidad = models.EmailField(
+        max_length=100, verbose_name="Correo Electrónico"
+    )
+    fecha_fundacion = models.DateField(
+        null=True, blank=True, verbose_name="Fecha de Fundación"
+    )
 
     def __str__(self):
         return self.nombre_universidad
@@ -171,6 +140,49 @@ class Informe(models.Model):
 
     def __str__(self):
         return self.usuario.username
+
+
+class InformeCarrera(models.Model):
+    carrera = models.CharField(max_length=100, verbose_name="Carrera")
+    numero_estudiantes = models.IntegerField(verbose_name="Número de Estudiantes")
+    aprobados = models.IntegerField(verbose_name="Aprobados")
+    reprobados = models.IntegerField(verbose_name="Reprobados")
+    desertores = models.IntegerField(verbose_name="Desertores")
+    retirados = models.IntegerField(verbose_name="Retirados")
+
+    class Meta:
+        verbose_name = "Informe de Carrera"
+        verbose_name_plural = "Informes de Carreras"
+
+    def __str__(self):
+        return self.carrera
+
+
+class InformeCiclo(models.Model):
+    ciclo = models.CharField(max_length=100)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    numero_estudiantes = models.IntegerField()
+    aprobados = models.IntegerField()
+    reprobados = models.IntegerField()
+    desertores = models.IntegerField()
+    retirados = models.IntegerField()
+
+    def __str__(self):
+        return self.ciclo
+
+
+class InformeMateria(models.Model):
+    materia = models.CharField(max_length=100)
+    docente_encargado = models.CharField(max_length=100)
+    num_estudiantes = models.IntegerField()
+    aprobados = models.IntegerField()
+    reprobados = models.IntegerField()
+    desertores = models.IntegerField()
+    retirados = models.IntegerField()
+
+    def __str__(self):
+        return self.materia
 
 
 # Poco usadas
