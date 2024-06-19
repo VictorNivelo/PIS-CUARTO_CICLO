@@ -45,6 +45,8 @@
         .actions form {
             display: flex;
             gap: 10px;
+            align-items: center;
+            margin-right: 10px;
         }
 
         .actions input[type="text"],
@@ -199,7 +201,6 @@
             cursor: pointer;
             width: 100%;
             margin-top: 10px;
-            /* Espaciado superior */
         }
 
         .form-group button[type="submit"]:hover {
@@ -218,24 +219,24 @@
                     value="{{ search_query }}">
                 <select name="rol">
                     <option value="">Todos los roles</option>
-                    <option value="personal_Administrativo"
-                        {% if filter_rol == 'personal_Administrativo' %}selected{% endif %}>Personal Administrativo
+                    <option value="Personal Administrativo"
+                        {% if filter_rol == 'Personal Administrativo' %}selected{% endif %}>Personal Administrativo
                     </option>
-                    <option value="secretaria" {% if filter_rol == 'secretaria' %}selected{% endif %}>Secretaria
+                    <option value="Secretaria" {% if filter_rol == 'Secretaria' %}selected{% endif %}>Secretaria
                     </option>
-                    <option value="docente" {% if filter_rol == 'docente' %}selected{% endif %}>Docente</option>
+                    <option value="Docente" {% if filter_rol == 'Docente' %}selected{% endif %}>Docente</option>
                 </select>
                 <select name="genero">
                     <option value="">Todos los géneros</option>
-                    <option value="masculino" {% if filter_genero == 'masculino' %}selected{% endif %}>Masculino
+                    <option value="Masculino" {% if filter_genero == 'Masculino' %}selected{% endif %}>Masculino
                     </option>
-                    <option value="femenino" {% if filter_genero == 'femenino' %}selected{% endif %}>Femenino</option>
-                    <option value="otro" {% if usuario.genero == 'otro' %}selected{% endif %}>Otro</option>
+                    <option value="Femenino" {% if filter_genero == 'Femenino' %}selected{% endif %}>Femenino</option>
+                    <option value="Otro" {% if usuario.genero == 'Otro' %}selected{% endif %}>Otro</option>
                 </select>
                 <select name="tipo_dni">
                     <option value="">Todos los tipos de DNI</option>
-                    <option value="DNI" {% if filter_tipo_dni == 'DNI' %}selected{% endif %}>cedula</option>
-                    <option value="PASAPORTE" {% if filter_tipo_dni == 'PASAPORTE' %}selected{% endif %}>Pasaporte
+                    <option value="Cedula" {% if filter_tipo_dni == 'Cedula' %}selected{% endif %}>Cedula</option>
+                    <option value="Pasaporte" {% if filter_tipo_dni == 'Pasaporte' %}selected{% endif %}>Pasaporte
                     </option>
                 </select>
                 <button type="submit" class="btn-buscar">Buscar</button>
@@ -257,7 +258,6 @@
                         <th>Tipo de DNI</th>
                         <th>Número de DNI</th>
                         <th>Teléfono</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -271,22 +271,22 @@
                             <td><input type="text" name="last_name" value="{{ usuario.last_name }}"></td>
                             <td>
                                 <select name="rol">
-                                    <option value="personal_Administrativo"
-                                        {% if usuario.rol == 'personal_Administrativo' %}selected{% endif %}>Personal
+                                    <option value="Personal Administrativo"
+                                        {% if usuario.rol == 'Personal Administrativo' %}selected{% endif %}>Personal
                                         Administrativo</option>
-                                    <option value="secretaria" {% if usuario.rol == 'secretaria' %}selected{% endif %}>
+                                    <option value="Secretaria" {% if usuario.rol == 'Secretaria' %}selected{% endif %}>
                                         Secretaria</option>
-                                    <option value="docente" {% if usuario.rol == 'docente' %}selected{% endif %}>Docente
+                                    <option value="Docente" {% if usuario.rol == 'Docente' %}selected{% endif %}>Docente
                                     </option>
                                 </select>
                             </td>
                             <td>
                                 <select name="genero">
-                                    <option value="masculino" {% if usuario.genero == 'masculino' %}selected{% endif %}>
+                                    <option value="Masculino" {% if usuario.genero == 'Masculino' %}selected{% endif %}>
                                         Masculino</option>
-                                    <option value="femenino" {% if usuario.genero == 'femenino' %}selected{% endif %}>
+                                    <option value="Femenino" {% if usuario.genero == 'Femenino' %}selected{% endif %}>
                                         Femenino</option>
-                                    <option value="otro" {% if usuario.genero == 'otro' %}selected{% endif %}>Otro
+                                    <option value="Otro" {% if usuario.genero == 'Otro' %}selected{% endif %}>Otro
                                     </option>
                                 </select>
                             </td>
@@ -294,10 +294,11 @@
                                     value="{{ usuario.fecha_nacimiento|date:'d/m/Y' }}"></td>
                             <td>
                                 <select name="tipo_dni">
-                                    <option value="DNI" {% if usuario.tipo_dni == 'DNI' %}selected{% endif %}>Cedula
+                                    <option value="Cedula" {% if usuario.tipo_dni == 'Cedula' %}selected{% endif %}>
+                                        Cedula
                                     </option>
-                                    <option value="PASAPORTE"
-                                        {% if usuario.tipo_dni == 'PASAPORTE' %}selected{% endif %}>Pasaporte</option>
+                                    <option value="Pasaporte"
+                                        {% if usuario.tipo_dni == 'Pasaporte' %}selected{% endif %}>Pasaporte</option>
                                 </select>
                             </td>
                             <td><input type="text" name="dni" value="{{ usuario.dni }}"></td>

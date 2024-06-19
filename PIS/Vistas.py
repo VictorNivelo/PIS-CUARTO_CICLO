@@ -1,20 +1,19 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import login_required
-from PIS.models import UsuarioPersonalizado
+from PIS.models import Universidad, UsuarioPersonalizado, Facultad
 from datetime import datetime
 from django.db.models import Q
 from .forms import (
     InformeCarreraForm,
     InformeCicloForm,
     InformeMateriaForm,
-    InicioSesionForm,
-    ModificarRolUsuarioForm,
     RecuperarContraseniaForm,
     RegistrarUsuarioForm,
+    UniversidadForm,
+    FacultadForm,
 )
 
 
@@ -298,18 +297,122 @@ def GestionUsuario(request):
     )
 
 
-def ModificarUsuario(request, user_id):
-    user = get_object_or_404(UsuarioPersonalizado, id=user_id)
-
+def RegistrarUniversidad(request):
     if request.method == "POST":
-        form = RegistrarUsuarioForm(request.POST, instance=user)
+        form = UniversidadForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, f"Usuario {user.email} modificado exitosamente.")
-            return redirect("Gestion_Usuario")
+            universidad = form.save(commit=False)
+            universidad.save()
+            messages.success(request, "Universidad registrada exitosamente.")
+            return redirect("Gestion_Universidad")
         else:
             messages.error(request, "Por favor, corrija los errores del formulario.")
     else:
-        form = RegistrarUsuarioForm(instance=user)
+        form = UniversidadForm()
 
-    return render(request, "GU-ModificarUsuario.html", {"form": form, "user": user})
+    return render(request, "GU-CrearUniversidad.html", {"form": form})
+
+
+def GestionUniversidad(request):
+    query = request.GET.get("search_query", "")
+
+    universidades = Universidad.objects.all()
+    
+    if query:
+        universidades = universidades.filter(
+            Q(nombre_universidad__icontains=query)
+            | Q(correo_universidad__icontains=query)
+        )
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            universidad_id = request.POST.get("universidad_id")
+            universidad = Universidad.objects.get(id=universidad_id)
+            universidad.nombre_universidad = request.POST.get("nombre_universidad")
+            universidad.direccion_universidad = request.POST.get(
+                "direccion_universidad"
+            )
+            universidad.telefono_universidad = request.POST.get("telefono_universidad")
+            universidad.correo_universidad = request.POST.get("correo_universidad")
+            fecha_fundacion_str = request.POST.get("fecha_fundacion")
+            try:
+                fecha_fundacion = datetime.strptime(
+                    fecha_fundacion_str, "%d/%m/%Y"
+                ).date()
+                universidad.fecha_fundacion = fecha_fundacion
+            except ValueError:
+                messages.error(
+                    request,
+                    "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
+                )
+            universidad.save()
+            messages.success(request, "Universidad actualizada exitosamente.")
+        elif "delete" in request.POST:
+            universidad_id = request.POST.get("universidad_id")
+            universidad = Universidad.objects.get(id=universidad_id)
+            universidad.delete()
+            messages.success(request, "Universidad eliminada exitosamente.")
+        return redirect("Gestion_Universidad")
+
+    return render(
+        request,
+        "GestionUniversidad.html",
+        {
+            "universidades": universidades,
+            "query": query,
+        },
+    )
+
+
+def RegistrarFacultad(request):
+    if request.method == "POST":
+        form = FacultadForm(request.POST)
+        if form.is_valid():
+            facultad = form.save(commit=False)
+            facultad.save()
+            messages.success(request, "Facultad registrada exitosamente.")
+            return redirect("Gestion_Facultad")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = FacultadForm()
+
+    return render(request, "GF-CrearFacultad.html", {"form": form})
+
+
+def GestionFacultad(request):
+    query = request.GET.get("search_query", "")
+
+    facultades = Facultad.objects.all()
+    
+    if query:
+        facultades = facultades.filter(
+            Q(nombre_facultad__icontains=query)
+        )
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            facultad_id = request.POST.get("facultad_id")
+            facultad = Facultad.objects.get(id=facultad_id)
+            facultad.nombre_facultad = request.POST.get("nombre_facultad")
+            facultad.fecha_fundacion = request.POST.get("fecha_fundacion")
+            universidad_id = request.POST.get("universidad_id")
+            universidad = Universidad.objects.get(id=universidad_id)
+            facultad.universidad = universidad
+            facultad.save()
+            messages.success(request, "Facultad actualizada exitosamente.")
+        elif "delete" in request.POST:
+            facultad_id = request.POST.get("facultad_id")
+            facultad = Facultad.objects.get(id=facultad_id)
+            facultad.delete()
+            messages.success(request, "Facultad eliminada exitosamente.")
+        return redirect("Gestion_Facultad")
+
+    return render(
+        request,
+        "GestionFacultad.html",
+        {
+            "facultades": facultades,
+            "query": query,
+        },
+    )
