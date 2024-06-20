@@ -302,7 +302,7 @@ class CicloForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Carrera
+        model = Ciclo
         fields = [
             "nombre_ciclo",
             "fecha_inicio",
@@ -508,7 +508,7 @@ class InformeCicloForm(forms.Form):
 
 
 class InformeMateriaForm(forms.ModelForm):
-    Materia = forms.CharField(
+    materia = forms.CharField(
         label="Materia",
         max_length=100,
         widget=forms.TextInput(
@@ -519,7 +519,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Docente_encargado = forms.CharField(
+    docente_encargado = forms.CharField(
         label="Docente Encargado",
         max_length=100,
         widget=forms.TextInput(
@@ -530,7 +530,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Num_estudiantes = forms.IntegerField(
+    numero_estudiantes = forms.IntegerField(
         label="Número de Estudiantes",
         widget=forms.NumberInput(
             attrs={
@@ -540,7 +540,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Aprobados = forms.IntegerField(
+    aprobados = forms.IntegerField(
         label="Aprobados",
         widget=forms.NumberInput(
             attrs={
@@ -550,7 +550,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Reprobados = forms.IntegerField(
+    reprobados = forms.IntegerField(
         label="Reprobados",
         widget=forms.NumberInput(
             attrs={
@@ -560,7 +560,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Desertores = forms.IntegerField(
+    desertores = forms.IntegerField(
         label="Desertores",
         widget=forms.NumberInput(
             attrs={
@@ -570,7 +570,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Retirados = forms.IntegerField(
+    retirados = forms.IntegerField(
         label="Retirados",
         widget=forms.NumberInput(
             attrs={
@@ -584,11 +584,11 @@ class InformeMateriaForm(forms.ModelForm):
     class Meta:
         model = InformeMateria
         fields = [
-            "Materia",
-            "Docente_encargado",
-            "Num_estudiantes",
-            "Aprobados",
-            "Reprobados",
-            "Desertores",
-            "Retirados",
+            "materia",
+            "docente_encargado",
+            "numero_estudiantes",
+            "aprobados",
+            "reprobados",
+            "desertores",
+            "retirados",
         ]

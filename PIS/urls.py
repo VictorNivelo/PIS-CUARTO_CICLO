@@ -21,6 +21,7 @@ from .vistas import (
     Prediccion,
     PrediccionPresente,
     Reporte,
+    CargarInforme,
     
     PaginaAdministrador,
     PaginaDocente,
@@ -72,6 +73,7 @@ urlpatterns = [
     path("Prediccion/", Prediccion, name="Prediccion"),
     path("PrediccionP/", PrediccionPresente, name="Prediccion_Presente"),
     path("Reporte-Generado/", Reporte, name="Reporte_Generado"),
+    path("Cargar-Informe/", CargarInforme, name="Cargar_Informe"),
     
     path("Gestion-Universidad/", GestionUniversidad, name="Gestion_Universidad"),
     path("Gestion-Usuarios/", GestionUsuario, name="Gestion_Usuario"),

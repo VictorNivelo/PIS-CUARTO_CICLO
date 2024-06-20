@@ -1,8 +1,12 @@
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from docx import Document
+import PyPDF2
+import pdfplumber
 from PIS.models import (
     Universidad,
     UsuarioPersonalizado,
@@ -514,7 +518,7 @@ def GestionCiclo(request):
     query = request.GET.get("search_query", "")
     ciclos = Ciclo.objects.all()
     carreras = Carrera.objects.all()
-    
+
     if query:
         ciclos = ciclos.filter(Q(nombre_ciclo__icontains=query))
 
@@ -583,7 +587,7 @@ def RegistrarMateria(request):
     else:
         form = MateriaForm()
 
-    return render(request, "GM-CrearMateria.html", {"form": form})
+    return render(request, "RM-CrearMateria.html", {"form": form})
 
 
 def GestionMateria(request):
@@ -617,3 +621,69 @@ def GestionMateria(request):
             "query": query,
         },
     )
+
+
+# Funcionalidad de subir archivo para su procesamiento
+
+
+def Extraer_DOCS(file):
+    document = Document(file)
+    data = {}
+    for para in document.paragraphs:
+        text = para.text.strip()
+        if "Materia:" in text:
+            data["materia"] = text.replace("Materia:", "").strip()
+        elif "Docente encargado:" in text:
+            data["docente_encargado"] = text.replace("Docente encargado:", "").strip()
+        elif "Numero de estudiante:" in text:
+            data["numero_estudiantes"] = int(text.replace("Numero de estudiante:", "").strip())
+        elif "Aprobados:" in text:
+            data["aprobados"] = int(text.replace("Aprobados:", "").strip())
+        elif "Reprobados:" in text:
+            data["reprobados"] = int(text.replace("Reprobados:", "").strip())
+        elif "Desertores:" in text:
+            data["desertores"] = int(text.replace("Desertores:", "").strip())
+        elif "Retirados:" in text:
+            data["retirados"] = int(text.replace("Retirados:", "").strip())
+    return data
+
+def Extraer_PDF(file):
+    data = {}
+    with pdfplumber.open(file) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text()
+            if text:
+                for line in text.split("\n"):
+                    line = line.strip()
+                    if "Materia:" in line:
+                        data["materia"] = line.replace("Materia:", "").strip()
+                    elif "Docente encargado:" in line:
+                        data["docente_encargado"] = line.replace("Docente encargado:", "").strip()
+                    elif "Numero de estudiante:" in line:
+                        data["numero_estudiantes"] = int(line.replace("Numero de estudiante:", "").strip())
+                    elif "Aprobados:" in line:
+                        data["aprobados"] = int(line.replace("Aprobados:", "").strip())
+                    elif "Reprobados:" in line:
+                        data["reprobados"] = int(line.replace("Reprobados:", "").strip())
+                    elif "Desertores:" in line:
+                        data["desertores"] = int(line.replace("Desertores:", "").strip())
+                    elif "Retirados:" in line:
+                        data["retirados"] = int(line.replace("Retirados:", "").strip())
+    return data
+
+def CargarInforme(request):
+    if request.method == "POST":
+        file = request.FILES["document"]
+        file_extension = file.name.split(".")[-1].lower()
+
+        if file_extension == "docx":
+            data = Extraer_DOCS(file)
+        elif file_extension == "pdf":
+            data = Extraer_PDF(file)
+        else:
+            return HttpResponse("Formato de archivo no soportado.", status=400)
+
+        form = InformeMateriaForm(initial=data)
+        return render(request, "InformeMateria.html", {"form": form})
+
+    return render(request, "CargarInforme.html")

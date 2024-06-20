@@ -175,7 +175,7 @@ class InformeCiclo(models.Model):
 class InformeMateria(models.Model):
     materia = models.CharField(max_length=100)
     docente_encargado = models.CharField(max_length=100)
-    num_estudiantes = models.IntegerField()
+    numero_estudiantes = models.IntegerField()
     aprobados = models.IntegerField()
     reprobados = models.IntegerField()
     desertores = models.IntegerField()
