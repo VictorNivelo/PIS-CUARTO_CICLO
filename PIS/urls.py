@@ -2,29 +2,43 @@ from django.contrib import admin
 from django.urls import path
 from .vistas import (
     PaginaPrincipal,
-    PaginaAdministrador,
+    
     IniciarSesion,
     RegistrarUsuario,
     RecuperarContrasenia,
+    
     InformeMateria,
     InformeCiclo,
     InformeCarrera,
+    
     Informacion1,
     Informacion2,
     Informacion3,
     Informacion4,
+    
     Grafico,
     Galeria,
     Prediccion,
     PrediccionPresente,
     Reporte,
-    GestionUniversidad,
+    
+    PaginaAdministrador,
     PaginaDocente,
     PaginaSecretaria,
-    GestionUsuario,
+    
     RegistrarUniversidad,
     RegistrarFacultad,
+    RegistrarCarrera,
+    RegistrarCarrera,
+    RegistrarCiclo,
+    RegistrarMateria,
+    
+    GestionUsuario,
+    GestionUniversidad,
     GestionFacultad,
+    GestionCarrera,
+    GestionCiclo,
+    GestionMateria,
 )
 
 urlpatterns = [
@@ -37,6 +51,9 @@ urlpatterns = [
     path("Registrar-Usuario/", RegistrarUsuario, name="Registrar_Usuario"),
     path("Registrar-Universidad/", RegistrarUniversidad, name="Registrar_Universidad"),
     path("Registrar-Facultad/", RegistrarFacultad, name="Registrar_Facultad"),
+    path("Registrar-Carrera/", RegistrarCarrera, name="Registrar_Carrera"),
+    path("Registrar-Ciclo/", RegistrarCiclo, name="Registrar_Ciclo"),
+    path("Registrar-Materia/", RegistrarMateria, name="Registrar_Materia"),
     
     path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
     path("Recuperar-Contrasenia/", RecuperarContrasenia, name="Recuperar_Contrasenia"),
@@ -58,5 +75,8 @@ urlpatterns = [
     
     path("Gestion-Universidad/", GestionUniversidad, name="Gestion_Universidad"),
     path("Gestion-Usuarios/", GestionUsuario, name="Gestion_Usuario"),
-    path("Gestion-Facultad/", GestionFacultad, name="Gestion_Facultad")
+    path("Gestion-Facultad/", GestionFacultad, name="Gestion_Facultad"),
+    path("Gestion-Carrera/", GestionCarrera, name="Gestion_Carrera"),
+    path("Gestion-Ciclo/", GestionCiclo, name="Gestion_Ciclo"),
+    path("Gestion-Materia/", GestionMateria, name="Gestion_Materia"),
 ]
