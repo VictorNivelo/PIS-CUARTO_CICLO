@@ -22,8 +22,8 @@ Este proyecto tiene como objetivo principal desarrollar herramientas predictivas
 
 
 > [!IMPORTANT]
-> Instalar las dependencias para el funcionamiento del programa.
-
+> Instalar las dependencias para el funcionamiento adecuado del programa.
+## Entorno virtual:
 Instalación del entorno virtual (si no está instalado):
 ```bash
 pip install virtualenv
@@ -38,7 +38,7 @@ Activar el entorno virtual (Windows):
 ```bash
 .\venv\Scripts\activate
 ```
-# Dependencias:
+## Dependencias:
 
 Django:
 ```bash
