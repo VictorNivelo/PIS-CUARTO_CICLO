@@ -1,9 +1,20 @@
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from PIS.models import Universidad, UsuarioPersonalizado, Facultad
+from docx import Document
+import PyPDF2
+import pdfplumber
+from PIS.models import (
+    Universidad,
+    UsuarioPersonalizado,
+    Facultad,
+    Carrera,
+    Ciclo,
+    Materia,
+)
 from datetime import datetime
 from django.db.models import Q
 from .forms import (
@@ -14,6 +25,9 @@ from .forms import (
     RegistrarUsuarioForm,
     UniversidadForm,
     FacultadForm,
+    CarreraForm,
+    CicloForm,
+    MateriaForm,
 )
 
 
@@ -180,7 +194,7 @@ def RegistrarUsuario(request):
                         messages.error(request, f"Error en el campo {field}: {error}")
     else:
         form = RegistrarUsuarioForm()
-    return render(request, "RegistrarUsuario.html", {"form": form})
+    return render(request, "RU-CrearUsuario.html", {"form": form})
 
 
 def IniciarSesion(request):
@@ -192,11 +206,11 @@ def IniciarSesion(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                if user.rol == "personal_Administrativo":
+                if user.rol == "Personal Administrativo":
                     return redirect("Pagina_Administrador")
-                elif user.rol == "docente":
+                elif user.rol == "Docente":
                     return redirect("Pagina_Docente")
-                elif user.rol == "secretaria":
+                elif user.rol == "Secretaria":
                     return redirect("Pagina_Secretaria")
                 else:
                     messages.error(request, "Rol de usuario no reconocido.")
@@ -210,7 +224,7 @@ def IniciarSesion(request):
 @login_required
 def CerrarSesion(request):
     logout(request)
-    return redirect("IniciarSesion")
+    return redirect("Iniciar_Sesion")
 
 
 def RecuperarContrasenia(request):
@@ -222,7 +236,7 @@ def RecuperarContrasenia(request):
                 request,
                 "Se ha enviado un enlace de recuperación a su correo electrónico.",
             )
-            return redirect("iniciar_sesion")
+            return redirect("Iniciar_Sesion")
         else:
             messages.error(request, "Error al enviar el enlace de recuperación.")
     else:
@@ -310,14 +324,14 @@ def RegistrarUniversidad(request):
     else:
         form = UniversidadForm()
 
-    return render(request, "GU-CrearUniversidad.html", {"form": form})
+    return render(request, "RU-CrearUniversidad.html", {"form": form})
 
 
 def GestionUniversidad(request):
     query = request.GET.get("search_query", "")
 
     universidades = Universidad.objects.all()
-    
+
     if query:
         universidades = universidades.filter(
             Q(nombre_universidad__icontains=query)
@@ -377,26 +391,38 @@ def RegistrarFacultad(request):
     else:
         form = FacultadForm()
 
-    return render(request, "GF-CrearFacultad.html", {"form": form})
+    return render(request, "RF-CrearFacultad.html", {"form": form})
 
 
 def GestionFacultad(request):
     query = request.GET.get("search_query", "")
-
     facultades = Facultad.objects.all()
-    
+    universidades = Universidad.objects.all()
+
     if query:
-        facultades = facultades.filter(
-            Q(nombre_facultad__icontains=query)
-        )
+        facultades = facultades.filter(Q(nombre_facultad__icontains=query))
 
     if request.method == "POST":
         if "modify" in request.POST:
             facultad_id = request.POST.get("facultad_id")
             facultad = Facultad.objects.get(id=facultad_id)
             facultad.nombre_facultad = request.POST.get("nombre_facultad")
-            facultad.fecha_fundacion = request.POST.get("fecha_fundacion")
-            universidad_id = request.POST.get("universidad_id")
+
+            fecha_fundacion_str = request.POST.get("fecha_fundacion")
+            if fecha_fundacion_str:
+                try:
+                    fecha_fundacion = datetime.strptime(
+                        fecha_fundacion_str, "%d/%m/%Y"
+                    ).date()
+                    facultad.fecha_fundacion = fecha_fundacion
+                except ValueError:
+                    messages.error(
+                        request,
+                        "Formato de fecha de fundación inválido. Utiliza el formato dd/mm/aaaa.",
+                    )
+                    return redirect("Gestion_Facultad")
+
+            universidad_id = request.POST.get("universidad")
             universidad = Universidad.objects.get(id=universidad_id)
             facultad.universidad = universidad
             facultad.save()
@@ -413,6 +439,251 @@ def GestionFacultad(request):
         "GestionFacultad.html",
         {
             "facultades": facultades,
+            "universidades": universidades,
             "query": query,
         },
     )
+
+
+def RegistrarCarrera(request):
+    if request.method == "POST":
+        form = CarreraForm(request.POST)
+        if form.is_valid():
+            carrera = form.save(commit=False)
+            carrera.save()
+            messages.success(request, "Carrera registrada exitosamente.")
+            return redirect("Gestion_Carrera")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = CarreraForm()
+
+    return render(request, "RC-CrearCarrera.html", {"form": form})
+
+
+def GestionCarrera(request):
+    query = request.GET.get("search_query", "")
+    carreras = Carrera.objects.all()
+    facultades = Facultad.objects.all()
+
+    if query:
+        carreras = carreras.filter(Q(nombre_carrera__icontains=query))
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            carrera_id = request.POST.get("carrera_id")
+            carrera = Carrera.objects.get(id=carrera_id)
+            carrera.nombre_carrera = request.POST.get("nombre_carrera")
+            carrera.duracion = request.POST.get("duracion")
+            facultad_id = request.POST.get("facultad")
+            facultad = Facultad.objects.get(id=facultad_id)
+            carrera.facultad = facultad
+            carrera.save()
+            messages.success(request, "Carrera actualizada exitosamente.")
+        elif "delete" in request.POST:
+            carrera_id = request.POST.get("carrera_id")
+            carrera = Carrera.objects.get(id=carrera_id)
+            carrera.delete()
+            messages.success(request, "Carrera eliminada exitosamente.")
+        return redirect("Gestion_Carrera")
+
+    return render(
+        request,
+        "GestionCarrera.html",
+        {
+            "carreras": carreras,
+            "facultades": facultades,
+            "query": query,
+        },
+    )
+
+
+def RegistrarCiclo(request):
+    if request.method == "POST":
+        form = CicloForm(request.POST)
+        if form.is_valid():
+            ciclo = form.save(commit=False)
+            ciclo.save()
+            messages.success(request, "Ciclo registrado exitosamente.")
+            return redirect("Gestion_Ciclo")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = CicloForm()
+
+    return render(request, "RC-CrearCiclo.html", {"form": form})
+
+
+def GestionCiclo(request):
+    query = request.GET.get("search_query", "")
+    ciclos = Ciclo.objects.all()
+    carreras = Carrera.objects.all()
+
+    if query:
+        ciclos = ciclos.filter(Q(nombre_ciclo__icontains=query))
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            ciclo_id = request.POST.get("ciclo_id")
+            ciclo = Ciclo.objects.get(id=ciclo_id)
+            ciclo.nombre_ciclo = request.POST.get("nombre_ciclo")
+            fecha_inicio_str = request.POST.get("fecha_inicio")
+            if fecha_inicio_str:
+                try:
+                    fecha_inicio = datetime.strptime(
+                        fecha_inicio_str, "%d/%m/%Y"
+                    ).date()
+                    ciclo.fecha_inicio = fecha_inicio
+                except ValueError:
+                    messages.error(
+                        request,
+                        "Formato de fecha de inicio inválido. Utiliza el formato dd/mm/aaaa.",
+                    )
+                    return redirect("Gestion_Ciclo")
+            fecha_fin_str = request.POST.get("fecha_fin")
+            if fecha_fin_str:
+                try:
+                    fecha_fin = datetime.strptime(fecha_fin_str, "%d/%m/%Y").date()
+                    ciclo.fecha_fin = fecha_fin
+                except ValueError:
+                    messages.error(
+                        request,
+                        "Formato de fecha de fin inválido. Utiliza el formato dd/mm/aaaa.",
+                    )
+                    return redirect("Gestion_Ciclo")
+            carrera_id = request.POST.get("carrera")
+            carrera = Carrera.objects.get(id=carrera_id)
+            ciclo.carrera = carrera
+            ciclo.save()
+            messages.success(request, "Ciclo actualizado exitosamente.")
+        elif "delete" in request.POST:
+            ciclo_id = request.POST.get("ciclo_id")
+            ciclo = Ciclo.objects.get(id=ciclo_id)
+            ciclo.delete()
+            messages.success(request, "Ciclo eliminado exitosamente.")
+        return redirect("Gestion_Ciclo")
+
+    return render(
+        request,
+        "GestionCiclo.html",
+        {
+            "ciclos": ciclos,
+            "carreras": carreras,
+            "query": query,
+        },
+    )
+
+
+def RegistrarMateria(request):
+    if request.method == "POST":
+        form = MateriaForm(request.POST)
+        if form.is_valid():
+            materia = form.save(commit=False)
+            materia.save()
+            messages.success(request, "Materia registrada exitosamente.")
+            return redirect("Gestion_Materia")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = MateriaForm()
+
+    return render(request, "RM-CrearMateria.html", {"form": form})
+
+
+def GestionMateria(request):
+    query = request.GET.get("search_query", "")
+    materias = Materia.objects.all()
+    ciclos = Ciclo.objects.all()
+
+    if query:
+        materias = materias.filter(Q(nombre_materia__icontains=query))
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            materia_id = request.POST.get("materia_id")
+            materia = Materia.objects.get(id=materia_id)
+            materia.nombre_materia = request.POST.get("nombre_materia")
+            materia.save()
+            messages.success(request, "Materia actualizada exitosamente.")
+        elif "delete" in request.POST:
+            materia_id = request.POST.get("materia_id")
+            materia = Materia.objects.get(id=materia_id)
+            materia.delete()
+            messages.success(request, "Materia eliminada exitosamente.")
+        return redirect("Gestion_Materia")
+
+    return render(
+        request,
+        "GestionMateria.html",
+        {
+            "materias": materias,
+            "ciclos": ciclos,
+            "query": query,
+        },
+    )
+
+
+# Funcionalidad de subir archivo para su procesamiento
+
+
+def Extraer_DOCS(file):
+    document = Document(file)
+    data = {}
+    for para in document.paragraphs:
+        text = para.text.strip()
+        if "Materia:" in text:
+            data["materia"] = text.replace("Materia:", "").strip()
+        elif "Docente encargado:" in text:
+            data["docente_encargado"] = text.replace("Docente encargado:", "").strip()
+        elif "Numero de estudiante:" in text:
+            data["numero_estudiantes"] = int(text.replace("Numero de estudiante:", "").strip())
+        elif "Aprobados:" in text:
+            data["aprobados"] = int(text.replace("Aprobados:", "").strip())
+        elif "Reprobados:" in text:
+            data["reprobados"] = int(text.replace("Reprobados:", "").strip())
+        elif "Desertores:" in text:
+            data["desertores"] = int(text.replace("Desertores:", "").strip())
+        elif "Retirados:" in text:
+            data["retirados"] = int(text.replace("Retirados:", "").strip())
+    return data
+
+def Extraer_PDF(file):
+    data = {}
+    with pdfplumber.open(file) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text()
+            if text:
+                for line in text.split("\n"):
+                    line = line.strip()
+                    if "Materia:" in line:
+                        data["materia"] = line.replace("Materia:", "").strip()
+                    elif "Docente encargado:" in line:
+                        data["docente_encargado"] = line.replace("Docente encargado:", "").strip()
+                    elif "Numero de estudiante:" in line:
+                        data["numero_estudiantes"] = int(line.replace("Numero de estudiante:", "").strip())
+                    elif "Aprobados:" in line:
+                        data["aprobados"] = int(line.replace("Aprobados:", "").strip())
+                    elif "Reprobados:" in line:
+                        data["reprobados"] = int(line.replace("Reprobados:", "").strip())
+                    elif "Desertores:" in line:
+                        data["desertores"] = int(line.replace("Desertores:", "").strip())
+                    elif "Retirados:" in line:
+                        data["retirados"] = int(line.replace("Retirados:", "").strip())
+    return data
+
+def CargarInforme(request):
+    if request.method == "POST":
+        file = request.FILES["document"]
+        file_extension = file.name.split(".")[-1].lower()
+
+        if file_extension == "docx":
+            data = Extraer_DOCS(file)
+        elif file_extension == "pdf":
+            data = Extraer_PDF(file)
+        else:
+            return HttpResponse("Formato de archivo no soportado.", status=400)
+
+        form = InformeMateriaForm(initial=data)
+        return render(request, "InformeMateria.html", {"form": form})
+
+    return render(request, "CargarInforme.html")

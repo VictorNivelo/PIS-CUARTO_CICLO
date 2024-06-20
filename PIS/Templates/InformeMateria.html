@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -121,49 +120,52 @@
 <body>
     <div class="caja">
         <form class="form-wrapper" action="{% url 'Informe_Materia' %}" method="post">
-            <h1 class="t">Informe de Deserción Estudiantil</h1>
             {% csrf_token %}
+            <h1 class="t">Informe de Deserción Estudiantil</h1>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="materia">Materia:</label>
-                        <input type="text" class="form-control" id="materia" name="materia" required placeholder="Ingrese la materia">
+                        <label for="id_materia">Materia:</label>
+                        <input type="text" class="form-control" id="id_materia" name="materia" value="{{ form.materia.value }}" required>
                     </div>
                     <div class="form-group">
-                        <label for="docente_encargado">Docente Encargado:</label>
-                        <input type="text" class="form-control" id="docente_encargado" name="docente_encargado" required placeholder="Ingrese el docente encargado">
+                        <label for="id_docente_encargado">Docente Encargado:</label>
+                        <input type="text" class="form-control" id="id_docente_encargado" name="docente_encargado" value="{{ form.docente_encargado.value }}" required>
                     </div>
                     <div class="form-group">
-                        <label for="num_estudiantes">Número de Estudiantes:</label>
-                        <input type="number" class="form-control" id="num_estudiantes" name="num_estudiantes" required placeholder="Ingrese el número de estudiantes">
+                        <label for="id_numero_estudiantes">Número de Estudiantes:</label>
+                        <input type="number" class="form-control" id="id_numero_estudiantes" name="numero_estudiantes" value="{{ form.numero_estudiantes.value }}" required>
                     </div>
                     <div class="form-group">
-                        <label for="aprobados">Aprobados:</label>
-                        <input type="number" class="form-control" id="aprobados" name="aprobados" required placeholder="Ingrese el número de aprobados">
+                        <label for="id_aprobados">Aprobados:</label>
+                        <input type="number" class="form-control" id="id_aprobados" name="aprobados" value="{{ form.aprobados.value }}" required>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="reprobados">Reprobados:</label>
-                        <input type="number" class="form-control" id="reprobados" name="reprobados" required placeholder="Ingrese el número de reprobados">
+                        <label for="id_reprobados">Reprobados:</label>
+                        <input type="number" class="form-control" id="id_reprobados" name="reprobados" value="{{ form.reprobados.value }}" required>
                     </div>
                     <div class="form-group">
-                        <label for="desertores">Desertores:</label>
-                        <input type="number" class="form-control" id="desertores" name="desertores" required placeholder="Ingrese el número de desertores">
+                        <label for="id_desertores">Desertores:</label>
+                        <input type="number" class="form-control" id="id_desertores" name="desertores" value="{{ form.desertores.value }}" required>
                     </div>
                     <div class="form-group">
-                        <label for="retirados">Retirados:</label>
-                        <input type="number" class="form-control" id="retirados" name="retirados" required placeholder="Ingrese el número de retirados">
+                        <label for="id_retirados">Retirados:</label>
+                        <input type="number" class="form-control" id="id_retirados" name="retirados" value="{{ form.retirados.value }}" required>
                     </div>
                 </div>
             </div>
             <div class="button-group">
                 <a href="{% url 'Index' %}" class="btn btn-regresar">Regresar</a>
-                <a href="{% url 'Reporte_Generado' %}" class="btn btn-grafico">Generar Informe</a>
+                <button type="submit" class="btn btn-grafico">Guardar Informe</button>
                 <a href="{% url 'Grafico' %}" class="btn btn-grafico">Generar gráfico</a>
+                <!-- <a href="{% url 'Cargar_Informe' %}" class="btn btn-grafico">Importar</a> -->
             </div>
+            <DIV class="button-group">
+                <a href="{% url 'Cargar_Informe' %}" class="btn btn-grafico">Importar</a>
+            </DIV>
         </form>
     </div>
 </body>
-
 </html>

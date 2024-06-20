@@ -6,6 +6,9 @@ from .models import (
     UsuarioPersonalizado,
     Universidad,
     Facultad,
+    Carrera,
+    Materia,
+    Ciclo,
 )
 
 
@@ -198,7 +201,9 @@ class UniversidadForm(forms.ModelForm):
         label="Correo",
     )
     fecha_fundacion = forms.DateField(
-        widget=forms.DateInput(attrs={"placeholder": "Ingrese la fecha de fundacion"}),
+        widget=forms.DateInput(
+            attrs={"type": "date", "placeholder": "Ingrese la fecha de fundacion"}
+        ),
         label="Fecha de Creación",
     )
 
@@ -221,12 +226,15 @@ class FacultadForm(forms.ModelForm):
         label="Nombre de la Facultad",
     )
     fecha_fundacion = forms.DateField(
-        widget=forms.DateInput(attrs={"placeholder": "Ingrese la fecha de fundacion"}),
+        widget=forms.DateInput(
+            attrs={"type": "date", "placeholder": "Ingrese la fecha de fundacion"}
+        ),
         label="Fecha de Creación",
     )
     universidad = forms.ModelChoiceField(
         queryset=Universidad.objects.all(),
-        widget=forms.Select(attrs={"placeholder": "Seleccione la universidad"}),
+        to_field_name="nombre_universidad",
+        empty_label="Seleccione una universidad",
         label="Universidad",
     )
 
@@ -236,6 +244,104 @@ class FacultadForm(forms.ModelForm):
             "nombre_facultad",
             "fecha_fundacion",
             "universidad",
+        ]
+
+
+class CarreraForm(forms.ModelForm):
+    nombre_carrera = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese el nombre de la carrera"}
+        ),
+        label="Nombre de la Carrera",
+    )
+    duracion = forms.IntegerField(
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese la duración de la carrera en horas"}
+        ),
+        label="Duración",
+        min_value=1,
+    )
+    facultad = forms.ModelChoiceField(
+        queryset=Facultad.objects.all(),
+        to_field_name="nombre_facultad",
+        empty_label="Seleccione una facultad",
+        label="Facultad",
+    )
+
+    class Meta:
+        model = Carrera
+        fields = [
+            "nombre_carrera",
+            "duracion",
+            "facultad",
+        ]
+
+
+class CicloForm(forms.ModelForm):
+    nombre_ciclo = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese el nombre del ciclo"}),
+        label="Nombre del Ciclo",
+    )
+    fecha_inicio = forms.DateField(
+        widget=forms.DateInput(
+            attrs={"type": "date", "placeholder": "Ingrese la fecha de inicio"}
+        ),
+        label="Fecha de Inicio",
+    )
+    fecha_fin = forms.DateField(
+        widget=forms.DateInput(
+            attrs={"type": "date", "placeholder": "Ingrese la fecha de fin"}
+        ),
+        label="Fecha de Fin",
+    )
+    carrera = forms.ModelChoiceField(
+        queryset=Carrera.objects.all(),
+        to_field_name="nombre_carrera",
+        empty_label="Seleccione una carrera",
+        label="Carrera",
+    )
+
+    class Meta:
+        model = Ciclo
+        fields = [
+            "nombre_ciclo",
+            "fecha_inicio",
+            "fecha_fin",
+            "carrera",
+        ]
+
+
+class MateriaForm(forms.ModelForm):
+    nombre_materia = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese el nombre de la materia"}
+        ),
+        label="Nombre de la Materia",
+    )
+    numero_horas = forms.IntegerField(
+        widget=forms.NumberInput(attrs={"placeholder": "Ingrese el número de horas"}),
+        label="Número de Horas",
+    )
+    docente_encargado = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese el nombre del docente encargado"}
+        ),
+        label="Docente Encargado",
+    )
+    ciclo = forms.ModelChoiceField(
+        queryset=Ciclo.objects.all(),
+        to_field_name="nombre_ciclo",
+        empty_label="Seleccione un ciclo",
+        label="Ciclo",
+    )
+
+    class Meta:
+        model = Materia
+        fields = [
+            "nombre_materia",
+            "numero_horas",
+            "docente_encargado",
+            "ciclo",
         ]
 
 
@@ -402,7 +508,7 @@ class InformeCicloForm(forms.Form):
 
 
 class InformeMateriaForm(forms.ModelForm):
-    Materia = forms.CharField(
+    materia = forms.CharField(
         label="Materia",
         max_length=100,
         widget=forms.TextInput(
@@ -413,7 +519,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Docente_encargado = forms.CharField(
+    docente_encargado = forms.CharField(
         label="Docente Encargado",
         max_length=100,
         widget=forms.TextInput(
@@ -424,7 +530,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Num_estudiantes = forms.IntegerField(
+    numero_estudiantes = forms.IntegerField(
         label="Número de Estudiantes",
         widget=forms.NumberInput(
             attrs={
@@ -434,7 +540,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Aprobados = forms.IntegerField(
+    aprobados = forms.IntegerField(
         label="Aprobados",
         widget=forms.NumberInput(
             attrs={
@@ -444,7 +550,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Reprobados = forms.IntegerField(
+    reprobados = forms.IntegerField(
         label="Reprobados",
         widget=forms.NumberInput(
             attrs={
@@ -454,7 +560,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Desertores = forms.IntegerField(
+    desertores = forms.IntegerField(
         label="Desertores",
         widget=forms.NumberInput(
             attrs={
@@ -464,7 +570,7 @@ class InformeMateriaForm(forms.ModelForm):
             }
         ),
     )
-    Retirados = forms.IntegerField(
+    retirados = forms.IntegerField(
         label="Retirados",
         widget=forms.NumberInput(
             attrs={
@@ -478,11 +584,11 @@ class InformeMateriaForm(forms.ModelForm):
     class Meta:
         model = InformeMateria
         fields = [
-            "Materia",
-            "Docente_encargado",
-            "Num_estudiantes",
-            "Aprobados",
-            "Reprobados",
-            "Desertores",
-            "Retirados",
+            "materia",
+            "docente_encargado",
+            "numero_estudiantes",
+            "aprobados",
+            "reprobados",
+            "desertores",
+            "retirados",
         ]

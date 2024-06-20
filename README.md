@@ -19,3 +19,41 @@ Este proyecto tiene como objetivo principal desarrollar herramientas predictivas
 - Modelo Matemático: Implementación de un modelo matemático para predecir casos de deserción estudiantil.
 - Cálculo de Materias por Ciclo: Funcionalidad para calcular la cantidad de materias que un estudiante debe cursar en cada ciclo de la carrera.
 - Interfaz de Usuario Amigable: Diseño de una interfaz de usuario intuitiva y fácil de usar para interactuar con el modelo de predicción y las herramientas de cálculo.
+
+
+> [!IMPORTANT]
+> Instalar las dependencias para el funcionamiento adecuado del programa.
+## Entorno virtual:
+Instalación del entorno virtual (si no está instalado):
+```bash
+pip install virtualenv
+```
+
+Crear un nuevo entorno virtual llamado 'venv':
+```bash
+virtualenv venv
+```
+
+Activar el entorno virtual (Windows):
+```bash
+.\venv\Scripts\activate
+```
+## Dependencias:
+
+Django:
+```bash
+pip install Django
+```
+Docx:
+```bash
+pip install python-docx
+```
+PyPDF2:
+```bash
+pip install PyPDF2
+```
+Pdfplumber:
+```bash
+pip install pdfplumber
+```
+
