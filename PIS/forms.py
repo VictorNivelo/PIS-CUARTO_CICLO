@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
+    Genero,
     InformeCarrera,
     InformeMateria,
+    TipoDNI,
     UsuarioPersonalizado,
     Universidad,
     Facultad,
@@ -39,8 +41,11 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="Confirmar Contraseña",
     )
 
-    genero = forms.ChoiceField(
-        choices=UsuarioPersonalizado.GENERO_OPCIONES, required=False, label="Género"
+    genero = forms.ModelChoiceField(
+        queryset=Genero.objects.all(),
+        to_field_name="nombre_genero",
+        empty_label="Seleccione un genero",
+        label="Genero",
     )
 
     fecha_nacimiento = forms.DateField(
@@ -54,10 +59,11 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="Fecha de Nacimiento",
     )
 
-    tipo_dni = forms.ChoiceField(
-        choices=UsuarioPersonalizado.TIPO_DNI_OPCIONES,
-        required=False,
-        label="Tipo de identificacion",
+    tipo_dni = forms.ModelChoiceField(
+        queryset=TipoDNI.objects.all(),
+        to_field_name="nombre_tipo_dni",
+        empty_label="Seleccione un Tipo de DNI",
+        label="Tipo de DNI",
     )
 
     dni = forms.CharField(
@@ -99,6 +105,42 @@ class RegistrarUsuarioForm(UserCreationForm):
             "password1": forms.PasswordInput(),
             "password2": forms.PasswordInput(),
         }
+
+
+class TipoDNIForm(forms.ModelForm):
+    nombre_tipo_dni = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese el nombre del tipo de DNI"}
+        ),
+        label="Nombre del Tipo de DNI",
+    )
+    descripcion_tipo_dni = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese la descripción del tipo de DNI"}
+        ),
+        label="Descripción",
+    )
+
+    class Meta:
+        model = TipoDNI
+        fields = ["nombre_tipo_dni", "descripcion_tipo_dni"]
+
+
+class GeneroForm(forms.ModelForm):
+    nombre_genero = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese el nombre del genero"}),
+        label="Nombre del Genero",
+    )
+    descripcion_genero = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese la descripción del genero"}
+        ),
+        label="Descripción",
+    )
+
+    class Meta:
+        model = Genero
+        fields = ["nombre_genero", "descripcion_genero"]
 
 
 class InicioSesionForm(AuthenticationForm):

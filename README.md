@@ -57,3 +57,7 @@ Pdfplumber:
 pip install pdfplumber
 ```
 
+Openpyxl:
+```bash
+pip install openpyxl
+```

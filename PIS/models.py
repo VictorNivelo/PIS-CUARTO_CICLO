@@ -22,12 +22,8 @@ class UsuarioPersonalizado(AbstractUser):
         ("Pasaporte", "Pasaporte"),
     ]
 
-    genero = models.CharField(
-        max_length=10,
-        choices=GENERO_OPCIONES,
-        blank=True,
-        null=True,
-        verbose_name="Género",
+    genero = models.ForeignKey(
+        "Genero", on_delete=models.CASCADE, verbose_name="Género"
     )
 
     fecha_nacimiento = models.DateField(
@@ -36,12 +32,8 @@ class UsuarioPersonalizado(AbstractUser):
 
     dni = models.CharField(max_length=10, blank=True, null=True, verbose_name="DNI")
 
-    tipo_dni = models.CharField(
-        max_length=20,
-        choices=TIPO_DNI_OPCIONES,
-        blank=True,
-        null=True,
-        verbose_name="Tipo de DNI",
+    tipo_dni = models.ForeignKey(
+        "TipoDNI", on_delete=models.CASCADE, verbose_name="Tipo de DNI"
     )
 
     telefono = models.CharField(
@@ -70,6 +62,22 @@ class UsuarioPersonalizado(AbstractUser):
 
     def __str__(self):
         return f"{self.username}"
+
+
+class Genero(models.Model):
+    nombre_genero = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion_genero = models.CharField(max_length=200, verbose_name="Descripción")
+
+    def __str__(self):
+        return self.nombre_genero
+
+
+class TipoDNI(models.Model):
+    nombre_tipo_dni = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion_tipo_dni = models.CharField(max_length=200, verbose_name="Descripción")
+
+    def __str__(self):
+        return self.nombre_tipo_dni
 
 
 class Universidad(models.Model):

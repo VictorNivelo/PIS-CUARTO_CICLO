@@ -38,10 +38,14 @@
 
         .form-wrapper {
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .form-group {
             margin-bottom: 20px;
+            width: 100%;
         }
 
         label {
@@ -59,20 +63,45 @@
             border-radius: 5px;
         }
 
-        button[type="submit"] {
+        .button-container {
             width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button[type="submit"], .back-button {
             padding: 10px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
             cursor: pointer;
             transition: background-color 0.3s;
         }
 
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            width: calc(50% - 5px); /* El 5px es el espacio entre botones */
+        }
+
         button[type="submit"]:hover {
             background-color: #45a049;
+        }
+
+        .back-button {
+            background-color: #808080;
+            color: white;
+            width: calc(50% - 5px); /* El 5px es el espacio entre botones */
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-button:hover {
+            background-color: #666666;
         }
     </style>
 </head>
@@ -80,12 +109,15 @@
     <div class="caja">
         <form class="form-wrapper" action="{% url 'Cargar_Informe' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <h1 class="t">Cargar Informe de Deserción Estudiantil</h1>
+            <h1 class="t">Cargar informacion de Deserción Estudiantil</h1>
             <div class="form-group">
-                <label for="document">Subir documento (PDF o DOCX):</label>
-                <input type="file" id="document" name="document" accept=".pdf,.docx" required>
+                <label for="document">Subir documento (PDF, DOCX o XLSX):</label>
+                <input type="file" id="document" name="document" accept=".pdf,.docx,.xlsx" required>
             </div>
-            <button type="submit">Cargar</button>
+            <div class="button-container">
+                <a href="{% url 'Informe_Materia' %}" class="back-button">Regresar</a>
+                <button type="submit">Cargar</button>
+            </div>
         </form>
     </div>
 </body>

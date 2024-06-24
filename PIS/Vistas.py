@@ -7,17 +7,22 @@ from django.contrib.auth.decorators import login_required
 from docx import Document
 import PyPDF2
 import pdfplumber
+import openpyxl
+from datetime import datetime
+from django.db.models import Q
 from PIS.models import (
+    Genero,
+    TipoDNI,
     Universidad,
     UsuarioPersonalizado,
     Facultad,
     Carrera,
     Ciclo,
     Materia,
+    Genero,
 )
-from datetime import datetime
-from django.db.models import Q
 from .forms import (
+    GeneroForm,
     InformeCarreraForm,
     InformeCicloForm,
     InformeMateriaForm,
@@ -28,6 +33,7 @@ from .forms import (
     CarreraForm,
     CicloForm,
     MateriaForm,
+    TipoDNIForm,
 )
 
 
@@ -170,11 +176,16 @@ def RegistrarUsuario(request):
         form = RegistrarUsuarioForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            rol = form.cleaned_data.get("rol") or "docente"
-            # user.rol = "docente"
+
+            if UsuarioPersonalizado.objects.count() == 0:
+                user.is_superuser = True
+                user.is_staff = True
+                user.rol = "Personal Administrativo"
+            else:
+                user.rol = "Docente"
+
             user.set_password(form.cleaned_data["password1"])
             user.save()
-            login(request, user)
             messages.success(request, "Usuario registrado exitosamente.")
             return redirect("Iniciar_Sesion")
         else:
@@ -194,7 +205,79 @@ def RegistrarUsuario(request):
                         messages.error(request, f"Error en el campo {field}: {error}")
     else:
         form = RegistrarUsuarioForm()
+
     return render(request, "RU-CrearUsuario.html", {"form": form})
+
+
+def GestionUsuario(request):
+    query = request.GET.get("search_query", "")
+    filter_rol = request.GET.get("rol", "")
+    filter_genero = request.GET.get("genero", "")
+    filter_tipo_dni = request.GET.get("tipo_dni", "")
+
+    usuarios = UsuarioPersonalizado.objects.all()
+    generos = Genero.objects.all()
+    tipos_dni = TipoDNI.objects.all()
+
+    if query:
+        usuarios = usuarios.filter(
+            Q(username__icontains=query) | Q(dni__icontains=query)
+        )
+    if filter_rol:
+        usuarios = usuarios.filter(rol=filter_rol)
+    if filter_genero:
+        usuarios = usuarios.filter(genero_id=filter_genero)
+    if filter_tipo_dni:
+        usuarios = usuarios.filter(tipo_dni=filter_tipo_dni)
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            user_id = request.POST.get("user_id")
+            usuario = UsuarioPersonalizado.objects.get(id=user_id)
+            usuario.username = request.POST.get("username")
+            usuario.first_name = request.POST.get("first_name")
+            usuario.last_name = request.POST.get("last_name")
+            usuario.rol = request.POST.get("rol")
+            usuario.genero_id = request.POST.get("genero")
+            usuario.tipo_dni_id = request.POST.get("tipo_dni")
+            usuario.dni = request.POST.get("dni")
+            fecha_nacimiento_str = request.POST.get("fecha_nacimiento")
+            try:
+                fecha_nacimiento = datetime.strptime(
+                    fecha_nacimiento_str, "%d/%m/%Y"
+                ).date()
+                usuario.fecha_nacimiento = fecha_nacimiento
+            except ValueError:
+                messages.error(
+                    request,
+                    "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
+                )
+                return redirect("Gestion_Usuario")
+            usuario.telefono = request.POST.get("telefono")
+            usuario.save()
+            messages.success(
+                request, "Información del usuario actualizada correctamente."
+            )
+        elif "delete" in request.POST:
+            user_id = request.POST.get("user_id")
+            usuario = UsuarioPersonalizado.objects.get(id=user_id)
+            usuario.delete()
+            messages.success(request, "Usuario eliminado correctamente.")
+        return redirect("Gestion_Usuario")
+
+    return render(
+        request,
+        "GestionUsuario.html",
+        {
+            "usuarios": usuarios,
+            "query": query,
+            "filter_rol": filter_rol,
+            "filter_genero": filter_genero,
+            "filter_tipo_dni": filter_tipo_dni,
+            "generos": generos,
+            "tipos_dni": tipos_dni,
+        },
+    )
 
 
 def IniciarSesion(request):
@@ -244,71 +327,88 @@ def RecuperarContrasenia(request):
     return render(request, "RecuperarContrasenia.html", {"form": form})
 
 
-def GestionUsuario(request):
-    query = request.GET.get("search_query", "")
-    filter_rol = request.GET.get("rol", "")
-    filter_genero = request.GET.get("genero", "")
-    filter_tipo_dni = request.GET.get("tipo_dni", "")
+def RegistrarTipoDNI(request):
+    if request.method == "POST":
+        form = TipoDNIForm(request.POST)
+        if form.is_valid():
+            tipo_dni = form.save(commit=False)
+            tipo_dni.save()
+            messages.success(request, "Tipo de DNI registrado exitosamente.")
+            return redirect("Gestion_TipoDNI")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = TipoDNIForm()
+    return render(request, "RTD-CrearTipoDNI.html", {"form": form})
 
-    usuarios = UsuarioPersonalizado.objects.all()
+
+def GestionTipoDNI(request):
+    query = request.GET.get("search_query", "")
+    tipos_dni = TipoDNI.objects.all()
 
     if query:
-        usuarios = usuarios.filter(
-            Q(username__icontains=query) | Q(dni__icontains=query)
-        )
-    if filter_rol:
-        usuarios = usuarios.filter(rol=filter_rol)
-    if filter_genero:
-        usuarios = usuarios.filter(genero=filter_genero)
-    if filter_tipo_dni:
-        usuarios = usuarios.filter(tipo_dni=filter_tipo_dni)
+        tipos_dni = tipos_dni.filter(Q(nombre_tipo_dni__icontains=query))
 
     if request.method == "POST":
         if "modify" in request.POST:
-            user_id = request.POST.get("user_id")
-            usuario = UsuarioPersonalizado.objects.get(id=user_id)
-            usuario.username = request.POST.get("username")
-            usuario.first_name = request.POST.get("first_name")
-            usuario.last_name = request.POST.get("last_name")
-            usuario.rol = request.POST.get("rol")
-            usuario.genero = request.POST.get("genero")
-            usuario.tipo_dni = request.POST.get("tipo_dni")
-            usuario.dni = request.POST.get("dni")
-            fecha_nacimiento_str = request.POST.get("fecha_nacimiento")
-            try:
-                fecha_nacimiento = datetime.strptime(
-                    fecha_nacimiento_str, "%d/%m/%Y"
-                ).date()
-                usuario.fecha_nacimiento = fecha_nacimiento
-            except ValueError:
-                messages.error(
-                    request,
-                    "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
-                )
-                return redirect("Gestion_Usuario")
-            usuario.telefono = request.POST.get("telefono")
-            usuario.save()
-            messages.success(
-                request, "Información del usuario actualizada correctamente."
-            )
+            tipo_dni_id = request.POST.get("tipo_dni_id")
+            tipo_dni = TipoDNI.objects.get(id=tipo_dni_id)
+            tipo_dni.nombre_tipo_dni = request.POST.get("nombre_tipo_dni")
+            tipo_dni.descripcion_tipo_dni = request.POST.get("descripcion_tipo_dni")
+            tipo_dni.save()
+            messages.success(request, "Tipo de DNI actualizado exitosamente.")
         elif "delete" in request.POST:
-            user_id = request.POST.get("user_id")
-            usuario = UsuarioPersonalizado.objects.get(id=user_id)
-            usuario.delete()
-            messages.success(request, "Usuario eliminado correctamente.")
-        return redirect("Gestion_Usuario")
+            tipo_dni_id = request.POST.get("tipo_dni_id")
+            tipo_dni = TipoDNI.objects.get(id=tipo_dni_id)
+            tipo_dni.delete()
+            messages.success(request, "Tipo de DNI eliminado exitosamente.")
+        return redirect("Gestion_TipoDNI")
 
     return render(
-        request,
-        "GestionUsuario.html",
-        {
-            "usuarios": usuarios,
-            "query": query,
-            "filter_rol": filter_rol,
-            "filter_genero": filter_genero,
-            "filter_tipo_dni": filter_tipo_dni,
-        },
+        request, "GestionTipoDNI.html", {"tipos_dni": tipos_dni, "query": query}
     )
+
+
+def RegistrarGenero(request):
+    if request.method == "POST":
+        form = GeneroForm(request.POST)
+        if form.is_valid():
+            genero = form.save(commit=False)
+            genero.save()
+            messages.success(request, "Género registrado exitosamente.")
+            return redirect("Gestion_Genero")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = GeneroForm()
+        # messages.success(request, "Género registrado exitosamente.")
+        # return redirect("Gestion_Genero")
+    return render(request, "RG-CrearGenero.html", {"form": form})
+
+
+def GestionGenero(request):
+    query = request.GET.get("search_query", "")
+    generos = Genero.objects.all()
+
+    if query:
+        generos = generos.filter(Q(nombre_genero__icontains=query))
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            genero_id = request.POST.get("genero_id")
+            genero = Genero.objects.get(id=genero_id)
+            genero.nombre_genero = request.POST.get("nombre_genero")
+            genero.descripcion_genero = request.POST.get("descripcion_genero")
+            genero.save()
+            messages.success(request, "Género actualizado exitosamente.")
+        elif "delete" in request.POST:
+            genero_id = request.POST.get("genero_id")
+            genero = Genero.objects.get(id=genero_id)
+            genero.delete()
+            messages.success(request, "Género eliminado exitosamente.")
+        return redirect("Gestion_Genero")
+
+    return render(request, "GestionGenero.html", {"generos": generos, "query": query})
 
 
 def RegistrarUniversidad(request):
@@ -636,7 +736,9 @@ def Extraer_DOCS(file):
         elif "Docente encargado:" in text:
             data["docente_encargado"] = text.replace("Docente encargado:", "").strip()
         elif "Numero de estudiante:" in text:
-            data["numero_estudiantes"] = int(text.replace("Numero de estudiante:", "").strip())
+            data["numero_estudiantes"] = int(
+                text.replace("Numero de estudiante:", "").strip()
+            )
         elif "Aprobados:" in text:
             data["aprobados"] = int(text.replace("Aprobados:", "").strip())
         elif "Reprobados:" in text:
@@ -646,6 +748,7 @@ def Extraer_DOCS(file):
         elif "Retirados:" in text:
             data["retirados"] = int(text.replace("Retirados:", "").strip())
     return data
+
 
 def Extraer_PDF(file):
     data = {}
@@ -658,18 +761,93 @@ def Extraer_PDF(file):
                     if "Materia:" in line:
                         data["materia"] = line.replace("Materia:", "").strip()
                     elif "Docente encargado:" in line:
-                        data["docente_encargado"] = line.replace("Docente encargado:", "").strip()
+                        data["docente_encargado"] = line.replace(
+                            "Docente encargado:", ""
+                        ).strip()
                     elif "Numero de estudiante:" in line:
-                        data["numero_estudiantes"] = int(line.replace("Numero de estudiante:", "").strip())
+                        data["numero_estudiantes"] = int(
+                            line.replace("Numero de estudiante:", "").strip()
+                        )
                     elif "Aprobados:" in line:
                         data["aprobados"] = int(line.replace("Aprobados:", "").strip())
                     elif "Reprobados:" in line:
-                        data["reprobados"] = int(line.replace("Reprobados:", "").strip())
+                        data["reprobados"] = int(
+                            line.replace("Reprobados:", "").strip()
+                        )
                     elif "Desertores:" in line:
-                        data["desertores"] = int(line.replace("Desertores:", "").strip())
+                        data["desertores"] = int(
+                            line.replace("Desertores:", "").strip()
+                        )
                     elif "Retirados:" in line:
                         data["retirados"] = int(line.replace("Retirados:", "").strip())
     return data
+
+
+def Extraer_XLSX(file):
+    data = {}
+    workbook = openpyxl.load_workbook(file, data_only=True)
+    sheet = workbook.active
+
+    for row in sheet.iter_rows(min_row=1, max_col=7, values_only=True):
+        for cell_value in row:
+            if isinstance(cell_value, str):
+                if "Materia:" in cell_value:
+                    data["materia"] = cell_value.replace("Materia:", "").strip()
+                elif "Docente encargado:" in cell_value:
+                    data["docente_encargado"] = cell_value.replace("Docente encargado:", "").strip()
+            elif isinstance(cell_value, (int, float)):
+                if "Numero de estudiante:" in str(cell_value):
+                    data["numero_estudiantes"] = int(str(cell_value).replace("Numero de estudiante:", "").strip())
+                elif "Aprobados:" in str(cell_value):
+                    data["aprobados"] = int(str(cell_value).replace("Aprobados:", "").strip())
+                elif "Reprobados:" in str(cell_value):
+                    data["reprobados"] = int(str(cell_value).replace("Reprobados:", "").strip())
+                elif "Desertores:" in str(cell_value):
+                    data["desertores"] = int(str(cell_value).replace("Desertores:", "").strip())
+                elif "Retirados:" in str(cell_value):
+                    data["retirados"] = int(str(cell_value).replace("Retirados:", "").strip())
+
+    workbook.close()
+    return data
+
+# def Extraer_XLSX(file):
+#     data = {}
+#     workbook = openpyxl.load_workbook(file)
+#     sheet = workbook.active
+
+#     for row in sheet.iter_rows(values_only=True):
+#         for cell_value in row:
+#             if isinstance(cell_value, str):
+#                 if "Materia:" in cell_value:
+#                     data["materia"] = cell_value.replace("Materia:", "").strip()
+#                 elif "Docente encargado:" in cell_value:
+#                     data["docente_encargado"] = cell_value.replace(
+#                         "Docente encargado:", ""
+#                     ).strip()
+#             elif isinstance(cell_value, (int, float)):
+#                 if "Numero de estudiante:" in str(cell_value):
+#                     data["numero_estudiantes"] = int(
+#                         str(cell_value).replace("Numero de estudiante:", "").strip()
+#                     )
+#                 elif "Aprobados:" in str(cell_value):
+#                     data["aprobados"] = int(
+#                         str(cell_value).replace("Aprobados:", "").strip()
+#                     )
+#                 elif "Reprobados:" in str(cell_value):
+#                     data["reprobados"] = int(
+#                         str(cell_value).replace("Reprobados:", "").strip()
+#                     )
+#                 elif "Desertores:" in str(cell_value):
+#                     data["desertores"] = int(
+#                         str(cell_value).replace("Desertores:", "").strip()
+#                     )
+#                 elif "Retirados:" in str(cell_value):
+#                     data["retirados"] = int(
+#                         str(cell_value).replace("Retirados:", "").strip()
+#                     )
+
+#     return data
+
 
 def CargarInforme(request):
     if request.method == "POST":
@@ -680,6 +858,8 @@ def CargarInforme(request):
             data = Extraer_DOCS(file)
         elif file_extension == "pdf":
             data = Extraer_PDF(file)
+        elif file_extension == "xlsx":
+            data = Extraer_XLSX(file)
         else:
             return HttpResponse("Formato de archivo no soportado.", status=400)
 

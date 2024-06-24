@@ -8,10 +8,14 @@ from .models import (
     Facultad,
     Carrera,
     Ciclo,
-    Materia
+    Materia,
+    Genero,
+    TipoDNI,
 )
 
 admin.site.register(UsuarioPersonalizado)
+admin.site.register(Genero)
+admin.site.register(TipoDNI)
 admin.site.register(Universidad)
 admin.site.register(Facultad)
 admin.site.register(Carrera)

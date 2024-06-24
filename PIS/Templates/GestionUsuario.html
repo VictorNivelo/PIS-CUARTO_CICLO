@@ -23,7 +23,7 @@
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            max-width: 1500px;
+            max-width: 1600px;
             margin: auto;
             padding: 20px;
         }
@@ -170,6 +170,33 @@
             background-color: #fff;
         }
 
+        td.actions-column {
+            width: 100px;
+        }
+
+        td.actions-column form {
+            display: flex;
+            justify-content: center;
+        }
+
+        td.actions-column10 {
+            width: 135px;
+        }
+
+        td.actions-column10 form {
+            display: flex;
+            justify-content: center;
+        }
+
+        td.actions-columnF {
+            width: 122px;
+        }
+
+        td.actions-columnF form {
+            display: flex;
+            justify-content: center;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -228,17 +255,26 @@
                 </select>
                 <select name="genero">
                     <option value="">Todos los géneros</option>
-                    <option value="Masculino" {% if filter_genero == 'Masculino' %}selected{% endif %}>Masculino
+                    {% for genero in generos %}
+                    <option value="{{ genero.id }}" {% if filter_genero == genero.id|stringformat:"s" %}selected{% endif %}>
+                        {{ genero.nombre_genero }}
                     </option>
-                    <option value="Femenino" {% if filter_genero == 'Femenino' %}selected{% endif %}>Femenino</option>
-                    <option value="Otro" {% if usuario.genero == 'Otro' %}selected{% endif %}>Otro</option>
+                    {% endfor %}
                 </select>
                 <select name="tipo_dni">
+                    <option value="">Todos los tipo de DNI</option>
+                    {% for tipo_dni in tipos_dni %}
+                    <option value="{{ tipo_dni.id }}" {% if filter_tipo_DNI == tipo_DNI.id|stringformat:"s" %}selected{% endif %}>
+                        {{ tipo_dni.nombre_tipo_dni }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <!-- <select name="tipo_dni">
                     <option value="">Todos los tipos de DNI</option>
                     <option value="Cedula" {% if filter_tipo_dni == 'Cedula' %}selected{% endif %}>Cedula</option>
                     <option value="Pasaporte" {% if filter_tipo_dni == 'Pasaporte' %}selected{% endif %}>Pasaporte
                     </option>
-                </select>
+                </select> -->
                 <button type="submit" class="btn-buscar">Buscar</button>
             </form>
             <a href="{% url 'Registrar_Usuario' %}" class="btn-crear">Crear Usuario</a>
@@ -282,28 +318,27 @@
                             </td>
                             <td>
                                 <select name="genero">
-                                    <option value="Masculino" {% if usuario.genero == 'Masculino' %}selected{% endif %}>
-                                        Masculino</option>
-                                    <option value="Femenino" {% if usuario.genero == 'Femenino' %}selected{% endif %}>
-                                        Femenino</option>
-                                    <option value="Otro" {% if usuario.genero == 'Otro' %}selected{% endif %}>Otro
+                                    {% for genero in generos %}
+                                    <option value="{{ genero.id }}" {% if usuario.genero_id == genero.id %}selected{% endif %}>
+                                        {{ genero.nombre_genero }}
                                     </option>
+                                    {% endfor %}
                                 </select>
                             </td>
-                            <td><input type="text" name="fecha_nacimiento"
+                            <td class="actions-columnF"><input type="text" name="fecha_nacimiento"
                                     value="{{ usuario.fecha_nacimiento|date:'d/m/Y' }}"></td>
                             <td>
                                 <select name="tipo_dni">
-                                    <option value="Cedula" {% if usuario.tipo_dni == 'Cedula' %}selected{% endif %}>
-                                        Cedula
+                                    {% for tipo_dni in tipos_dni %}
+                                    <option value="{{ tipo_dni.id }}" {% if usuario.tipo_dni_id == tipo_dni.id %}selected{% endif %}>
+                                        {{ tipo_dni.nombre_tipo_dni }}
                                     </option>
-                                    <option value="Pasaporte"
-                                        {% if usuario.tipo_dni == 'Pasaporte' %}selected{% endif %}>Pasaporte</option>
+                                    {% endfor %}
                                 </select>
                             </td>
-                            <td><input type="text" name="dni" value="{{ usuario.dni }}"></td>
-                            <td><input type="text" name="telefono" value="{{ usuario.telefono }}"></td>
-                            <td>
+                            <td class="actions-column10"><input type="text" name="dni" value="{{ usuario.dni }}"></td>
+                            <td class="actions-column10"><input type="text" name="telefono" value="{{ usuario.telefono }}"></td>
+                            <td class="actions-column">
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
                                 <form method="POST" style="display: inline-block; margin-left: 5px;">
                                     {% csrf_token %}
