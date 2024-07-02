@@ -14,6 +14,16 @@ from .models import (
 )
 
 
+class TelefonoInput(forms.TextInput):
+    input_type = "tel"
+
+    def __init__(self, attrs=None):
+        default_attrs = {"pattern": "[0-9]{1,10}", "maxlength": "10"}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
+
+
 class RegistrarUsuarioForm(UserCreationForm):
 
     username = forms.EmailField(
@@ -74,7 +84,7 @@ class RegistrarUsuarioForm(UserCreationForm):
     )
 
     telefono = forms.CharField(
-        widget=forms.TextInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
+        widget=TelefonoInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
         max_length=10,
         required=False,
         label="Numero de teléfono",
@@ -231,7 +241,7 @@ class UniversidadForm(forms.ModelForm):
         label="Dirección",
     )
     telefono_universidad = forms.CharField(
-        widget=forms.TextInput(
+        widget=TelefonoInput(
             attrs={"placeholder": "Ingrese el teléfono de la universidad"}
         ),
         label="Teléfono",

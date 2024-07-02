@@ -179,6 +179,15 @@
             justify-content: center;
         }
 
+        td.actions-column10 {
+            width: 135px;
+        }
+
+        td.actions-column10 form {
+            display: flex;
+            justify-content: center;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -191,6 +200,8 @@
         }
 
         .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
         .form-group select {
             width: 100%;
             padding: 10px;
@@ -248,9 +259,12 @@
                             {% csrf_token %}
                             <input type="hidden" name="ciclo_id" value="{{ ciclo.id }}">
                             <td><input type="text" name="nombre_ciclo" value="{{ ciclo.nombre_ciclo }}"></td>
-
-                            <td><input type="text" name="fecha_inicio" value="{{ ciclo.fecha_inicio }}"></td>
-                            <td><input type="text" name="fecha_fin" value="{{ ciclo.fecha_fin }}"></td>
+                            <!-- <td><input type="text" name="fecha_inicio" value="{{ ciclo.fecha_inicio }}"></td> -->
+                            <!-- <td><input type="text" name="fecha_fin" value="{{ ciclo.fecha_fin }}"></td> -->
+                            <td class="actions-column10"><input type="date" name="fecha_inicio"
+                                value="{{ ciclo.fecha_inicio|date:'Y-m-d' }}"></td>
+                            <td class="actions-column10"><input type="date" name="fecha_fin"
+                                value="{{ ciclo.fecha_fin|date:'Y-m-d' }}"></td>
                             <td>
                                 <select name="carrera">
                                     {% for carrera in carreras %}

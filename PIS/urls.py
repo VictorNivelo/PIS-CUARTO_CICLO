@@ -5,6 +5,7 @@ from .vistas import (
     PaginaPrincipal,
     
     IniciarSesion,
+    CerrarSesion,
     RegistrarUsuario,
     RecuperarContrasenia,
     
@@ -44,6 +45,7 @@ from .vistas import (
     GestionCarrera,
     GestionCiclo,
     GestionMateria,
+    upload_universities,
 )
 
 urlpatterns = [
@@ -63,6 +65,7 @@ urlpatterns = [
     path("Registrar-Materia/", RegistrarMateria, name="Registrar_Materia"),
     
     path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
+    path("Cerrar-Sesion/", CerrarSesion, name="Cerrar_Sesion"),
     path("Recuperar-Contrasenia/", RecuperarContrasenia, name="Recuperar_Contrasenia"),
     
     path("Informe-Materia/", InformeMateria, name="Informe_Materia"),
@@ -89,4 +92,6 @@ urlpatterns = [
     path("Gestion-Carrera/", GestionCarrera, name="Gestion_Carrera"),
     path("Gestion-Ciclo/", GestionCiclo, name="Gestion_Ciclo"),
     path("Gestion-Materia/", GestionMateria, name="Gestion_Materia"),
+
+    path('upload-universities/', upload_universities, name='upload_universities'),
 ]

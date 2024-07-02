@@ -99,7 +99,9 @@ class Universidad(models.Model):
 
 class Facultad(models.Model):
     nombre_facultad = models.CharField(max_length=100, verbose_name="Nombre")
-    fecha_fundacion = models.DateField(verbose_name="Fecha de Fundación")
+    fecha_fundacion = models.DateField(
+        null=True, blank=True, verbose_name="Fecha de Fundación"
+    )
     universidad = models.ForeignKey(
         Universidad, on_delete=models.CASCADE, verbose_name="Universidad"
     )
@@ -233,9 +235,6 @@ class Cuenta(models.Model):
 class Rol(models.Model):
     nombre_rol = models.CharField(max_length=50, verbose_name="Nombre de Rol")
     descripcion = models.CharField(max_length=200, verbose_name="Descripción")
-    usuario = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
-    )
 
     def __str__(self):
         return self.nombre_rol
@@ -268,6 +267,7 @@ class Docente(models.Model):
     usuario = models.ForeignKey(
         Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
     )
+    materias = models.ManyToManyField(Materia, verbose_name="Materias Asignadas")
 
     def __str__(self):
         return self.codigo_docente

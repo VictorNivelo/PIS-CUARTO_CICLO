@@ -180,6 +180,15 @@
             justify-content: center;
         }
 
+        td.actions-column10 {
+            width: 135px;
+        }
+
+        td.actions-column10 form {
+            display: flex;
+            justify-content: center;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -192,6 +201,7 @@
         }
 
         .form-group input[type="text"],
+        .form-group input[type="date"],
         .form-group select {
             width: 100%;
             padding: 10px;
@@ -250,8 +260,10 @@
                             <td><input type="text" name="nombre_facultad" value="{{ facultad.nombre_facultad }}"></td>
                             <!-- <td><input type="text" class="datepicker" name="fecha_fundacion" value="{{ facultad.fecha_fundacion|date:'d/m/Y' }}"></td> -->
 
-                            <td><input type="text" name="fecha_fundacion_facultad"
-                                    value="{{ facultad.fecha_fundacion }}"></td>
+                            <!-- <td><input type="text" name="fecha_fundacion_facultad"
+                                    value="{{ facultad.fecha_fundacion }}"></td> -->
+                            <td class="actions-column10"><input type="date" name="fecha_fundacion"
+                                    value="{{ facultad.fecha_fundacion|date:'Y-m-d' }}"></td>
 
                             <!-- <td>
                                 <select name="universidad">

@@ -197,6 +197,15 @@
             justify-content: center;
         }
 
+        td.actions-columnI {
+            width: 175px;
+        }
+
+        td.actions-columnI form {
+            display: flex;
+            justify-content: center;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -303,8 +312,8 @@
                             {% csrf_token %}
                             <input type="hidden" name="user_id" value="{{ usuario.id }}">
                             <td><input type="text" name="username" value="{{ usuario.username }}"></td>
-                            <td><input type="text" name="first_name" value="{{ usuario.first_name }}"></td>
-                            <td><input type="text" name="last_name" value="{{ usuario.last_name }}"></td>
+                            <td class="actions-columnI"><input type="text" name="first_name" value="{{ usuario.first_name }}"></td>
+                            <td class="actions-columnI"><input type="text" name="last_name" value="{{ usuario.last_name }}"></td>
                             <td>
                                 <select name="rol">
                                     <option value="Personal Administrativo"

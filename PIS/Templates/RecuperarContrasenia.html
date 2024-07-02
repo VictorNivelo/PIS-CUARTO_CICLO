@@ -110,14 +110,14 @@
         <div class="form-wrapper">
             <form action="{% url 'Recuperar_Contrasenia' %}" method="post">
                 {% csrf_token %}
-                <h1 class="t">Recuperar Contraseña</h1>
+                <!-- <h1 class="t">Recuperar Contraseña</h1>
                 {% if messages %}
                 <div class="alert alert-danger" role="alert">
                     {% for message in messages %}
                     {{ message }}
                     {% endfor %}
                 </div>
-                {% endif %}
+                {% endif %} -->
                 <div class="form-group">
                     <label for="{{ form.username.id_for_label }}">Nombre de usuario o Correo Electrónico</label>
                     {{ form.username }}
