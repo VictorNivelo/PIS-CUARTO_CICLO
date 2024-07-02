@@ -61,7 +61,8 @@
         input[type="email"],
         input[type="password"],
         input[type="date"],
-        select{
+        input[type="tel"],
+        select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -104,6 +105,8 @@
             justify-content: space-between;
             margin-top: 20px;
         }
+
+        
     </style>
 </head>
 
@@ -114,13 +117,13 @@
                 <h1 class="t">Crear Usuario</h1>
                 {% csrf_token %}
 
-                {% if messages %}
+                <!-- {% if messages %}
                 {% for message in messages %}
                 <div class="alert alert-{{ message.tags }}" role="alert">
                     {{ message }}
                 </div>
                 {% endfor %}
-                {% endif %}
+                {% endif %} -->
 
                 <div class="row">
                     <div class="col-md-6">
@@ -168,29 +171,102 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <div class="button-group">
                     <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
-                    <button type="submit">Crear Usuario</button>
+                    <button type="submit" id="submitBtn">Crear Usuario</button>
+                    <!-- <button type="submit">Crear Usuario</button> -->
                 </div>
             </form>
         </div>
     </div>
 
-    <script>
+    <!-- <script>
         document.getElementById('btnRegresar').addEventListener('click', function () {
-            var paginaAnterior = localStorage.getItem('paginaAnterior');
-            if (paginaAnterior) {
-                window.location.href = paginaAnterior;
-            } else {
-                window.location.href = '/';
-            }
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¡Se perderán los datos no guardados!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, regresar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var paginaAnterior = localStorage.getItem('paginaAnterior');
+                    if (paginaAnterior) {
+                        window.location.href = paginaAnterior;
+                    } else {
+                        window.location.href = '/';
+                    }
+                }
+            });
         });
 
         function recordarPaginaAnterior() {
             localStorage.setItem('paginaAnterior', document.referrer);
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('registerForm');
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+
+            form.addEventListener('input', function () {
+                let allFilled = true;
+                form.querySelectorAll('input, select').forEach(function (input) {
+                    if (input.value === '') {
+                        allFilled = false;
+                    }
+                });
+                submitBtn.disabled = !allFilled;
+            });
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            Swal.fire({
+                title: 'Usuario creado exitosamente',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{% url 'Iniciar_Sesion' %}";
+                }
+            });
+        });
+    </script> -->
+
+    <script>
+        document.getElementById('btnRegresar').addEventListener('click', function () {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¡Se perderán los datos no guardados!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, regresar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var paginaAnterior = localStorage.getItem('paginaAnterior');
+                    if (paginaAnterior) {
+                        window.location.href = paginaAnterior;
+                    } else {
+                        window.location.href = '/';
+                    }
+                }
+            });
+        });
+    
+        function recordarPaginaAnterior() {
+            localStorage.setItem('paginaAnterior', document.referrer);
+        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>

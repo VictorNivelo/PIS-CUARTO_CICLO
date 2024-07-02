@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
+    Genero,
     InformeCarrera,
     InformeMateria,
+    TipoDNI,
     UsuarioPersonalizado,
     Universidad,
     Facultad,
@@ -10,6 +12,16 @@ from .models import (
     Materia,
     Ciclo,
 )
+
+
+class TelefonoInput(forms.TextInput):
+    input_type = "tel"
+
+    def __init__(self, attrs=None):
+        default_attrs = {"pattern": "[0-9]{1,10}", "maxlength": "10"}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
 
 
 class RegistrarUsuarioForm(UserCreationForm):
@@ -39,8 +51,11 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="Confirmar Contraseña",
     )
 
-    genero = forms.ChoiceField(
-        choices=UsuarioPersonalizado.GENERO_OPCIONES, required=False, label="Género"
+    genero = forms.ModelChoiceField(
+        queryset=Genero.objects.all(),
+        to_field_name="nombre_genero",
+        empty_label="Seleccione un genero",
+        label="Genero",
     )
 
     fecha_nacimiento = forms.DateField(
@@ -54,10 +69,11 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="Fecha de Nacimiento",
     )
 
-    tipo_dni = forms.ChoiceField(
-        choices=UsuarioPersonalizado.TIPO_DNI_OPCIONES,
-        required=False,
-        label="Tipo de identificacion",
+    tipo_dni = forms.ModelChoiceField(
+        queryset=TipoDNI.objects.all(),
+        to_field_name="nombre_tipo_dni",
+        empty_label="Seleccione un Tipo de DNI",
+        label="Tipo de DNI",
     )
 
     dni = forms.CharField(
@@ -68,7 +84,7 @@ class RegistrarUsuarioForm(UserCreationForm):
     )
 
     telefono = forms.CharField(
-        widget=forms.TextInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
+        widget=TelefonoInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
         max_length=10,
         required=False,
         label="Numero de teléfono",
@@ -99,6 +115,42 @@ class RegistrarUsuarioForm(UserCreationForm):
             "password1": forms.PasswordInput(),
             "password2": forms.PasswordInput(),
         }
+
+
+class TipoDNIForm(forms.ModelForm):
+    nombre_tipo_dni = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese el nombre del tipo de DNI"}
+        ),
+        label="Nombre del Tipo de DNI",
+    )
+    descripcion_tipo_dni = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese la descripción del tipo de DNI"}
+        ),
+        label="Descripción",
+    )
+
+    class Meta:
+        model = TipoDNI
+        fields = ["nombre_tipo_dni", "descripcion_tipo_dni"]
+
+
+class GeneroForm(forms.ModelForm):
+    nombre_genero = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese el nombre del genero"}),
+        label="Nombre del Genero",
+    )
+    descripcion_genero = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese la descripción del genero"}
+        ),
+        label="Descripción",
+    )
+
+    class Meta:
+        model = Genero
+        fields = ["nombre_genero", "descripcion_genero"]
 
 
 class InicioSesionForm(AuthenticationForm):
@@ -189,7 +241,7 @@ class UniversidadForm(forms.ModelForm):
         label="Dirección",
     )
     telefono_universidad = forms.CharField(
-        widget=forms.TextInput(
+        widget=TelefonoInput(
             attrs={"placeholder": "Ingrese el teléfono de la universidad"}
         ),
         label="Teléfono",

@@ -1,17 +1,177 @@
 <!DOCTYPE html>
-
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página del Administrador</title>
+    <title>Página del Docente</title>
     <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
+            background-size: cover;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            width: calc(100vw - 40px);
+            height: calc(100vh - 40px);
+            max-width: 1600px;
+            padding: 30px;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-family: 'Lobster', cursive;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .user-menu {
+            display: flex;
+            justify-content: right;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .user-menu .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-menu .username {
+            font-weight: bold;
+            color: #333;
+            margin-right: 10px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-options {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1;
+            width: 150px;
+        }
+
+        .user-options a {
+            display: block;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            transition: color 0.5s;
+            white-space: nowrap;
+        }
+
+        .user-options a:hover {
+            color: #007BFF;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .menu {
+            width: 250px;
+            padding-right: 15px;
+            border-right: 2px solid #ccc;
+            margin-right: 20px;
+            overflow: auto;
+        }
+
+        .menu a {
+            display: block;
+            margin-bottom: 10px;
+            padding: 12px 15px;
+            text-align: left;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu a:hover {
+            background-color: #147741;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding-left: 20px;
+            overflow: auto;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Bienvenido docente</h1>
+    <div class="container">
+        <div class="user-menu">
+            <img class="avatar" src="https://via.placeholder.com/40" alt="Avatar">
+            <div class="username" onclick="toggleUserOptions()">{{ user.first_name }} {{ user.last_name }}
+                <div class="user-options" id="user-options">
+                    <a href="{% url 'Cerrar_Sesion' %}">Cerrar Sesión</a>
+                    <a href="{% url 'Cerrar_Sesion' %}">Configuración</a>
+                </div>
+            </div>
+        </div>
+        <h1>Bienvenido, {{ user.first_name }}!</h1>
+        <div class="content-wrapper">
+            <div class="menu">
+                <a href="#">Materia 1</a>
+                <a href="#">Materia 2</a>
+                <a href="#">Materia 3</a>
+            </div>
+            <div class="main-content">
+                <!-- Aquí puedes agregar el contenido principal de la página -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleUserOptions() {
+            const userOptions = document.getElementById('user-options');
+            userOptions.style.display = userOptions.style.display === 'block' ? 'none' : 'block';
+        }
+
+        document.addEventListener('click', function (event) {
+            const userOptions = document.getElementById('user-options');
+            const username = document.querySelector('.username');
+            if (!username.contains(event.target)) {
+                userOptions.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 
 </html>

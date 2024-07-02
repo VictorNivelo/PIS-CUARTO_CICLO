@@ -1,4 +1,7 @@
-from django.http import HttpResponse
+from django.conf import settings
+import re
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -7,17 +10,25 @@ from django.contrib.auth.decorators import login_required
 from docx import Document
 import PyPDF2
 import pdfplumber
+import openpyxl
+from datetime import datetime
+from django.db.models import Q
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
 from PIS.models import (
+    Genero,
+    TipoDNI,
     Universidad,
     UsuarioPersonalizado,
     Facultad,
     Carrera,
     Ciclo,
     Materia,
+    Genero,
 )
-from datetime import datetime
-from django.db.models import Q
 from .forms import (
+    GeneroForm,
     InformeCarreraForm,
     InformeCicloForm,
     InformeMateriaForm,
@@ -28,6 +39,7 @@ from .forms import (
     CarreraForm,
     CicloForm,
     MateriaForm,
+    TipoDNIForm,
 )
 
 
@@ -170,11 +182,16 @@ def RegistrarUsuario(request):
         form = RegistrarUsuarioForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            rol = form.cleaned_data.get("rol") or "docente"
-            # user.rol = "docente"
+
+            if UsuarioPersonalizado.objects.count() == 0:
+                user.is_superuser = True
+                user.is_staff = True
+                user.rol = "Personal Administrativo"
+            else:
+                user.rol = "Docente"
+
             user.set_password(form.cleaned_data["password1"])
             user.save()
-            login(request, user)
             messages.success(request, "Usuario registrado exitosamente.")
             return redirect("Iniciar_Sesion")
         else:
@@ -194,7 +211,79 @@ def RegistrarUsuario(request):
                         messages.error(request, f"Error en el campo {field}: {error}")
     else:
         form = RegistrarUsuarioForm()
+
     return render(request, "RU-CrearUsuario.html", {"form": form})
+
+
+def GestionUsuario(request):
+    query = request.GET.get("search_query", "")
+    filter_rol = request.GET.get("rol", "")
+    filter_genero = request.GET.get("genero", "")
+    filter_tipo_dni = request.GET.get("tipo_dni", "")
+
+    usuarios = UsuarioPersonalizado.objects.all()
+    generos = Genero.objects.all()
+    tipos_dni = TipoDNI.objects.all()
+
+    if query:
+        usuarios = usuarios.filter(
+            Q(username__icontains=query) | Q(dni__icontains=query)
+        )
+    if filter_rol:
+        usuarios = usuarios.filter(rol=filter_rol)
+    if filter_genero:
+        usuarios = usuarios.filter(genero_id=filter_genero)
+    if filter_tipo_dni:
+        usuarios = usuarios.filter(tipo_dni=filter_tipo_dni)
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            user_id = request.POST.get("user_id")
+            usuario = UsuarioPersonalizado.objects.get(id=user_id)
+            usuario.username = request.POST.get("username")
+            usuario.first_name = request.POST.get("first_name")
+            usuario.last_name = request.POST.get("last_name")
+            usuario.rol = request.POST.get("rol")
+            usuario.genero_id = request.POST.get("genero")
+            usuario.tipo_dni_id = request.POST.get("tipo_dni")
+            usuario.dni = request.POST.get("dni")
+            fecha_nacimiento_str = request.POST.get("fecha_nacimiento")
+            try:
+                fecha_nacimiento = datetime.strptime(
+                    fecha_nacimiento_str, "%d/%m/%Y"
+                ).date()
+                usuario.fecha_nacimiento = fecha_nacimiento
+            except ValueError:
+                messages.error(
+                    request,
+                    "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
+                )
+                return redirect("Gestion_Usuario")
+            usuario.telefono = request.POST.get("telefono")
+            usuario.save()
+            messages.success(
+                request, "Información del usuario actualizada correctamente."
+            )
+        elif "delete" in request.POST:
+            user_id = request.POST.get("user_id")
+            usuario = UsuarioPersonalizado.objects.get(id=user_id)
+            usuario.delete()
+            messages.success(request, "Usuario eliminado correctamente.")
+        return redirect("Gestion_Usuario")
+
+    return render(
+        request,
+        "GestionUsuario.html",
+        {
+            "usuarios": usuarios,
+            "query": query,
+            "filter_rol": filter_rol,
+            "filter_genero": filter_genero,
+            "filter_tipo_dni": filter_tipo_dni,
+            "generos": generos,
+            "tipos_dni": tipos_dni,
+        },
+    )
 
 
 def IniciarSesion(request):
@@ -244,71 +333,88 @@ def RecuperarContrasenia(request):
     return render(request, "RecuperarContrasenia.html", {"form": form})
 
 
-def GestionUsuario(request):
-    query = request.GET.get("search_query", "")
-    filter_rol = request.GET.get("rol", "")
-    filter_genero = request.GET.get("genero", "")
-    filter_tipo_dni = request.GET.get("tipo_dni", "")
+def RegistrarTipoDNI(request):
+    if request.method == "POST":
+        form = TipoDNIForm(request.POST)
+        if form.is_valid():
+            tipo_dni = form.save(commit=False)
+            tipo_dni.save()
+            messages.success(request, "Tipo de DNI registrado exitosamente.")
+            return redirect("Gestion_TipoDNI")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = TipoDNIForm()
+    return render(request, "RTD-CrearTipoDNI.html", {"form": form})
 
-    usuarios = UsuarioPersonalizado.objects.all()
+
+def GestionTipoDNI(request):
+    query = request.GET.get("search_query", "")
+    tipos_dni = TipoDNI.objects.all()
 
     if query:
-        usuarios = usuarios.filter(
-            Q(username__icontains=query) | Q(dni__icontains=query)
-        )
-    if filter_rol:
-        usuarios = usuarios.filter(rol=filter_rol)
-    if filter_genero:
-        usuarios = usuarios.filter(genero=filter_genero)
-    if filter_tipo_dni:
-        usuarios = usuarios.filter(tipo_dni=filter_tipo_dni)
+        tipos_dni = tipos_dni.filter(Q(nombre_tipo_dni__icontains=query))
 
     if request.method == "POST":
         if "modify" in request.POST:
-            user_id = request.POST.get("user_id")
-            usuario = UsuarioPersonalizado.objects.get(id=user_id)
-            usuario.username = request.POST.get("username")
-            usuario.first_name = request.POST.get("first_name")
-            usuario.last_name = request.POST.get("last_name")
-            usuario.rol = request.POST.get("rol")
-            usuario.genero = request.POST.get("genero")
-            usuario.tipo_dni = request.POST.get("tipo_dni")
-            usuario.dni = request.POST.get("dni")
-            fecha_nacimiento_str = request.POST.get("fecha_nacimiento")
-            try:
-                fecha_nacimiento = datetime.strptime(
-                    fecha_nacimiento_str, "%d/%m/%Y"
-                ).date()
-                usuario.fecha_nacimiento = fecha_nacimiento
-            except ValueError:
-                messages.error(
-                    request,
-                    "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
-                )
-                return redirect("Gestion_Usuario")
-            usuario.telefono = request.POST.get("telefono")
-            usuario.save()
-            messages.success(
-                request, "Información del usuario actualizada correctamente."
-            )
+            tipo_dni_id = request.POST.get("tipo_dni_id")
+            tipo_dni = TipoDNI.objects.get(id=tipo_dni_id)
+            tipo_dni.nombre_tipo_dni = request.POST.get("nombre_tipo_dni")
+            tipo_dni.descripcion_tipo_dni = request.POST.get("descripcion_tipo_dni")
+            tipo_dni.save()
+            messages.success(request, "Tipo de DNI actualizado exitosamente.")
         elif "delete" in request.POST:
-            user_id = request.POST.get("user_id")
-            usuario = UsuarioPersonalizado.objects.get(id=user_id)
-            usuario.delete()
-            messages.success(request, "Usuario eliminado correctamente.")
-        return redirect("Gestion_Usuario")
+            tipo_dni_id = request.POST.get("tipo_dni_id")
+            tipo_dni = TipoDNI.objects.get(id=tipo_dni_id)
+            tipo_dni.delete()
+            messages.success(request, "Tipo de DNI eliminado exitosamente.")
+        return redirect("Gestion_TipoDNI")
 
     return render(
-        request,
-        "GestionUsuario.html",
-        {
-            "usuarios": usuarios,
-            "query": query,
-            "filter_rol": filter_rol,
-            "filter_genero": filter_genero,
-            "filter_tipo_dni": filter_tipo_dni,
-        },
+        request, "GestionTipoDNI.html", {"tipos_dni": tipos_dni, "query": query}
     )
+
+
+def RegistrarGenero(request):
+    if request.method == "POST":
+        form = GeneroForm(request.POST)
+        if form.is_valid():
+            genero = form.save(commit=False)
+            genero.save()
+            messages.success(request, "Género registrado exitosamente.")
+            return redirect("Gestion_Genero")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = GeneroForm()
+        # messages.success(request, "Género registrado exitosamente.")
+        # return redirect("Gestion_Genero")
+    return render(request, "RG-CrearGenero.html", {"form": form})
+
+
+def GestionGenero(request):
+    query = request.GET.get("search_query", "")
+    generos = Genero.objects.all()
+
+    if query:
+        generos = generos.filter(Q(nombre_genero__icontains=query))
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            genero_id = request.POST.get("genero_id")
+            genero = Genero.objects.get(id=genero_id)
+            genero.nombre_genero = request.POST.get("nombre_genero")
+            genero.descripcion_genero = request.POST.get("descripcion_genero")
+            genero.save()
+            messages.success(request, "Género actualizado exitosamente.")
+        elif "delete" in request.POST:
+            genero_id = request.POST.get("genero_id")
+            genero = Genero.objects.get(id=genero_id)
+            genero.delete()
+            messages.success(request, "Género eliminado exitosamente.")
+        return redirect("Gestion_Genero")
+
+    return render(request, "GestionGenero.html", {"generos": generos, "query": query})
 
 
 def RegistrarUniversidad(request):
@@ -351,7 +457,7 @@ def GestionUniversidad(request):
             fecha_fundacion_str = request.POST.get("fecha_fundacion")
             try:
                 fecha_fundacion = datetime.strptime(
-                    fecha_fundacion_str, "%d/%m/%Y"
+                    fecha_fundacion_str, "%Y-%m-%d"
                 ).date()
                 universidad.fecha_fundacion = fecha_fundacion
             except ValueError:
@@ -409,18 +515,16 @@ def GestionFacultad(request):
             facultad.nombre_facultad = request.POST.get("nombre_facultad")
 
             fecha_fundacion_str = request.POST.get("fecha_fundacion")
-            if fecha_fundacion_str:
-                try:
-                    fecha_fundacion = datetime.strptime(
-                        fecha_fundacion_str, "%d/%m/%Y"
-                    ).date()
-                    facultad.fecha_fundacion = fecha_fundacion
-                except ValueError:
-                    messages.error(
-                        request,
-                        "Formato de fecha de fundación inválido. Utiliza el formato dd/mm/aaaa.",
-                    )
-                    return redirect("Gestion_Facultad")
+            try:
+                fecha_fundacion = datetime.strptime(
+                    fecha_fundacion_str, "%Y-%m-%d").date()
+                facultad.fecha_fundacion = fecha_fundacion
+            except ValueError:
+                messages.error(
+                    request,
+                    "Formato de fecha de fundación inválido. Utiliza el formato dd/mm/aaaa.",
+                )
+                return redirect("Gestion_Facultad")
 
             universidad_id = request.POST.get("universidad")
             universidad = Universidad.objects.get(id=universidad_id)
@@ -530,8 +634,20 @@ def GestionCiclo(request):
             fecha_inicio_str = request.POST.get("fecha_inicio")
             if fecha_inicio_str:
                 try:
+                    fecha_fundacion = datetime.strptime(
+                        fecha_inicio_str, "%Y-%m-%d"
+                    ).date()
+                    ciclo.fecha_fundacion = fecha_fundacion
+                except ValueError:
+                    messages.error(
+                        request,
+                        "Formato de fecha de fundación inválido. Utiliza el formato dd/mm/aaaa.",
+                    )
+                    return redirect("Gestion_Facultad")
+            if fecha_inicio_str:
+                try:
                     fecha_inicio = datetime.strptime(
-                        fecha_inicio_str, "%d/%m/%Y"
+                        fecha_inicio_str, "%Y-%m-%d"
                     ).date()
                     ciclo.fecha_inicio = fecha_inicio
                 except ValueError:
@@ -543,7 +659,7 @@ def GestionCiclo(request):
             fecha_fin_str = request.POST.get("fecha_fin")
             if fecha_fin_str:
                 try:
-                    fecha_fin = datetime.strptime(fecha_fin_str, "%d/%m/%Y").date()
+                    fecha_fin = datetime.strptime(fecha_fin_str, "%Y-%m-%d").date()
                     ciclo.fecha_fin = fecha_fin
                 except ValueError:
                     messages.error(
@@ -626,64 +742,507 @@ def GestionMateria(request):
 # Funcionalidad de subir archivo para su procesamiento
 
 
-def Extraer_DOCS(file):
-    document = Document(file)
-    data = {}
-    for para in document.paragraphs:
-        text = para.text.strip()
-        if "Materia:" in text:
-            data["materia"] = text.replace("Materia:", "").strip()
-        elif "Docente encargado:" in text:
-            data["docente_encargado"] = text.replace("Docente encargado:", "").strip()
-        elif "Numero de estudiante:" in text:
-            data["numero_estudiantes"] = int(text.replace("Numero de estudiante:", "").strip())
-        elif "Aprobados:" in text:
-            data["aprobados"] = int(text.replace("Aprobados:", "").strip())
-        elif "Reprobados:" in text:
-            data["reprobados"] = int(text.replace("Reprobados:", "").strip())
-        elif "Desertores:" in text:
-            data["desertores"] = int(text.replace("Desertores:", "").strip())
-        elif "Retirados:" in text:
-            data["retirados"] = int(text.replace("Retirados:", "").strip())
-    return data
+# def Extraer_DOCS(file):
+#     document = Document(file)
+#     data = {}
+#     for para in document.paragraphs:
+#         text = para.text.strip()
+#         if "Materia:" in text:
+#             data["materia"] = text.replace("Materia:", "").strip()
+#         elif "Docente encargado:" in text:
+#             data["docente_encargado"] = text.replace("Docente encargado:", "").strip()
+#         elif "Numero de estudiante:" in text:
+#             data["numero_estudiantes"] = int(
+#                 text.replace("Numero de estudiante:", "").strip()
+#             )
+#         elif "Aprobados:" in text:
+#             data["aprobados"] = int(text.replace("Aprobados:", "").strip())
+#         elif "Reprobados:" in text:
+#             data["reprobados"] = int(text.replace("Reprobados:", "").strip())
+#         elif "Desertores:" in text:
+#             data["desertores"] = int(text.replace("Desertores:", "").strip())
+#         elif "Retirados:" in text:
+#             data["retirados"] = int(text.replace("Retirados:", "").strip())
+#     return data
 
-def Extraer_PDF(file):
-    data = {}
+
+# def Extraer_PDF(file):
+#     data = {}
+#     with pdfplumber.open(file) as pdf:
+#         for page in pdf.pages:
+#             text = page.extract_text()
+#             if text:
+#                 for line in text.split("\n"):
+#                     line = line.strip()
+#                     if "Materia:" in line:
+#                         data["materia"] = line.replace("Materia:", "").strip()
+#                     elif "Docente encargado:" in line:
+#                         data["docente_encargado"] = line.replace(
+#                             "Docente encargado:", ""
+#                         ).strip()
+#                     elif "Numero de estudiante:" in line:
+#                         data["numero_estudiantes"] = int(
+#                             line.replace("Numero de estudiante:", "").strip()
+#                         )
+#                     elif "Aprobados:" in line:
+#                         data["aprobados"] = int(line.replace("Aprobados:", "").strip())
+#                     elif "Reprobados:" in line:
+#                         data["reprobados"] = int(
+#                             line.replace("Reprobados:", "").strip()
+#                         )
+#                     elif "Desertores:" in line:
+#                         data["desertores"] = int(
+#                             line.replace("Desertores:", "").strip()
+#                         )
+#                     elif "Retirados:" in line:
+#                         data["retirados"] = int(line.replace("Retirados:", "").strip())
+#     return data
+
+# valido
+# def Extraer_XLSX(file):
+#     data = {}
+#     workbook = openpyxl.load_workbook(file, data_only=True)
+#     sheet = workbook.active
+
+#     for row in sheet.iter_rows(min_row=1, max_col=7, values_only=True):
+#         for cell_value in row:
+#             if isinstance(cell_value, str):
+#                 if "Materia:" in cell_value:
+#                     data["materia"] = cell_value.replace("Materia:", "").strip()
+#                 elif "Docente encargado:" in cell_value:
+#                     data["docente_encargado"] = cell_value.replace("Docente encargado:", "").strip()
+#             elif isinstance(cell_value, (int, float)):
+#                 if "Numero de estudiante:" in str(cell_value):
+#                     data["numero_estudiantes"] = int(str(cell_value).replace("Numero de estudiante:", "").strip())
+#                 elif "Aprobados:" in str(cell_value):
+#                     data["aprobados"] = int(str(cell_value).replace("Aprobados:", "").strip())
+#                 elif "Reprobados:" in str(cell_value):
+#                     data["reprobados"] = int(str(cell_value).replace("Reprobados:", "").strip())
+#                 elif "Desertores:" in str(cell_value):
+#                     data["desertores"] = int(str(cell_value).replace("Desertores:", "").strip())
+#                 elif "Retirados:" in str(cell_value):
+#                     data["retirados"] = int(str(cell_value).replace("Retirados:", "").strip())
+
+#     workbook.close()
+#     return data
+
+# def Extraer_XLSX(file):
+#     data = {}
+#     workbook = openpyxl.load_workbook(file)
+#     sheet = workbook.active
+
+#     for row in sheet.iter_rows(values_only=True):
+#         for cell_value in row:
+#             if isinstance(cell_value, str):
+#                 if "Materia:" in cell_value:
+#                     data["materia"] = cell_value.replace("Materia:", "").strip()
+#                 elif "Docente encargado:" in cell_value:
+#                     data["docente_encargado"] = cell_value.replace(
+#                         "Docente encargado:", ""
+#                     ).strip()
+#             elif isinstance(cell_value, (int, float)):
+#                 if "Numero de estudiante:" in str(cell_value):
+#                     data["numero_estudiantes"] = int(
+#                         str(cell_value).replace("Numero de estudiante:", "").strip()
+#                     )
+#                 elif "Aprobados:" in str(cell_value):
+#                     data["aprobados"] = int(
+#                         str(cell_value).replace("Aprobados:", "").strip()
+#                     )
+#                 elif "Reprobados:" in str(cell_value):
+#                     data["reprobados"] = int(
+#                         str(cell_value).replace("Reprobados:", "").strip()
+#                     )
+#                 elif "Desertores:" in str(cell_value):
+#                     data["desertores"] = int(
+#                         str(cell_value).replace("Desertores:", "").strip()
+#                     )
+#                 elif "Retirados:" in str(cell_value):
+#                     data["retirados"] = int(
+#                         str(cell_value).replace("Retirados:", "").strip()
+#                     )
+
+#     return data
+
+
+# def CargarInforme(request):
+#     if request.method == "POST":
+#         file = request.FILES["document"]
+#         file_extension = file.name.split(".")[-1].lower()
+
+#         if file_extension == "docx":
+#             data = Extraer_DOCS(file)
+#         elif file_extension == "pdf":
+#             data = Extraer_PDF(file)
+#         elif file_extension == "xlsx":
+#             data = Extraer_XLSX(file)
+#         else:
+#             return HttpResponse("Formato de archivo no soportado.", status=400)
+
+#         form = InformeMateriaForm(initial=data)
+#         return render(request, "InformeMateria.html", {"form": form})
+
+#     return render(request, "CargarInforme.html")
+
+
+# def Extraer_PDF(file):
+#     data = []
+#     with pdfplumber.open(file) as pdf:
+#         for page in pdf.pages:
+#             text = page.extract_text()
+#             if text:
+#                 current_item = {}
+#                 for line in text.split("\n"):
+#                     if line.startswith("Universidad:"):
+#                         if current_item:
+#                             data.append(current_item)
+#                         current_item = {"tipo": "universidad", "datos": {}}
+#                         current_item["datos"]["nombre_universidad"] = line.replace(
+#                             "Universidad:", ""
+#                         ).strip()
+#                     elif line.startswith("Dirección:"):
+#                         current_item["datos"]["direccion_universidad"] = line.replace(
+#                             "Dirección:", ""
+#                         ).strip()
+#                     elif line.startswith("Teléfono:"):
+#                         current_item["datos"]["telefono_universidad"] = line.replace(
+#                             "Teléfono:", ""
+#                         ).strip()
+#                     elif line.startswith("Correo:"):
+#                         current_item["datos"]["correo_universidad"] = line.replace(
+#                             "Correo:", ""
+#                         ).strip()
+#                     elif line.startswith("Fecha de fundación:"):
+#                         current_item["datos"]["fecha_fundacion"] = line.replace(
+#                             "Fecha de fundación:", ""
+#                         ).strip()
+#                 if current_item:
+#                     data.append(current_item)
+#     return data
+
+
+# def Extraer_XLSX(file):
+#     data = []
+#     workbook = openpyxl.load_workbook(file)
+#     sheet = workbook.active
+#     headers = [cell.value for cell in sheet[1]]
+
+#     for row in sheet.iter_rows(min_row=2, values_only=True):
+#         item = {"tipo": row[0], "datos": {}}
+#         for header, value in zip(headers[1:], row[1:]):
+#             if value:
+#                 item["datos"][header.lower().replace(" ", "_")] = value
+#         data.append(item)
+
+#     return data
+
+
+# def Extraer_DOCS(file):
+#     document = Document(file)
+#     data = []
+#     current_item = None
+
+#     for para in document.paragraphs:
+#         text = para.text.strip()
+#         if text.startswith("Universidad:"):
+#             if current_item:
+#                 data.append(current_item)
+#             current_item = {"tipo": "universidad", "datos": {}}
+#             current_item["datos"]["nombre_universidad"] = text.replace(
+#                 "Universidad:", ""
+#             ).strip()
+#         elif text.startswith("Direccion:"):
+#             current_item["datos"]["direccion_universidad"] = text.replace(
+#                 "Direccion:", ""
+#             ).strip()
+#         elif text.startswith("Telefono:"):
+#             current_item["datos"]["telefono_universidad"] = text.replace(
+#                 "Telefono:", ""
+#             ).strip()
+#         elif text.startswith("Correo:"):
+#             current_item["datos"]["correo_universidad"] = text.replace(
+#                 "Correo:", ""
+#             ).strip()
+#         elif text.startswith("Fecha de fundación:"):
+#             current_item["datos"]["fecha_fundacion"] = text.replace(
+#                 "Fecha de fundación:", ""
+#             ).strip()
+
+#     if current_item:
+#         data.append(current_item)
+
+#     return data
+
+
+# def CargarInforme(request):
+#     if request.method == "POST" and request.FILES["document"]:
+#         file = request.FILES["document"]
+#         file_extension = file.name.split(".")[-1].lower()
+
+#         path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
+#         tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+
+#         try:
+#             if file_extension == "docx":
+#                 data = Extraer_DOCS(tmp_file)
+#             elif file_extension == "pdf":
+#                 data = Extraer_PDF(tmp_file)
+#             elif file_extension in ["xlsx", "xls"]:
+#                 data = Extraer_XLSX(tmp_file)
+#             else:
+#                 return HttpResponse("Formato de archivo no soportado.", status=400)
+
+#             for item in data:
+#                 if item["tipo"] == "universidad":
+#                     Universidad.objects.create(**item["datos"])
+
+#             messages.success(request, "Universidades importadas exitosamente.")
+#             return JsonResponse({"success": True})
+
+#         except Exception as e:
+#             messages.error(request, f"Error al importar universidades: {str(e)}")
+#             return JsonResponse({"success": False, "error": str(e)})
+
+#         finally:
+#             default_storage.delete(tmp_file)
+
+#     return render(request, "CargarInforme.html")
+
+
+# def CargarInforme(request):
+#     if request.method == "POST" and request.FILES["document"]:
+#         file = request.FILES["document"]
+#         file_extension = file.name.split(".")[-1].lower()
+
+#         path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
+#         tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+
+#         try:
+#             if file_extension == "docx":
+#                 data = Extraer_DOCS(tmp_file)
+#             elif file_extension == "pdf":
+#                 data = Extraer_PDF(tmp_file)
+#             elif file_extension in ["xlsx", "xls"]:
+#                 data = Extraer_XLSX(tmp_file)
+#             else:
+#                 return HttpResponse("Formato de archivo no soportado.", status=400)
+
+#             for item in data:
+#                 if "tipo" in item:
+#                     if item["tipo"] == "universidad":
+#                         Universidad.objects.create(**item["datos"])
+#                     elif item["tipo"] == "facultad":
+#                         Facultad.objects.create(**item["datos"])
+#                     elif item["tipo"] == "carrera":
+#                         Carrera.objects.create(**item["datos"])
+#                     elif item["tipo"] == "ciclo":
+#                         Ciclo.objects.create(**item["datos"])
+#                     elif item["tipo"] == "materia":
+#                         Materia.objects.create(**item["datos"])
+
+#             messages.success(request, "Datos importados exitosamente.")
+#             return redirect("Index")
+
+#         finally:
+#             default_storage.delete(tmp_file)
+
+#     return render(request, "CargarInforme.html")
+
+
+@csrf_exempt
+def upload_universities(request):
+    if request.method == "POST" and request.FILES.get("document"):
+        document = request.FILES["document"]
+        content = document.read().decode("utf-8")
+
+        universities = parse_university_data(content)
+        for university in universities:
+            Universidad.objects.create(**university)
+
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"success": False})
+
+
+def parse_university_data(content):
+    pattern = re.compile(
+        r"Universidad:\s*(.*?)\s*Direccion:\s*(.*?)\s*Telefono:\s*(.*?)\s*Correo:\s*(.*?)\s*Fecha de fundación:\s*(.*?)\s*(?=Universidad:|$)"
+    )
+    matches = pattern.findall(content)
+
+    universities = []
+    for match in matches:
+        universities.append(
+            {
+                "nombre_universidad": match[0],
+                "direccion_universidad": match[1],
+                "telefono_universidad": match[2],
+                "correo_universidad": match[3],
+                "fecha_fundacion": match[4],
+            }
+        )
+
+    return universities
+
+
+ENTITY_MAPPING = {
+    "universidad": Universidad,
+    "facultad": Facultad,
+    "carrera": Carrera,
+    "ciclo": Ciclo,
+    "materia": Materia,
+    "usuario": UsuarioPersonalizado,
+}
+
+
+def extract_data_from_file(file, file_extension):
+    if file_extension == "docx":
+        return extract_docs(file)
+    elif file_extension == "pdf":
+        return extract_pdf(file)
+    elif file_extension in ["xlsx", "xls"]:
+        return extract_xlsx(file)
+    else:
+        raise ValueError("Unsupported file format")
+
+
+def extract_pdf(file):
+    data = []
     with pdfplumber.open(file) as pdf:
         for page in pdf.pages:
             text = page.extract_text()
             if text:
+                current_item = {}
                 for line in text.split("\n"):
-                    line = line.strip()
-                    if "Materia:" in line:
-                        data["materia"] = line.replace("Materia:", "").strip()
-                    elif "Docente encargado:" in line:
-                        data["docente_encargado"] = line.replace("Docente encargado:", "").strip()
-                    elif "Numero de estudiante:" in line:
-                        data["numero_estudiantes"] = int(line.replace("Numero de estudiante:", "").strip())
-                    elif "Aprobados:" in line:
-                        data["aprobados"] = int(line.replace("Aprobados:", "").strip())
-                    elif "Reprobados:" in line:
-                        data["reprobados"] = int(line.replace("Reprobados:", "").strip())
-                    elif "Desertores:" in line:
-                        data["desertores"] = int(line.replace("Desertores:", "").strip())
-                    elif "Retirados:" in line:
-                        data["retirados"] = int(line.replace("Retirados:", "").strip())
+                    key, value = map(str.strip, line.split(":", 1))
+                    if key.lower() in ENTITY_MAPPING:
+                        if current_item:
+                            data.append(current_item)
+                        current_item = {"tipo": key.lower(), "datos": {}}
+                    if current_item:
+                        current_item["datos"][key.lower().replace(" ", "_")] = value
+                if current_item:
+                    data.append(current_item)
     return data
 
+
+def extract_xlsx(file):
+    data = []
+    workbook = openpyxl.load_workbook(file)
+    sheet = workbook.active
+    headers = [cell.value for cell in sheet[1]]
+
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        item = {"tipo": row[0].lower(), "datos": {}}
+        for header, value in zip(headers[1:], row[1:]):
+            if value:
+                item["datos"][header.lower().replace(" ", "_")] = value
+        data.append(item)
+
+    return data
+
+
+def extract_docs(file):
+    document = Document(file)
+    data = []
+    current_item = None
+
+    for para in document.paragraphs:
+        text = para.text.strip()
+        if ":" in text:
+            key, value = map(str.strip, text.split(":", 1))
+            if key.lower() in ENTITY_MAPPING:
+                if current_item:
+                    data.append(current_item)
+                current_item = {"tipo": key.lower(), "datos": {}}
+            if current_item:
+                current_item["datos"][key.lower().replace(" ", "_")] = value
+
+    if current_item:
+        data.append(current_item)
+
+    return data
+
+
+def save_entities(data):
+    for item in data:
+        model = ENTITY_MAPPING.get(item["tipo"])
+        if model:
+            model.objects.create(**item["datos"])
+        else:
+            print(f"Unrecognized entity type: {item['tipo']}")
+
+
 def CargarInforme(request):
-    if request.method == "POST":
+    if request.method == "POST" and request.FILES["document"]:
         file = request.FILES["document"]
         file_extension = file.name.split(".")[-1].lower()
 
-        if file_extension == "docx":
-            data = Extraer_DOCS(file)
-        elif file_extension == "pdf":
-            data = Extraer_PDF(file)
-        else:
-            return HttpResponse("Formato de archivo no soportado.", status=400)
+        path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
+        tmp_file = os.path.join(settings.MEDIA_ROOT, path)
 
-        form = InformeMateriaForm(initial=data)
-        return render(request, "InformeMateria.html", {"form": form})
+        try:
+            data = extract_data_from_file(tmp_file, file_extension)
+            save_entities(data)
+            messages.success(request, "Datos importados exitosamente.")
+            return redirect("Index")
+        except Exception as e:
+            messages.error(request, f"Error al importar datos: {str(e)}")
+        finally:
+            default_storage.delete(tmp_file)
 
     return render(request, "CargarInforme.html")
+
+
+def parse_university_data(content):
+    pattern = re.compile(
+        r"Universidad:\s*(.*?)\s*Direccion:\s*(.*?)\s*Telefono:\s*(.*?)\s*Correo:\s*(.*?)\s*Fecha de fundación:\s*(.*?)\s*(?=Universidad:|$)"
+    )
+    matches = pattern.findall(content)
+
+    universities = []
+    for match in matches:
+        universities.append(
+            {
+                "nombre_universidad": match[0],
+                "direccion_universidad": match[1],
+                "telefono_universidad": match[2],
+                "correo_universidad": match[3],
+                "fecha_fundacion": match[4],
+            }
+        )
+
+    return universities
+
+
+@csrf_exempt
+def upload_universities(request):
+    if request.method == "POST" and request.FILES.get("document"):
+        file = request.FILES["document"]
+        file_extension = file.name.split(".")[-1].lower()
+
+        path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
+        tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+
+        try:
+            if file_extension == "docx":
+                data = extract_docs(tmp_file)
+            elif file_extension == "pdf":
+                data = extract_pdf(tmp_file)
+            elif file_extension in ["xlsx", "xls"]:
+                data = extract_xlsx(tmp_file)
+            else:
+                return JsonResponse(
+                    {"success": False, "message": "Formato de archivo no soportado."}
+                )
+
+            save_entities(data)
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)})
+        finally:
+            default_storage.delete(tmp_file)
+
+    return JsonResponse(
+        {"success": False, "message": "No se ha subido ningún archivo."}
+    )

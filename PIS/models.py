@@ -22,12 +22,8 @@ class UsuarioPersonalizado(AbstractUser):
         ("Pasaporte", "Pasaporte"),
     ]
 
-    genero = models.CharField(
-        max_length=10,
-        choices=GENERO_OPCIONES,
-        blank=True,
-        null=True,
-        verbose_name="Género",
+    genero = models.ForeignKey(
+        "Genero", on_delete=models.CASCADE, verbose_name="Género"
     )
 
     fecha_nacimiento = models.DateField(
@@ -36,12 +32,8 @@ class UsuarioPersonalizado(AbstractUser):
 
     dni = models.CharField(max_length=10, blank=True, null=True, verbose_name="DNI")
 
-    tipo_dni = models.CharField(
-        max_length=20,
-        choices=TIPO_DNI_OPCIONES,
-        blank=True,
-        null=True,
-        verbose_name="Tipo de DNI",
+    tipo_dni = models.ForeignKey(
+        "TipoDNI", on_delete=models.CASCADE, verbose_name="Tipo de DNI"
     )
 
     telefono = models.CharField(
@@ -72,6 +64,22 @@ class UsuarioPersonalizado(AbstractUser):
         return f"{self.username}"
 
 
+class Genero(models.Model):
+    nombre_genero = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion_genero = models.CharField(max_length=200, verbose_name="Descripción")
+
+    def __str__(self):
+        return self.nombre_genero
+
+
+class TipoDNI(models.Model):
+    nombre_tipo_dni = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion_tipo_dni = models.CharField(max_length=200, verbose_name="Descripción")
+
+    def __str__(self):
+        return self.nombre_tipo_dni
+
+
 class Universidad(models.Model):
     nombre_universidad = models.CharField(
         max_length=100, verbose_name="Nombre universidad"
@@ -91,7 +99,9 @@ class Universidad(models.Model):
 
 class Facultad(models.Model):
     nombre_facultad = models.CharField(max_length=100, verbose_name="Nombre")
-    fecha_fundacion = models.DateField(verbose_name="Fecha de Fundación")
+    fecha_fundacion = models.DateField(
+        null=True, blank=True, verbose_name="Fecha de Fundación"
+    )
     universidad = models.ForeignKey(
         Universidad, on_delete=models.CASCADE, verbose_name="Universidad"
     )
@@ -225,9 +235,6 @@ class Cuenta(models.Model):
 class Rol(models.Model):
     nombre_rol = models.CharField(max_length=50, verbose_name="Nombre de Rol")
     descripcion = models.CharField(max_length=200, verbose_name="Descripción")
-    usuario = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
-    )
 
     def __str__(self):
         return self.nombre_rol
@@ -260,6 +267,7 @@ class Docente(models.Model):
     usuario = models.ForeignKey(
         Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
     )
+    materias = models.ManyToManyField(Materia, verbose_name="Materias Asignadas")
 
     def __str__(self):
         return self.codigo_docente

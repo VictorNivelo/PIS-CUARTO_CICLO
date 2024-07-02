@@ -29,7 +29,6 @@
 
         .caja {
             background: rgba(255, 255, 255, 0.9);
-            /* Fondo blanco semi-transparente */
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
@@ -92,9 +91,6 @@
         .btn-regresar {
             background-color: #f0ad4e;
             color: white;
-            text-align: center;
-            display: inline-block;
-            line-height: normal;
             text-decoration: none;
         }
 
@@ -130,13 +126,13 @@
                     {{ form.password }}
                 </div>
                 <div class="button-group">
-                    <button type="button" class="btn-regresar" onclick="window.location.href = localStorage.getItem('paginaAnterior') || '/';">Regresar</button>
+                    <button type="button" class="btn-regresar"
+                        onclick="window.location.href = localStorage.getItem('paginaAnterior') || '/';">Regresar</button>
                     <button type="submit">Ingresar</button>
                 </div>
                 <div class="text-center mt-3">
                     <a href="{% url 'Recuperar_Contrasenia' %}" class="btn btn-link">¿Olvidaste tu contraseña?</a>
                 </div>
-            </form>
         </div>
     </div>
 </body>

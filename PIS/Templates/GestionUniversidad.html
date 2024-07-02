@@ -23,7 +23,7 @@
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            max-width: 1500px;
+            max-width: 1600px;
             margin: auto;
             padding: 20px;
         }
@@ -50,6 +50,8 @@
         }
 
         .actions input[type="text"],
+        .actions input[type="date"],
+        .actions input[type="email"],
         .actions select {
             width: 100%;
             padding: 10px;
@@ -147,6 +149,23 @@
             background-color: #180488;
         }
 
+        .btn-importar {
+            background-color: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .btn-importar:hover {
+            background-color: #138496;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -170,6 +189,24 @@
             background-color: #fff;
         }
 
+        td.actions-column {
+            width: 100px;
+        }
+
+        td.actions-column form {
+            display: flex;
+            justify-content: center;
+        }
+
+        td.actions-column10 {
+            width: 135px;
+        }
+
+        td.actions-column10 form {
+            display: flex;
+            justify-content: center;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -182,6 +219,8 @@
         }
 
         .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="email"],
         .form-group select {
             width: 100%;
             padding: 10px;
@@ -207,7 +246,6 @@
             background-color: #0056b3;
         }
     </style>
-
 </head>
 
 <body>
@@ -220,6 +258,8 @@
                 <button type="submit" class="btn-buscar">Buscar</button>
             </form>
             <a href="{% url 'Registrar_Universidad' %}" class="btn-crear">Crear Universidad</a>
+            <a href="#" class="btn-importar" id="importButton">Importar Universidades</a>
+            <input type="file" id="fileInput" style="display: none;" accept=".pdf,.docx,.xlsx">
             <a href="#" class="btn-regresar">Regresar</a>
         </div>
 
@@ -232,6 +272,7 @@
                         <th>Teléfono</th>
                         <th>Correo Electrónico</th>
                         <th>Fecha de Fundación</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -244,19 +285,15 @@
                                     value="{{ universidad.nombre_universidad }}"></td>
                             <td><input type="text" name="direccion_universidad"
                                     value="{{ universidad.direccion_universidad }}"></td>
-                            <td><input type="text" name="telefono_universidad"
+                            <td class="actions-column10"><input type="text" maxlength="10" name="telefono_universidad"
                                     value="{{ universidad.telefono_universidad }}"></td>
-                            <td><input type="text" name="correo_universidad"
+                            <td><input type="email" name="correo_universidad"
                                     value="{{ universidad.correo_universidad }}"></td>
-                            <td><input type="text" name="fecha_fundacion"
-                                    value="{{ universidad.fecha_fundacion|date:'d/m/Y' }}"></td>
-                            <td>
+                            <td class="actions-column10"><input type="date" name="fecha_fundacion"
+                                    value="{{ universidad.fecha_fundacion|date:'Y-m-d' }}"></td>
+                            <td class="actions-column">
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
-                                <form method="POST" style="display: inline-block; margin-left: 5px;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="universidad_id" value="{{ universidad.id }}">
-                                    <button type="submit" name="delete" class="btn-eliminar">Eliminar</button>
-                                </form>
+                                <button type="submit" name="delete" class="btn-eliminar">Eliminar</button>
                             </td>
                         </form>
                     </tr>
@@ -265,12 +302,62 @@
             </table>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelector('.btn-regresar').addEventListener('click', function (event) {
                 event.preventDefault();
                 history.back();
+            });
+
+            const importButton = document.getElementById('importButton');
+            const fileInput = document.getElementById('fileInput');
+
+            importButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('document', file);
+
+                    fetch('{% url "upload_universities" %}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Éxito',
+                                    text: 'Universidades importadas correctamente',
+                                    icon: 'success'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'Hubo un problema al importar las universidades',
+                                    icon: 'error'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Hubo un problema al importar las universidades',
+                                icon: 'error'
+                            });
+                        });
+                }
             });
         });
     </script>

@@ -23,7 +23,7 @@
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            max-width: 1500px;
+            max-width: 1600px;
             margin: auto;
             padding: 20px;
         }
@@ -170,6 +170,24 @@
             background-color: #fff;
         }
 
+        td.actions-column {
+            width: 100px;
+        }
+
+        td.actions-column form {
+            display: flex;
+            justify-content: center;
+        }
+
+        td.actions-column10 {
+            width: 135px;
+        }
+
+        td.actions-column10 form {
+            display: flex;
+            justify-content: center;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -182,6 +200,8 @@
         }
 
         .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
         .form-group select {
             width: 100%;
             padding: 10px;
@@ -239,21 +259,23 @@
                             {% csrf_token %}
                             <input type="hidden" name="ciclo_id" value="{{ ciclo.id }}">
                             <td><input type="text" name="nombre_ciclo" value="{{ ciclo.nombre_ciclo }}"></td>
-
-                            <td><input type="text" name="fecha_inicio"
-                                value="{{ ciclo.fecha_inicio }}"></td>
-                            <td><input type="text" name="fecha_fin"
-                                value="{{ ciclo.fecha_fin }}"></td>
+                            <!-- <td><input type="text" name="fecha_inicio" value="{{ ciclo.fecha_inicio }}"></td> -->
+                            <!-- <td><input type="text" name="fecha_fin" value="{{ ciclo.fecha_fin }}"></td> -->
+                            <td class="actions-column10"><input type="date" name="fecha_inicio"
+                                value="{{ ciclo.fecha_inicio|date:'Y-m-d' }}"></td>
+                            <td class="actions-column10"><input type="date" name="fecha_fin"
+                                value="{{ ciclo.fecha_fin|date:'Y-m-d' }}"></td>
                             <td>
                                 <select name="carrera">
                                     {% for carrera in carreras %}
-                                    <option value="{{ carrera.id }}" {% if carrera.id == ciclo.carrera.id %}selected{% endif %}>
+                                    <option value="{{ carrera.id }}"
+                                        {% if carrera.id == ciclo.carrera.id %}selected{% endif %}>
                                         {{ carrera.nombre_carrera }}
                                     </option>
                                     {% endfor %}
                                 </select>
                             </td>
-                            <td>
+                            <td class="actions-column">
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
                                 <form method="POST" style="display: inline-block; margin-left: 5px;">
                                     {% csrf_token %}
