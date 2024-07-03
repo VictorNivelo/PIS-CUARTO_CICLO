@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path
 from .vistas import (
     GestionTipoDNI,
@@ -8,6 +9,7 @@ from .vistas import (
     CerrarSesion,
     RegistrarUsuario,
     RecuperarContrasenia,
+    CambiarContrasenia,
     
     InformeMateria,
     InformeCiclo,
@@ -67,6 +69,7 @@ urlpatterns = [
     path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
     path("Cerrar-Sesion/", CerrarSesion, name="Cerrar_Sesion"),
     path("Recuperar-Contrasenia/", RecuperarContrasenia, name="Recuperar_Contrasenia"),
+    path("Cambiar-Contrasenia/", CambiarContrasenia, name="Cambiar_Contrasenia"),
     
     path("Informe-Materia/", InformeMateria, name="Informe_Materia"),
     path("Informe-Ciclo/", InformeCiclo, name="Informe_Ciclo"),
@@ -94,4 +97,9 @@ urlpatterns = [
     path("Gestion-Materia/", GestionMateria, name="Gestion_Materia"),
 
     path('upload-universities/', upload_universities, name='upload_universities'),
+
+    # path('Recuperar-Contrasenia/', auth_views.PasswordResetView.as_view(), name='Recuperar_Contrasenia'),
+    # path('Recuperar-Contrasenia/confirmar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    # path('Recuperar-Contrasenia/completado/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    # path('Recuperar-Contrasenia/enviado/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
 ]

@@ -1,7 +1,13 @@
 from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.core.mail import send_mail
 import re
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -16,6 +22,8 @@ from django.db.models import Q
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import os
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from PIS.models import (
     Genero,
     TipoDNI,
@@ -40,6 +48,8 @@ from .forms import (
     CicloForm,
     MateriaForm,
     TipoDNIForm,
+    CambiarContraseniaForm,
+    InicioSesionForm,
 )
 
 
@@ -321,6 +331,32 @@ def RecuperarContrasenia(request):
         form = RecuperarContraseniaForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data["username"]
+            try:
+                user = UsuarioPersonalizado.objects.get(username=username)
+            except UsuarioPersonalizado.DoesNotExist:
+                messages.error(request, "El usuario no existe.")
+                return render(request, "RecuperarContrasenia.html", {"form": form})
+
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+            reset_url = reverse(
+                "password_reset_confirm", kwargs={"uidb64": uid, "token": token}
+            )
+            reset_url = request.build_absolute_uri(reset_url)
+
+            subject = "Recuperación de Contraseña"
+            message = render_to_string(
+                "CambiarContrasenia.html",
+                {
+                    "user": user,
+                    "reset_url": reset_url,
+                },
+            )
+            from_email = settings.EMAIL_HOST_USER
+            to_email = form.cleaned_data["username"]
+            send_mail(subject, message, from_email, [to_email])
+
             messages.success(
                 request,
                 "Se ha enviado un enlace de recuperación a su correo electrónico.",
@@ -331,6 +367,43 @@ def RecuperarContrasenia(request):
     else:
         form = RecuperarContraseniaForm()
     return render(request, "RecuperarContrasenia.html", {"form": form})
+
+
+# def RecuperarContrasenia(request):
+#     if request.method == "POST":
+#         form = RecuperarContraseniaForm(request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data["username"]
+#             messages.success(
+#                 request,
+#                 "Se ha enviado un enlace de recuperación a su correo electrónico.",
+#             )
+#             return redirect("Iniciar_Sesion")
+#         else:
+#             messages.error(request, "Error al enviar el enlace de recuperación.")
+#     else:
+#         form = RecuperarContraseniaForm()
+#     return render(request, "RecuperarContrasenia.html", {"form": form})
+
+
+def CambiarContrasenia(request):
+    if request.method == "POST":
+        form = CambiarContraseniaForm(request.POST)
+        if form.is_valid():
+            nueva_contrasenia = form.cleaned_data["Contrasenia"]
+            request.user.set_password(nueva_contrasenia)
+            request.user.save()
+            update_session_auth_hash(request, request.user)
+            messages.success(request, "Contraseña cambiada exitosamente.")
+            return redirect("Iniciar_Sesion")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = CambiarContraseniaForm()
+
+    return render(request, "CambiarContrasenia.html", {"form": form})
 
 
 def RegistrarTipoDNI(request):
@@ -517,7 +590,8 @@ def GestionFacultad(request):
             fecha_fundacion_str = request.POST.get("fecha_fundacion")
             try:
                 fecha_fundacion = datetime.strptime(
-                    fecha_fundacion_str, "%Y-%m-%d").date()
+                    fecha_fundacion_str, "%Y-%m-%d"
+                ).date()
                 facultad.fecha_fundacion = fecha_fundacion
             except ValueError:
                 messages.error(

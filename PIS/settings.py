@@ -86,3 +86,19 @@ LOGIN_URL = "/Iniciar-Sesion"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "PIS.UsuarioPersonalizado"
+
+EMAIL_USE_TLS = True
+
+EMAIL_HOST = "smtp.gmail.com"
+
+EMAIL_PORT = 25
+# 587
+
+EMAIL_HOST_USER = "victor.nivelo0909@gmail.com"
+
+EMAIL_HOST_PASSWORD = "aquilaclave"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+# PIS.Cuarto.Ciclo@gmail.com
+# PisCuartoCiclo2024

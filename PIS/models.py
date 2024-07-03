@@ -30,7 +30,7 @@ class UsuarioPersonalizado(AbstractUser):
         null=True, blank=True, verbose_name="Fecha de Nacimiento"
     )
 
-    dni = models.CharField(max_length=10, blank=True, null=True, verbose_name="DNI")
+    dni = models.CharField(max_length=10, verbose_name="DNI")
 
     tipo_dni = models.ForeignKey(
         "TipoDNI", on_delete=models.CASCADE, verbose_name="Tipo de DNI"
@@ -39,17 +39,22 @@ class UsuarioPersonalizado(AbstractUser):
     telefono = models.CharField(
         max_length=10, blank=True, null=True, verbose_name="Teléfono"
     )
+    # rol = models.ForeignKey("Rol", on_delete=models.CASCADE, verbose_name="Rol")
     rol = models.CharField(
         max_length=50, choices=ROLES, default="Docente", verbose_name="Rol"
     )
-    # rol = models.CharField(max_length=30, choices=ROLES, blank=True, null=True, verbose_name="Rol")
     first_name = models.CharField(max_length=100, verbose_name="Nombre")
+
     last_name = models.CharField(max_length=100, verbose_name="Apellido")
+
     is_active = models.BooleanField(default=True, verbose_name="Activo")
+
     is_staff = models.BooleanField(default=False, verbose_name="Staff")
+
     is_superuser = models.BooleanField(default=False, verbose_name="Superusuario")
 
     USERNAME_FIELD = "username"
+
     REQUIRED_FIELDS = [
         "first_name",
         "last_name",
@@ -62,6 +67,14 @@ class UsuarioPersonalizado(AbstractUser):
 
     def __str__(self):
         return f"{self.username}"
+
+
+class Rol(models.Model):
+    nombre_rol = models.CharField(max_length=50, verbose_name="Nombre de Rol")
+    descripcion = models.CharField(max_length=200, verbose_name="Descripción")
+
+    def __str__(self):
+        return self.nombre_rol
 
 
 class Genero(models.Model):
@@ -230,14 +243,6 @@ class Cuenta(models.Model):
 
     def __str__(self):
         return self.correo_cuenta
-
-
-class Rol(models.Model):
-    nombre_rol = models.CharField(max_length=50, verbose_name="Nombre de Rol")
-    descripcion = models.CharField(max_length=200, verbose_name="Descripción")
-
-    def __str__(self):
-        return self.nombre_rol
 
 
 class PersonalAdministrativo(models.Model):

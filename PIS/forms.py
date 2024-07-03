@@ -41,16 +41,6 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="Apellido",
     )
 
-    password1 = forms.CharField(
-        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su contraseña"}),
-        label="Contraseña",
-    )
-
-    password2 = forms.CharField(
-        widget=forms.PasswordInput(attrs={"placeholder": "Confirme su contraseña"}),
-        label="Confirmar Contraseña",
-    )
-
     genero = forms.ModelChoiceField(
         queryset=Genero.objects.all(),
         to_field_name="nombre_genero",
@@ -58,15 +48,11 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="Genero",
     )
 
-    fecha_nacimiento = forms.DateField(
-        widget=forms.DateInput(
-            attrs={
-                "type": "date",
-                "Placeholder": "Ingrese su fecha de nacimiento",
-            }
-        ),
+    telefono = forms.CharField(
+        widget=TelefonoInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
+        max_length=10,
         required=False,
-        label="Fecha de Nacimiento",
+        label="Numero de teléfono",
     )
 
     tipo_dni = forms.ModelChoiceField(
@@ -83,11 +69,25 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="DNI",
     )
 
-    telefono = forms.CharField(
-        widget=TelefonoInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
-        max_length=10,
+    fecha_nacimiento = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "Placeholder": "Ingrese su fecha de nacimiento",
+            }
+        ),
         required=False,
-        label="Numero de teléfono",
+        label="Fecha de Nacimiento",
+    )
+
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su contraseña"}),
+        label="Contraseña",
+    )
+
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Confirme su contraseña"}),
+        label="Confirmar Contraseña",
     )
 
     rol = forms.ChoiceField(
@@ -103,13 +103,13 @@ class RegistrarUsuarioForm(UserCreationForm):
             "username",
             "first_name",
             "last_name",
-            "password1",
-            "password2",
             "genero",
-            "fecha_nacimiento",
+            "telefono",
             "tipo_dni",
             "dni",
-            "telefono",
+            "fecha_nacimiento",
+            "password1",
+            "password2",
         ]
         widgets = {
             "password1": forms.PasswordInput(),
@@ -181,8 +181,18 @@ class RecuperarContraseniaForm(forms.Form):
 
 
 class CambiarContraseniaForm(forms.ModelForm):
-    Contrasenia = forms.CharField(widget=forms.PasswordInput)
-    Confirmar_contrasenia = forms.CharField(widget=forms.PasswordInput)
+    Contrasenia = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={"placeholder": "Ingrese la nueva contraseña"}
+        ),
+        label="Contraseña",
+    )
+    Confirmar_contrasenia = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={"placeholder": "Confirme la nueva contraseña"}
+        ),
+        label="Confirmar Contraseña",
+    )
 
     class Meta:
         model = UsuarioPersonalizado
