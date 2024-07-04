@@ -1461,7 +1461,13 @@ def PredecirDesercion(request):
     plt.ylim(1, 100)
 
     plt.tight_layout()
-    plt.savefig("../Static/Predicciones/prediccion.png")
+    filename = os.path.join(
+        "C:\\Users\\Victor\\Documents\\Proyectos 4 ciclo\\PIS-CUARTO_CICLO\\PIS\\Static\\Predicciones",
+        "prediccion.png"
+    )
+    plt.savefig(filename)
+    plt.close() 
+    # plt.savefig("../Static/Predicciones/prediccion.png")
 
 
     return render(
