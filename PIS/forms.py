@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
+    Datos_Historicos,
     Genero,
     InformeCarrera,
     InformeMateria,
@@ -11,6 +12,7 @@ from .models import (
     Carrera,
     Materia,
     Ciclo,
+    PeriodoAcademico,
 )
 
 
@@ -318,7 +320,7 @@ class CarreraForm(forms.ModelForm):
     )
     duracion = forms.IntegerField(
         widget=forms.NumberInput(
-            attrs={"placeholder": "Ingrese la duración de la carrera en horas"}
+            attrs={"placeholder": "Ingrese la duración de la carrera en ciclos"}
         ),
         label="Duración",
         min_value=1,
@@ -356,6 +358,13 @@ class CicloForm(forms.ModelForm):
         ),
         label="Fecha de Fin",
     )
+    periodo_academico = forms.ModelChoiceField(
+        queryset=PeriodoAcademico.objects.all(),
+        # queryset=PeriodoAcademico.objects.filter(estado='Activo'),
+        to_field_name="codigo_periodo_academico",
+        empty_label="Seleccione un periodo académico",
+        label="Periodo Académico",
+    )
     carrera = forms.ModelChoiceField(
         queryset=Carrera.objects.all(),
         to_field_name="nombre_carrera",
@@ -369,6 +378,7 @@ class CicloForm(forms.ModelForm):
             "nombre_ciclo",
             "fecha_inicio",
             "fecha_fin",
+            "periodo_academico",
             "carrera",
         ]
 
@@ -384,10 +394,10 @@ class MateriaForm(forms.ModelForm):
         widget=forms.NumberInput(attrs={"placeholder": "Ingrese el número de horas"}),
         label="Número de Horas",
     )
-    docente_encargado = forms.CharField(
-        widget=forms.TextInput(
-            attrs={"placeholder": "Ingrese el nombre del docente encargado"}
-        ),
+    docente_encargado = forms.ModelChoiceField(
+        queryset=UsuarioPersonalizado.objects.filter(rol="Docente"),
+        to_field_name="username",
+        empty_label="Seleccione un docente",
         label="Docente Encargado",
     )
     ciclo = forms.ModelChoiceField(
@@ -404,6 +414,71 @@ class MateriaForm(forms.ModelForm):
             "numero_horas",
             "docente_encargado",
             "ciclo",
+        ]
+
+
+class PeriodoAcademicoForm(forms.ModelForm):
+    fecha_inicio = forms.DateField(
+        widget=forms.DateInput(
+            attrs={"type": "date", "placeholder": "Ingrese la fecha de inicio"}
+        ),
+        label="Fecha de Inicio",
+    )
+    fecha_fin = forms.DateField(
+        widget=forms.DateInput(
+            attrs={"type": "date", "placeholder": "Ingrese la fecha de fin"}
+        ),
+        label="Fecha de Fin",
+    )
+    ESTADO_CHOICES = [
+        ("activo", "Activo"),
+        ("inactivo", "Inactivo"),
+    ]
+    estado = forms.ChoiceField(choices=ESTADO_CHOICES, label="Estado")
+    # estado = forms.BooleanField(widget=forms.CheckboxInput(), label="Estado")
+
+    class Meta:
+        model = PeriodoAcademico
+        fields = [
+            "fecha_inicio",
+            "fecha_fin",
+            "estado",
+        ]
+
+
+class DatosHistoricosForm(forms.Form):
+    fecha = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}), label="Fecha", required=False
+    )
+    cantidad_matriculados = forms.IntegerField(
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese la cantidad de matriculados"}
+        ),
+        label="Cantidad de Matriculados",
+        required=False,
+    )
+    cantidad_aprobados = forms.IntegerField(
+        widget=forms.NumberInput(), label="Cantidad de Aprobados", required=False
+    )
+    cantidad_reprobados = forms.IntegerField(
+        widget=forms.NumberInput(), label="Cantidad de Reprobados", required=False
+    )
+    cantidad_desertores = forms.IntegerField(
+        widget=forms.NumberInput(), label="Cantidad de Desertores", required=False
+    )
+    cantidad_retirados = forms.IntegerField(
+        widget=forms.NumberInput(), label="Cantidad de Retirados", required=False
+    )
+
+    class Meta:
+        model = Datos_Historicos
+        fields = [
+            "fecha",
+            "cantidad_matriculados",
+            "cantidad_aprobados",
+            "cantidad_reprobados",
+            "cantidad_desertores",
+            "cantidad_retirados",
         ]
 
 

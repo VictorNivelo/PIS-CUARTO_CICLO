@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
 from .vistas import (
+    GestionPeriodoAcademico,
     GestionTipoDNI,
     PaginaPrincipal,
     
@@ -39,6 +40,7 @@ from .vistas import (
     RegistrarCarrera,
     RegistrarCiclo,
     RegistrarMateria,
+    RegistrarPeriodoAcademico,
     
     GestionUsuario,
     GestionGenero,
@@ -48,6 +50,7 @@ from .vistas import (
     GestionCiclo,
     GestionMateria,
     upload_universities,
+    PredecirDesercion,
 )
 
 urlpatterns = [
@@ -64,6 +67,7 @@ urlpatterns = [
     path("Registrar-Facultad/", RegistrarFacultad, name="Registrar_Facultad"),
     path("Registrar-Carrera/", RegistrarCarrera, name="Registrar_Carrera"),
     path("Registrar-Ciclo/", RegistrarCiclo, name="Registrar_Ciclo"),
+    path("Registrar-PeriodoAcademico/", RegistrarPeriodoAcademico, name="Registrar_PeriodoAcademico"),
     path("Registrar-Materia/", RegistrarMateria, name="Registrar_Materia"),
     
     path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
@@ -93,10 +97,13 @@ urlpatterns = [
     path("Gestion-Usuarios/", GestionUsuario, name="Gestion_Usuario"),
     path("Gestion-Facultad/", GestionFacultad, name="Gestion_Facultad"),
     path("Gestion-Carrera/", GestionCarrera, name="Gestion_Carrera"),
+    path("Gestion-PeriodoAcademico/", GestionPeriodoAcademico, name="Gestion_PeriodoAcademico"),
     path("Gestion-Ciclo/", GestionCiclo, name="Gestion_Ciclo"),
     path("Gestion-Materia/", GestionMateria, name="Gestion_Materia"),
 
     path('upload-universities/', upload_universities, name='upload_universities'),
+
+    path("Predecir/", PredecirDesercion, name="Predecir_Desercion")
 
     # path('Recuperar-Contrasenia/', auth_views.PasswordResetView.as_view(), name='Recuperar_Contrasenia'),
     # path('Recuperar-Contrasenia/confirmar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),

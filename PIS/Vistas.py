@@ -24,8 +24,15 @@ from django.core.files.base import ContentFile
 import os
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+from django.shortcuts import render
+from .models import Datos_Historicos
+from .ModeloMatematico import model, params_list
 from PIS.models import (
     Genero,
+    PeriodoAcademico,
     TipoDNI,
     Universidad,
     UsuarioPersonalizado,
@@ -40,6 +47,7 @@ from .forms import (
     InformeCarreraForm,
     InformeCicloForm,
     InformeMateriaForm,
+    PeriodoAcademicoForm,
     RecuperarContraseniaForm,
     RegistrarUsuarioForm,
     UniversidadForm,
@@ -764,6 +772,79 @@ def GestionCiclo(request):
     )
 
 
+def RegistrarPeriodoAcademico(request):
+    if request.method == "POST":
+        form = PeriodoAcademicoForm(request.POST)
+        if form.is_valid():
+            periodo_academico = form.save(commit=False)
+            periodo_academico.save()
+            messages.success(request, "Periodo académico registrado exitosamente.")
+            return redirect("Gestion_PeriodoAcademico")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = PeriodoAcademicoForm()
+
+    return render(request, "RPA-CrearPeriodoAcademico.html", {"form": form})
+
+
+def GestionPeriodoAcademico(request):
+    query = request.GET.get("search_query", "")
+    PeriodosAcademicos = PeriodoAcademico.objects.all()
+
+    if query:
+        PeriodosAcademicos = PeriodosAcademicos.filter(
+            Q(codigo_periodo_academico__icontains=query)
+        )
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            periodo_academico_id = request.POST.get("PeriodoAcademico_id")
+            periodo_academico = PeriodoAcademico.objects.get(id=periodo_academico_id)
+            periodo_academico.codigo_periodo_academico = request.POST.get(
+                "codigo_periodo_academico"
+            )
+            fecha_inicio_str = request.POST.get("fecha_inicio")
+            if fecha_inicio_str:
+                try:
+                    fecha_inicio = datetime.strptime(
+                        fecha_inicio_str, "%Y-%m-%d"
+                    ).date()
+                    periodo_academico.fecha_inicio = fecha_inicio
+                except ValueError:
+                    messages.error(
+                        request,
+                        "Formato de fecha de inicio inválido. Utiliza el formato dd/mm/aaaa.",
+                    )
+                    return redirect("Gestion_PeriodoAcademico")
+            fecha_fin_str = request.POST.get("fecha_fin")
+            if fecha_fin_str:
+                try:
+                    fecha_fin = datetime.strptime(fecha_fin_str, "%Y-%m-%d").date()
+                    periodo_academico.fecha_fin = fecha_fin
+                except ValueError:
+                    messages.error(
+                        request,
+                        "Formato de fecha de fin inválido. Utiliza el formato dd/mm/aaaa.",
+                    )
+                    return redirect("Gestion_PeriodoAcademico")
+            periodo_academico.estado_periodo_academico = request.POST.get("estado")
+            periodo_academico.save()
+            messages.success(request, "Periodo académico actualizado exitosamente.")
+        elif "delete" in request.POST:
+            periodo_academico_id = request.POST.get("PeriodoAcademico_id")
+            periodo_academico = PeriodoAcademico.objects.get(id=periodo_academico_id)
+            periodo_academico.delete()
+            messages.success(request, "Periodo académico eliminado exitosamente.")
+        return redirect("Gestion_PeriodoAcademico")
+
+    return render(
+        request,
+        "GestionPeriodoAcademico.html",
+        {"periodosAcademicos": PeriodosAcademicos, "query": query},
+    )
+
+
 def RegistrarMateria(request):
     if request.method == "POST":
         form = MateriaForm(request.POST)
@@ -784,6 +865,7 @@ def GestionMateria(request):
     query = request.GET.get("search_query", "")
     materias = Materia.objects.all()
     ciclos = Ciclo.objects.all()
+    docentes = UsuarioPersonalizado.objects.filter(rol="Docente")
 
     if query:
         materias = materias.filter(Q(nombre_materia__icontains=query))
@@ -807,6 +889,7 @@ def GestionMateria(request):
         "GestionMateria.html",
         {
             "materias": materias,
+            "docentes": docentes,
             "ciclos": ciclos,
             "query": query,
         },
@@ -1319,4 +1402,68 @@ def upload_universities(request):
 
     return JsonResponse(
         {"success": False, "message": "No se ha subido ningún archivo."}
+    )
+
+
+def PredecirDesercion(request):
+    params = params_list[0]
+
+    y0 = [500, 0, 0, 0]
+
+    t_span = [0, 180]
+    t_eval = np.linspace(t_span[0], t_span[1], 1000)
+
+    sol = solve_ivp(
+        model,
+        t_span,
+        y0,
+        t_eval=t_eval,
+        args=(
+            params["ciclo"],
+            params["for"],
+            params["trab"],
+            params["disc"],
+            params["edu"],
+            params["hijos"],
+            params["gen"],
+        ),
+    )
+
+    S_sol = sol.y[0]
+    R_sol = sol.y[1]
+    D_sol = sol.y[2]
+    A_sol = sol.y[3]
+
+    prob_desercion = np.clip((D_sol / 500) * 100, 1, 100)
+
+    prob_desercion_final = prob_desercion[-1]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(sol.t, S_sol, label="Estudiantes Matriculados (S(t))")
+    plt.plot(sol.t, R_sol, label="Estudiantes Reprobados (R(t))")
+    plt.plot(sol.t, D_sol, label="Estudiantes Desertores (D(t))")
+    plt.plot(sol.t, A_sol, label="Estudiantes Aprobados (A(t))")
+    plt.xlabel("Tiempo (días)")
+    plt.ylabel("Número de estudiantes")
+    plt.title(
+        f'Parámetros para Género {params["gen"]}: Ciclo {params["ciclo"]}, Foráneo {params["for"]}, Trabaja {params["trab"]}, Discapacidad {params["disc"]}, Educación {params["edu"]}, Hijos {params["hijos"]}'
+    )
+    plt.legend()
+    plt.grid()
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(sol.t, prob_desercion, label="Probabilidad de Deserción (%)")
+    plt.xlabel("Tiempo (días)")
+    plt.ylabel("Probabilidad de Deserción (%)")
+    plt.title(f'Probabilidad de Deserción para Género {params["gen"]}')
+    plt.legend()
+    plt.grid()
+    plt.ylim(1, 100)
+
+    plt.tight_layout()
+    plt.savefig("../Static/Predicciones/prediccion.png")
+
+
+    return render(
+        request, "PredecirDesercion.html", {"prediccion": prob_desercion_final}
     )

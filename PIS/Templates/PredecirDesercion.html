@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicción de Deserción</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 2em;
+            margin: 0;
+        }
+        .content {
+            text-align: center;
+        }
+        .content p {
+            font-size: 1.2em;
+        }
+        .content img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Predicción de Deserción</h1>
+        </div>
+        <div class="content">
+            <p>La probabilidad de deserción al final de 6 meses es: <strong>{{ prediccion }}%</strong></p>
+            <img src="{% Static 'prediccion.png' %}" alt="Gráfico de Predicción de Deserción">
+            <!-- src="../Static/Imagen/demo/320x320.png" -->
+            <!-- <img src="{% Static 'prediccion.png' %}" alt="Gráfico de Predicción de Deserción"> -->
+        </div>
+    </div>
+</body>
+</html>

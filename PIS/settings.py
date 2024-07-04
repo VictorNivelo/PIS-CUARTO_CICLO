@@ -79,7 +79,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = "/Static/"
+STATIC_URL = '/Static/'
 
 LOGIN_URL = "/Iniciar-Sesion"
 
@@ -91,7 +91,7 @@ EMAIL_USE_TLS = True
 
 EMAIL_HOST = "smtp.gmail.com"
 
-EMAIL_PORT = 25
+EMAIL_PORT = 587
 # 587
 
 EMAIL_HOST_USER = "victor.nivelo0909@gmail.com"
