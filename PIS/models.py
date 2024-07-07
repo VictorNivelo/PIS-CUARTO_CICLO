@@ -69,14 +69,6 @@ class UsuarioPersonalizado(AbstractUser):
         return f"{self.username}"
 
 
-class Rol(models.Model):
-    nombre_rol = models.CharField(max_length=50, verbose_name="Nombre de Rol")
-    descripcion = models.CharField(max_length=200, verbose_name="Descripción")
-
-    def __str__(self):
-        return self.nombre_rol
-
-
 class Genero(models.Model):
     nombre_genero = models.CharField(max_length=100, verbose_name="Nombre")
     descripcion_genero = models.CharField(max_length=200, verbose_name="Descripción")
@@ -152,6 +144,7 @@ class Ciclo(models.Model):
 class Materia(models.Model):
     nombre_materia = models.CharField(max_length=100, verbose_name="Nombre")
     numero_horas = models.IntegerField(verbose_name="Número de Horas")
+    unidades = models.IntegerField(null=True, blank=True, verbose_name="Unidades")
     docente_encargado = models.ForeignKey(
         UsuarioPersonalizado,
         on_delete=models.CASCADE,
@@ -277,10 +270,19 @@ class Usuario(models.Model):
         return self.nombre_usuario
 
 
+class Rol(models.Model):
+    nombre_rol = models.CharField(max_length=50, verbose_name="Nombre de Rol")
+    descripcion = models.CharField(max_length=200, verbose_name="Descripción")
+
+    def __str__(self):
+        return self.nombre_rol
+
+
 class Cuenta(models.Model):
     correo_cuenta = models.EmailField(max_length=100, verbose_name="Correo Electrónico")
     contrasenia_cuenta = models.CharField(max_length=100, verbose_name="Contraseña")
     estado_cuenta = models.BooleanField(verbose_name="Estado de Cuenta")
+    rol = models.ForeignKey(Rol, on_delete=models.CASCADE, verbose_name="Rol")
     usuario = models.ForeignKey(
         Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
     )

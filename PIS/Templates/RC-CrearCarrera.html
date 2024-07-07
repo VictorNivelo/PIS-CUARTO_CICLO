@@ -70,6 +70,17 @@
             font-size: 16px;
             margin-top: 5px;
             box-sizing: border-box;
+            color: #aaa;
+        }
+
+        input::placeholder,
+        select::placeholder {
+            color: #aaa;
+        }
+
+        input.has-value,
+        select.has-value {
+            color: #333; 
         }
 
         button[type="submit"],
@@ -115,28 +126,19 @@
             <form method="POST">
                 <h1 class="t">Crear carrera</h1>
                 {% csrf_token %}
-                <!-- {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}" role="alert">
-                    {{ message }}
-                </div>
-                {% endfor %}
-                {% endif %} -->
-
                 <div class="row">
                     <div class="form-group">
                         <label for="{{ form.nombre_carrera.id_for_label }}">Nombre de la carrera:</label>
                         {{ form.nombre_carrera }}
                     </div>
                     <div class="form-group">
-                        <label for="{{ form.duracion.id_for_label }}">Duracion:</label>
+                        <label for="{{ form.duracion.id_for_label }}">Duración:</label>
                         {{ form.duracion }}
                     </div>
                     <div class="form-group">
                         <label for="{{ form.facultad.id_for_label }}">Facultad:</label>
                         {{ form.facultad }}
                     </div>
-
                     <div class="button-group">
                         <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
                         <button type="submit">Crear carrera</button>
@@ -158,6 +160,34 @@
 
         function recordarPaginaAnterior() {
             localStorage.setItem('paginaAnterior', document.referrer);
+        }
+
+        var carreraInput = document.querySelector('input[name="nombre_carrera"]');
+        
+        carreraInput.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                this.classList.add('has-value');
+            } else {
+                this.classList.remove('has-value');
+            }
+        });
+
+        if (carreraInput.value.trim() !== '') {
+            carreraInput.classList.add('has-value');
+        }
+
+        var facultadSelect = document.querySelector('select[name="facultad"]');
+        
+        facultadSelect.addEventListener('change', function() {
+            if (this.value.trim() !== '') {
+                this.classList.add('has-value');
+            } else {
+                this.classList.remove('has-value');
+            }
+        });
+
+        if (facultadSelect.value.trim() !== '') {
+            facultadSelect.classList.add('has-value');
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

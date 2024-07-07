@@ -68,7 +68,17 @@
             border-radius: 5px;
             font-size: 16px;
             margin-top: 5px;
-            box-sizing: border-box;
+            color: #aaa;
+        }
+
+        input::placeholder,
+        select::placeholder {
+            color: #aaa;
+        }
+
+        input.has-value,
+        select.has-value {
+            color: #333;
         }
 
         button[type="submit"],
@@ -114,32 +124,26 @@
             <form method="POST">
                 <h1 class="t">Crear facultad</h1>
                 {% csrf_token %}
-                <!-- {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}" role="alert">
-                    {{ message }}
-                </div>
-                {% endfor %}
-                {% endif %} -->
-
                 <div class="row">
-                    <div class="form-group">
-                        <label for="{{ form.nombre_facultad.id_for_label }}">Nombre de la facultad:</label>
-                        {{ form.nombre_facultad }}
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="{{ form.nombre_facultad.id_for_label }}">Nombre de la facultad:</label>
+                            {{ form.nombre_facultad }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.fecha_fundacion.id_for_label }}">Fecha de fundación:</label>
+                            {{ form.fecha_fundacion }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.universidad.id_for_label }}">Universidad:</label>
+                            {{ form.universidad }}
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.fecha_fundacion.id_for_label }}">Fecha de fundacion:</label>
-                        {{ form.fecha_fundacion }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.universidad.id_for_label }}">Universidad:</label>
-                        {{ form.universidad }}
-                    </div>
-    
-                    <div class="button-group">
-                        <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
-                        <button type="submit">Crear facultad</button>
-                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
+                    <button type="submit">Crear facultad</button>
                 </div>
             </form>
         </div>
@@ -158,6 +162,22 @@
         function recordarPaginaAnterior() {
             localStorage.setItem('paginaAnterior', document.referrer);
         }
+
+        var inputs = document.querySelectorAll('input, select');
+
+        inputs.forEach(function (input) {
+            input.addEventListener('input', function () {
+                if (this.value.trim() !== '') {
+                    this.classList.add('has-value');
+                } else {
+                    this.classList.remove('has-value');
+                }
+            });
+
+            if (input.value.trim() !== '') {
+                input.classList.add('has-value');
+            }
+        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

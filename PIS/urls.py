@@ -103,7 +103,10 @@ urlpatterns = [
 
     path('upload-universities/', upload_universities, name='upload_universities'),
 
-    path("Predecir/", PredecirDesercion, name="Predecir_Desercion")
+    path("Predecir/", PredecirDesercion, name="Predecir_Desercion"),
+
+    path('Recuperar-Contrasenia/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('Recuperar-Contrasenia/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     # path('Recuperar-Contrasenia/', auth_views.PasswordResetView.as_view(), name='Recuperar_Contrasenia'),
     # path('Recuperar-Contrasenia/confirmar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),

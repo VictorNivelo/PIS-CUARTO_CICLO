@@ -32,7 +32,7 @@
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 500px;
+            max-width: 450px;
             padding: 30px;
             margin: auto;
         }
@@ -58,10 +58,7 @@
         }
 
         input[type="text"],
-        input[type="email"],
-        input[type="date"],
-        input[type="tel"],
-        select {
+        textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -69,6 +66,11 @@
             font-size: 16px;
             margin-top: 5px;
             box-sizing: border-box;
+        }
+
+        textarea {
+            height: 150px;
+            resize: vertical;
         }
 
         button[type="submit"],
@@ -123,18 +125,21 @@
                 {% endif %} -->
 
                 <div class="row">
-                    <div class="form-group">
-                        <label for="{{ form.nombre_tipo_dni.id_for_label }}">Nombre del tipo DNI:</label>
-                        {{ form.nombre_tipo_dni }}
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="{{ form.nombre_tipo_dni.id_for_label }}">Nombre del tipo DNI:</label>
+                            {{ form.nombre_tipo_dni }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.descripcion_tipo_dni.id_for_label }}">Descripción:</label>
+                            {{ form.descripcion_tipo_dni }}
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.descripcion_tipo_dni.id_for_label }}">Descripcion:</label>
-                        {{ form.descripcion_tipo_dni }}
-                    </div>
-                    <div class="button-group">
-                        <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
-                        <button type="submit">Crear genero</button>
-                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
+                    <button type="submit">Crear tipo DNI</button>
                 </div>
             </form>
         </div>

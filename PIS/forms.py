@@ -393,6 +393,12 @@ class MateriaForm(forms.ModelForm):
     numero_horas = forms.IntegerField(
         widget=forms.NumberInput(attrs={"placeholder": "Ingrese el número de horas"}),
         label="Número de Horas",
+        min_value=1,
+    )
+    unidades = forms.IntegerField(
+        widget=forms.NumberInput(attrs={"placeholder": "Ingrese el número de unidades"}),
+        label="Unidades",
+        min_value=1,
     )
     docente_encargado = forms.ModelChoiceField(
         queryset=UsuarioPersonalizado.objects.filter(rol="Docente"),
@@ -406,6 +412,12 @@ class MateriaForm(forms.ModelForm):
         empty_label="Seleccione un ciclo",
         label="Ciclo",
     )
+    datos_historicos = forms.ModelChoiceField(
+        queryset=Datos_Historicos.objects.all(),
+        to_field_name="codigo_datos_historicos",
+        empty_label="Seleccione datos historicos",
+        label="Datos Historicos",
+    )
 
     class Meta:
         model = Materia
@@ -414,6 +426,7 @@ class MateriaForm(forms.ModelForm):
             "numero_horas",
             "docente_encargado",
             "ciclo",
+            "datos_historicos",
         ]
 
 
@@ -435,7 +448,6 @@ class PeriodoAcademicoForm(forms.ModelForm):
         ("inactivo", "Inactivo"),
     ]
     estado = forms.ChoiceField(choices=ESTADO_CHOICES, label="Estado")
-    # estado = forms.BooleanField(widget=forms.CheckboxInput(), label="Estado")
 
     class Meta:
         model = PeriodoAcademico
@@ -444,6 +456,18 @@ class PeriodoAcademicoForm(forms.ModelForm):
             "fecha_fin",
             "estado",
         ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_inicio = cleaned_data.get("fecha_inicio")
+        fecha_fin = cleaned_data.get("fecha_fin")
+
+        if fecha_inicio and fecha_fin and fecha_inicio > fecha_fin:
+            raise forms.ValidationError(
+                "La fecha de inicio no puede ser después de la fecha de fin."
+            )
+
+        return cleaned_data
 
 
 class DatosHistoricosForm(forms.Form):
