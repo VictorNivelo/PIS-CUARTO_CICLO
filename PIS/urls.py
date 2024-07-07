@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path
 from .vistas import (
+    GestionPeriodoAcademico,
     GestionTipoDNI,
     PaginaPrincipal,
     
@@ -8,6 +10,7 @@ from .vistas import (
     CerrarSesion,
     RegistrarUsuario,
     RecuperarContrasenia,
+    CambiarContrasenia,
     
     InformeMateria,
     InformeCiclo,
@@ -37,6 +40,7 @@ from .vistas import (
     RegistrarCarrera,
     RegistrarCiclo,
     RegistrarMateria,
+    RegistrarPeriodoAcademico,
     
     GestionUsuario,
     GestionGenero,
@@ -46,6 +50,7 @@ from .vistas import (
     GestionCiclo,
     GestionMateria,
     upload_universities,
+    PredecirDesercion,
 )
 
 urlpatterns = [
@@ -62,11 +67,13 @@ urlpatterns = [
     path("Registrar-Facultad/", RegistrarFacultad, name="Registrar_Facultad"),
     path("Registrar-Carrera/", RegistrarCarrera, name="Registrar_Carrera"),
     path("Registrar-Ciclo/", RegistrarCiclo, name="Registrar_Ciclo"),
+    path("Registrar-PeriodoAcademico/", RegistrarPeriodoAcademico, name="Registrar_PeriodoAcademico"),
     path("Registrar-Materia/", RegistrarMateria, name="Registrar_Materia"),
     
     path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
     path("Cerrar-Sesion/", CerrarSesion, name="Cerrar_Sesion"),
     path("Recuperar-Contrasenia/", RecuperarContrasenia, name="Recuperar_Contrasenia"),
+    path("Cambiar-Contrasenia/", CambiarContrasenia, name="Cambiar_Contrasenia"),
     
     path("Informe-Materia/", InformeMateria, name="Informe_Materia"),
     path("Informe-Ciclo/", InformeCiclo, name="Informe_Ciclo"),
@@ -90,8 +97,19 @@ urlpatterns = [
     path("Gestion-Usuarios/", GestionUsuario, name="Gestion_Usuario"),
     path("Gestion-Facultad/", GestionFacultad, name="Gestion_Facultad"),
     path("Gestion-Carrera/", GestionCarrera, name="Gestion_Carrera"),
+    path("Gestion-PeriodoAcademico/", GestionPeriodoAcademico, name="Gestion_PeriodoAcademico"),
     path("Gestion-Ciclo/", GestionCiclo, name="Gestion_Ciclo"),
     path("Gestion-Materia/", GestionMateria, name="Gestion_Materia"),
 
     path('upload-universities/', upload_universities, name='upload_universities'),
+
+    path("Predecir/", PredecirDesercion, name="Predecir_Desercion"),
+
+    path('Recuperar-Contrasenia/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('Recuperar-Contrasenia/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
+    # path('Recuperar-Contrasenia/', auth_views.PasswordResetView.as_view(), name='Recuperar_Contrasenia'),
+    # path('Recuperar-Contrasenia/confirmar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    # path('Recuperar-Contrasenia/completado/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    # path('Recuperar-Contrasenia/enviado/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
 ]

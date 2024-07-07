@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
+    Datos_Historicos,
     Genero,
     InformeCarrera,
     InformeMateria,
@@ -11,6 +12,7 @@ from .models import (
     Carrera,
     Materia,
     Ciclo,
+    PeriodoAcademico,
 )
 
 
@@ -41,16 +43,6 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="Apellido",
     )
 
-    password1 = forms.CharField(
-        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su contraseña"}),
-        label="Contraseña",
-    )
-
-    password2 = forms.CharField(
-        widget=forms.PasswordInput(attrs={"placeholder": "Confirme su contraseña"}),
-        label="Confirmar Contraseña",
-    )
-
     genero = forms.ModelChoiceField(
         queryset=Genero.objects.all(),
         to_field_name="nombre_genero",
@@ -58,15 +50,11 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="Genero",
     )
 
-    fecha_nacimiento = forms.DateField(
-        widget=forms.DateInput(
-            attrs={
-                "type": "date",
-                "Placeholder": "Ingrese su fecha de nacimiento",
-            }
-        ),
+    telefono = forms.CharField(
+        widget=TelefonoInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
+        max_length=10,
         required=False,
-        label="Fecha de Nacimiento",
+        label="Numero de teléfono",
     )
 
     tipo_dni = forms.ModelChoiceField(
@@ -83,11 +71,25 @@ class RegistrarUsuarioForm(UserCreationForm):
         label="DNI",
     )
 
-    telefono = forms.CharField(
-        widget=TelefonoInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
-        max_length=10,
+    fecha_nacimiento = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "Placeholder": "Ingrese su fecha de nacimiento",
+            }
+        ),
         required=False,
-        label="Numero de teléfono",
+        label="Fecha de Nacimiento",
+    )
+
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su contraseña"}),
+        label="Contraseña",
+    )
+
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Confirme su contraseña"}),
+        label="Confirmar Contraseña",
     )
 
     rol = forms.ChoiceField(
@@ -103,13 +105,13 @@ class RegistrarUsuarioForm(UserCreationForm):
             "username",
             "first_name",
             "last_name",
-            "password1",
-            "password2",
             "genero",
-            "fecha_nacimiento",
+            "telefono",
             "tipo_dni",
             "dni",
-            "telefono",
+            "fecha_nacimiento",
+            "password1",
+            "password2",
         ]
         widgets = {
             "password1": forms.PasswordInput(),
@@ -181,8 +183,18 @@ class RecuperarContraseniaForm(forms.Form):
 
 
 class CambiarContraseniaForm(forms.ModelForm):
-    Contrasenia = forms.CharField(widget=forms.PasswordInput)
-    Confirmar_contrasenia = forms.CharField(widget=forms.PasswordInput)
+    Contrasenia = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={"placeholder": "Ingrese la nueva contraseña"}
+        ),
+        label="Contraseña",
+    )
+    Confirmar_contrasenia = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={"placeholder": "Confirme la nueva contraseña"}
+        ),
+        label="Confirmar Contraseña",
+    )
 
     class Meta:
         model = UsuarioPersonalizado
@@ -308,7 +320,7 @@ class CarreraForm(forms.ModelForm):
     )
     duracion = forms.IntegerField(
         widget=forms.NumberInput(
-            attrs={"placeholder": "Ingrese la duración de la carrera en horas"}
+            attrs={"placeholder": "Ingrese la duración de la carrera en ciclos"}
         ),
         label="Duración",
         min_value=1,
@@ -346,6 +358,13 @@ class CicloForm(forms.ModelForm):
         ),
         label="Fecha de Fin",
     )
+    periodo_academico = forms.ModelChoiceField(
+        queryset=PeriodoAcademico.objects.all(),
+        # queryset=PeriodoAcademico.objects.filter(estado='Activo'),
+        to_field_name="codigo_periodo_academico",
+        empty_label="Seleccione un periodo académico",
+        label="Periodo Académico",
+    )
     carrera = forms.ModelChoiceField(
         queryset=Carrera.objects.all(),
         to_field_name="nombre_carrera",
@@ -359,6 +378,7 @@ class CicloForm(forms.ModelForm):
             "nombre_ciclo",
             "fecha_inicio",
             "fecha_fin",
+            "periodo_academico",
             "carrera",
         ]
 
@@ -373,11 +393,17 @@ class MateriaForm(forms.ModelForm):
     numero_horas = forms.IntegerField(
         widget=forms.NumberInput(attrs={"placeholder": "Ingrese el número de horas"}),
         label="Número de Horas",
+        min_value=1,
     )
-    docente_encargado = forms.CharField(
-        widget=forms.TextInput(
-            attrs={"placeholder": "Ingrese el nombre del docente encargado"}
-        ),
+    unidades = forms.IntegerField(
+        widget=forms.NumberInput(attrs={"placeholder": "Ingrese el número de unidades"}),
+        label="Unidades",
+        min_value=1,
+    )
+    docente_encargado = forms.ModelChoiceField(
+        queryset=UsuarioPersonalizado.objects.filter(rol="Docente"),
+        to_field_name="username",
+        empty_label="Seleccione un docente",
         label="Docente Encargado",
     )
     ciclo = forms.ModelChoiceField(
@@ -385,6 +411,12 @@ class MateriaForm(forms.ModelForm):
         to_field_name="nombre_ciclo",
         empty_label="Seleccione un ciclo",
         label="Ciclo",
+    )
+    datos_historicos = forms.ModelChoiceField(
+        queryset=Datos_Historicos.objects.all(),
+        to_field_name="codigo_datos_historicos",
+        empty_label="Seleccione datos historicos",
+        label="Datos Historicos",
     )
 
     class Meta:
@@ -394,6 +426,83 @@ class MateriaForm(forms.ModelForm):
             "numero_horas",
             "docente_encargado",
             "ciclo",
+            "datos_historicos",
+        ]
+
+
+class PeriodoAcademicoForm(forms.ModelForm):
+    fecha_inicio = forms.DateField(
+        widget=forms.DateInput(
+            attrs={"type": "date", "placeholder": "Ingrese la fecha de inicio"}
+        ),
+        label="Fecha de Inicio",
+    )
+    fecha_fin = forms.DateField(
+        widget=forms.DateInput(
+            attrs={"type": "date", "placeholder": "Ingrese la fecha de fin"}
+        ),
+        label="Fecha de Fin",
+    )
+    ESTADO_CHOICES = [
+        ("activo", "Activo"),
+        ("inactivo", "Inactivo"),
+    ]
+    estado = forms.ChoiceField(choices=ESTADO_CHOICES, label="Estado")
+
+    class Meta:
+        model = PeriodoAcademico
+        fields = [
+            "fecha_inicio",
+            "fecha_fin",
+            "estado",
+        ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_inicio = cleaned_data.get("fecha_inicio")
+        fecha_fin = cleaned_data.get("fecha_fin")
+
+        if fecha_inicio and fecha_fin and fecha_inicio > fecha_fin:
+            raise forms.ValidationError(
+                "La fecha de inicio no puede ser después de la fecha de fin."
+            )
+
+        return cleaned_data
+
+
+class DatosHistoricosForm(forms.Form):
+    fecha = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}), label="Fecha", required=False
+    )
+    cantidad_matriculados = forms.IntegerField(
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese la cantidad de matriculados"}
+        ),
+        label="Cantidad de Matriculados",
+        required=False,
+    )
+    cantidad_aprobados = forms.IntegerField(
+        widget=forms.NumberInput(), label="Cantidad de Aprobados", required=False
+    )
+    cantidad_reprobados = forms.IntegerField(
+        widget=forms.NumberInput(), label="Cantidad de Reprobados", required=False
+    )
+    cantidad_desertores = forms.IntegerField(
+        widget=forms.NumberInput(), label="Cantidad de Desertores", required=False
+    )
+    cantidad_retirados = forms.IntegerField(
+        widget=forms.NumberInput(), label="Cantidad de Retirados", required=False
+    )
+
+    class Meta:
+        model = Datos_Historicos
+        fields = [
+            "fecha",
+            "cantidad_matriculados",
+            "cantidad_aprobados",
+            "cantidad_reprobados",
+            "cantidad_desertores",
+            "cantidad_retirados",
         ]
 
 

@@ -14,7 +14,6 @@ class UsuarioPersonalizado(AbstractUser):
     GENERO_OPCIONES = [
         ("Masculino", "Masculino"),
         ("Femenino", "Femenino"),
-        ("Otro", "Otro"),
     ]
 
     TIPO_DNI_OPCIONES = [
@@ -30,7 +29,7 @@ class UsuarioPersonalizado(AbstractUser):
         null=True, blank=True, verbose_name="Fecha de Nacimiento"
     )
 
-    dni = models.CharField(max_length=10, blank=True, null=True, verbose_name="DNI")
+    dni = models.CharField(max_length=10, verbose_name="DNI")
 
     tipo_dni = models.ForeignKey(
         "TipoDNI", on_delete=models.CASCADE, verbose_name="Tipo de DNI"
@@ -39,17 +38,23 @@ class UsuarioPersonalizado(AbstractUser):
     telefono = models.CharField(
         max_length=10, blank=True, null=True, verbose_name="Teléfono"
     )
+    # rol = models.ForeignKey("Rol", on_delete=models.CASCADE, verbose_name="Rol")
     rol = models.CharField(
         max_length=50, choices=ROLES, default="Docente", verbose_name="Rol"
     )
-    # rol = models.CharField(max_length=30, choices=ROLES, blank=True, null=True, verbose_name="Rol")
+
     first_name = models.CharField(max_length=100, verbose_name="Nombre")
+
     last_name = models.CharField(max_length=100, verbose_name="Apellido")
+
     is_active = models.BooleanField(default=True, verbose_name="Activo")
+
     is_staff = models.BooleanField(default=False, verbose_name="Staff")
+
     is_superuser = models.BooleanField(default=False, verbose_name="Superusuario")
 
     USERNAME_FIELD = "username"
+
     REQUIRED_FIELDS = [
         "first_name",
         "last_name",
@@ -125,6 +130,9 @@ class Ciclo(models.Model):
     nombre_ciclo = models.CharField(max_length=100, verbose_name="Nombre")
     fecha_inicio = models.DateField(verbose_name="Fecha de Inicio")
     fecha_fin = models.DateField(verbose_name="Fecha de Fin")
+    periodo_academico = models.ForeignKey(
+        "PeriodoAcademico", on_delete=models.CASCADE, verbose_name="Período Académico"
+    )
     carrera = models.ForeignKey(
         Carrera, on_delete=models.CASCADE, verbose_name="Carrera"
     )
@@ -136,16 +144,58 @@ class Ciclo(models.Model):
 class Materia(models.Model):
     nombre_materia = models.CharField(max_length=100, verbose_name="Nombre")
     numero_horas = models.IntegerField(verbose_name="Número de Horas")
-    docente_encargado = models.CharField(
-        max_length=100, verbose_name="Docente Encargado"
+    unidades = models.IntegerField(null=True, blank=True, verbose_name="Unidades")
+    docente_encargado = models.ForeignKey(
+        UsuarioPersonalizado,
+        on_delete=models.CASCADE,
+        verbose_name="Docente Encargado",
+        limit_choices_to={"rol": "Docente"},
     )
     ciclo = models.ForeignKey(Ciclo, on_delete=models.CASCADE, verbose_name="Ciclo")
+    datos_historicos = models.ForeignKey(
+        "Datos_Historicos", on_delete=models.CASCADE, verbose_name="Datos Históricos"
+    )
 
     def __str__(self):
         return self.nombre_materia
 
 
+class PeriodoAcademico(models.Model):
+    codigo_periodo_academico = models.CharField(max_length=100, verbose_name="Código")
+    fecha_inicio = models.DateField(verbose_name="Fecha de Inicio")
+    fecha_fin = models.DateField(verbose_name="Fecha de Fin")
+    estado_periodo_academico = models.CharField(
+        max_length=10,
+        choices=[("activo", "Activo"), ("inactivo", "Inactivo")],
+        verbose_name="Estado",
+    )
+    # estado_periodo_academico = models.BooleanField(verbose_name="Estado")
+
+    def save(self, *args, **kwargs):
+        if not self.codigo_periodo_academico:
+            self.codigo_periodo_academico = (
+                f"{self.fecha_inicio.year}-{self.fecha_fin.year}"
+            )
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.codigo_periodo_academico
+
+
+class Datos_Historicos(models.Model):
+    fecha = models.DateField(verbose_name="Fecha")
+    cantidad_estudiantes = models.IntegerField(verbose_name="Cantidad de Estudiantes")
+    cantidad_aprobados = models.IntegerField(verbose_name="Cantidad de Aprobados")
+    cantidad_reprobados = models.IntegerField(verbose_name="Cantidad de Reprobados")
+    cantidad_desertores = models.IntegerField(verbose_name="Cantidad de Desertores")
+    cantidad_retirados = models.IntegerField(verbose_name="Cantidad de Retirados")
+
+    def __str__(self):
+        return self.materia.nombre_materia
+
+
 class Informe(models.Model):
+
     fecha_creacion = models.DateField(verbose_name="Fecha de Creación")
 
     def __str__(self):
@@ -220,24 +270,25 @@ class Usuario(models.Model):
         return self.nombre_usuario
 
 
-class Cuenta(models.Model):
-    correo_cuenta = models.EmailField(max_length=100, verbose_name="Correo Electrónico")
-    contrasenia_cuenta = models.CharField(max_length=100, verbose_name="Contraseña")
-    estado_cuenta = models.BooleanField(verbose_name="Estado de Cuenta")
-    usuario = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
-    )
-
-    def __str__(self):
-        return self.correo_cuenta
-
-
 class Rol(models.Model):
     nombre_rol = models.CharField(max_length=50, verbose_name="Nombre de Rol")
     descripcion = models.CharField(max_length=200, verbose_name="Descripción")
 
     def __str__(self):
         return self.nombre_rol
+
+
+class Cuenta(models.Model):
+    correo_cuenta = models.EmailField(max_length=100, verbose_name="Correo Electrónico")
+    contrasenia_cuenta = models.CharField(max_length=100, verbose_name="Contraseña")
+    estado_cuenta = models.BooleanField(verbose_name="Estado de Cuenta")
+    rol = models.ForeignKey(Rol, on_delete=models.CASCADE, verbose_name="Rol")
+    usuario = models.ForeignKey(
+        Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
+    )
+
+    def __str__(self):
+        return self.correo_cuenta
 
 
 class PersonalAdministrativo(models.Model):

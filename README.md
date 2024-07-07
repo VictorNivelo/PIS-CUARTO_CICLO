@@ -56,8 +56,15 @@ Pdfplumber:
 ```bash
 pip install pdfplumber
 ```
-
 Openpyxl:
 ```bash
 pip install openpyxl
+```
+Matplotlib:
+```bash
+pip install matplotlib
+```
+Scipy:
+```bash
+pip install scipy
 ```

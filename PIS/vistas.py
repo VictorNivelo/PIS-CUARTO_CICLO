@@ -1,7 +1,13 @@
 from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.core.mail import send_mail
 import re
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -16,8 +22,20 @@ from django.db.models import Q
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import os
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+from django.shortcuts import render
+from .models import Datos_Historicos
+from .ModeloMatematico import model, params_list
+from django.contrib.auth.hashers import make_password
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth import get_user_model
 from PIS.models import (
     Genero,
+    PeriodoAcademico,
     TipoDNI,
     Universidad,
     UsuarioPersonalizado,
@@ -32,6 +50,7 @@ from .forms import (
     InformeCarreraForm,
     InformeCicloForm,
     InformeMateriaForm,
+    PeriodoAcademicoForm,
     RecuperarContraseniaForm,
     RegistrarUsuarioForm,
     UniversidadForm,
@@ -40,6 +59,8 @@ from .forms import (
     CicloForm,
     MateriaForm,
     TipoDNIForm,
+    CambiarContraseniaForm,
+    InicioSesionForm,
 )
 
 
@@ -316,22 +337,170 @@ def CerrarSesion(request):
     return redirect("Iniciar_Sesion")
 
 
+# def RecuperarContrasenia(request):
+#     if request.method == "POST":
+#         form = RecuperarContraseniaForm(request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data["username"]
+#             try:
+#                 user = UsuarioPersonalizado.objects.get(username=username)
+#             except UsuarioPersonalizado.DoesNotExist:
+#                 messages.error(request, "El usuario no existe.")
+#                 return render(request, "RecuperarContrasenia.html", {"form": form})
+
+#             token = default_token_generator.make_token(user)
+#             uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+#             reset_url = reverse(
+#                 "password_reset_confirm", kwargs={"uidb64": uid, "token": token}
+#             )
+
+#             return redirect(reset_url)
+#         else:
+#             messages.error(request, "Error al enviar el enlace de recuperación.")
+#     else:
+#         form = RecuperarContraseniaForm()
+#     return render(request, "RecuperarContrasenia.html", {"form": form})
+
+
+# prueba 2
+
 def RecuperarContrasenia(request):
     if request.method == "POST":
         form = RecuperarContraseniaForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data["username"]
-            messages.success(
-                request,
-                "Se ha enviado un enlace de recuperación a su correo electrónico.",
+            try:
+                user = UsuarioPersonalizado.objects.get(username=username)
+            except UsuarioPersonalizado.DoesNotExist:
+                messages.error(request, "El usuario no existe.")
+                return render(request, "RecuperarContrasenia.html", {"form": form})
+
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+            return render(
+                request, "CambiarContrasenia.html", {"uid": uid, "token": token}
             )
-            return redirect("Iniciar_Sesion")
         else:
             messages.error(request, "Error al enviar el enlace de recuperación.")
     else:
         form = RecuperarContraseniaForm()
     return render(request, "RecuperarContrasenia.html", {"form": form})
 
+
+User = get_user_model()
+
+
+def CambiarContrasenia(request):
+    if request.method == "POST":
+        uid = request.POST.get("uid")
+        token = request.POST.get("token")
+        new_password1 = request.POST.get("new_password1")
+        new_password2 = request.POST.get("new_password2")
+
+        if new_password1 != new_password2:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return redirect("cambiar_contrasenia")
+
+        try:
+            uid = urlsafe_base64_decode(uid).decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            user.password = make_password(new_password1)
+            user.save()
+            messages.success(request, "Contraseña cambiada con éxito.")
+            return redirect("Iniciar_Sesion")
+        else:
+            messages.error(
+                request, "El enlace de restablecimiento de contraseña no es válido."
+            )
+            return redirect("Recuperar_Contrasenia")
+    else:
+        return render(request, "CambiarContrasenia.html")
+
+
+# def RecuperarContrasenia(request):
+#     if request.method == "POST":
+#         form = RecuperarContraseniaForm(request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data["username"]
+#             try:
+#                 user = UsuarioPersonalizado.objects.get(username=username)
+#             except UsuarioPersonalizado.DoesNotExist:
+#                 messages.error(request, "El usuario no existe.")
+#                 return render(request, "RecuperarContrasenia.html", {"form": form})
+
+#             token = default_token_generator.make_token(user)
+#             uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+#             reset_url = reverse(
+#                 "password_reset_confirm", kwargs={"uidb64": uid, "token": token}
+#             )
+#             reset_url = request.build_absolute_uri(reset_url)
+
+#             subject = "Recuperación de Contraseña"
+#             message = render_to_string(
+#                 "CambiarContrasenia.html",
+#                 {
+#                     "user": user,
+#                     "reset_url": reset_url,
+#                 },
+#             )
+#             from_email = settings.EMAIL_HOST_USER
+#             to_email = form.cleaned_data["username"]
+#             send_mail(subject, message, from_email, [to_email])
+
+#             messages.success(
+#                 request,
+#                 "Se ha enviado un enlace de recuperación a su correo electrónico.",
+#             )
+#             return redirect("Iniciar_Sesion")
+#         else:
+#             messages.error(request, "Error al enviar el enlace de recuperación.")
+#     else:
+#         form = RecuperarContraseniaForm()
+#     return render(request, "RecuperarContrasenia.html", {"form": form})
+
+
+# def RecuperarContrasenia(request):
+#     if request.method == "POST":
+#         form = RecuperarContraseniaForm(request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data["username"]
+#             messages.success(
+#                 request,
+#                 "Se ha enviado un enlace de recuperación a su correo electrónico.",
+#             )
+#             return redirect("Iniciar_Sesion")
+#         else:
+#             messages.error(request, "Error al enviar el enlace de recuperación.")
+#     else:
+#         form = RecuperarContraseniaForm()
+#     return render(request, "RecuperarContrasenia.html", {"form": form})
+
+
+def CambiarContrasenia(request):
+    if request.method == "POST":
+        form = CambiarContraseniaForm(request.POST)
+        if form.is_valid():
+            nueva_contrasenia = form.cleaned_data["Contrasenia"]
+            request.user.set_password(nueva_contrasenia)
+            request.user.save()
+            update_session_auth_hash(request, request.user)
+            messages.success(request, "Contraseña cambiada exitosamente.")
+            return redirect("Iniciar_Sesion")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = CambiarContraseniaForm()
+
+    return render(request, "CambiarContrasenia.html", {"form": form})
 
 def RegistrarTipoDNI(request):
     if request.method == "POST":
@@ -517,7 +686,8 @@ def GestionFacultad(request):
             fecha_fundacion_str = request.POST.get("fecha_fundacion")
             try:
                 fecha_fundacion = datetime.strptime(
-                    fecha_fundacion_str, "%Y-%m-%d").date()
+                    fecha_fundacion_str, "%Y-%m-%d"
+                ).date()
                 facultad.fecha_fundacion = fecha_fundacion
             except ValueError:
                 messages.error(
@@ -690,6 +860,79 @@ def GestionCiclo(request):
     )
 
 
+def RegistrarPeriodoAcademico(request):
+    if request.method == "POST":
+        form = PeriodoAcademicoForm(request.POST)
+        if form.is_valid():
+            periodo_academico = form.save(commit=False)
+            periodo_academico.save()
+            messages.success(request, "Periodo académico registrado exitosamente.")
+            return redirect("Gestion_PeriodoAcademico")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = PeriodoAcademicoForm()
+
+    return render(request, "RPA-CrearPeriodoAcademico.html", {"form": form})
+
+
+def GestionPeriodoAcademico(request):
+    query = request.GET.get("search_query", "")
+    PeriodosAcademicos = PeriodoAcademico.objects.all()
+
+    if query:
+        PeriodosAcademicos = PeriodosAcademicos.filter(
+            Q(codigo_periodo_academico__icontains=query)
+        )
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            periodo_academico_id = request.POST.get("PeriodoAcademico_id")
+            periodo_academico = PeriodoAcademico.objects.get(id=periodo_academico_id)
+            periodo_academico.codigo_periodo_academico = request.POST.get(
+                "codigo_periodo_academico"
+            )
+            fecha_inicio_str = request.POST.get("fecha_inicio")
+            if fecha_inicio_str:
+                try:
+                    fecha_inicio = datetime.strptime(
+                        fecha_inicio_str, "%Y-%m-%d"
+                    ).date()
+                    periodo_academico.fecha_inicio = fecha_inicio
+                except ValueError:
+                    messages.error(
+                        request,
+                        "Formato de fecha de inicio inválido. Utiliza el formato dd/mm/aaaa.",
+                    )
+                    return redirect("Gestion_PeriodoAcademico")
+            fecha_fin_str = request.POST.get("fecha_fin")
+            if fecha_fin_str:
+                try:
+                    fecha_fin = datetime.strptime(fecha_fin_str, "%Y-%m-%d").date()
+                    periodo_academico.fecha_fin = fecha_fin
+                except ValueError:
+                    messages.error(
+                        request,
+                        "Formato de fecha de fin inválido. Utiliza el formato dd/mm/aaaa.",
+                    )
+                    return redirect("Gestion_PeriodoAcademico")
+            periodo_academico.estado_periodo_academico = request.POST.get("estado")
+            periodo_academico.save()
+            messages.success(request, "Periodo académico actualizado exitosamente.")
+        elif "delete" in request.POST:
+            periodo_academico_id = request.POST.get("PeriodoAcademico_id")
+            periodo_academico = PeriodoAcademico.objects.get(id=periodo_academico_id)
+            periodo_academico.delete()
+            messages.success(request, "Periodo académico eliminado exitosamente.")
+        return redirect("Gestion_PeriodoAcademico")
+
+    return render(
+        request,
+        "GestionPeriodoAcademico.html",
+        {"periodosAcademicos": PeriodosAcademicos, "query": query},
+    )
+
+
 def RegistrarMateria(request):
     if request.method == "POST":
         form = MateriaForm(request.POST)
@@ -710,6 +953,7 @@ def GestionMateria(request):
     query = request.GET.get("search_query", "")
     materias = Materia.objects.all()
     ciclos = Ciclo.objects.all()
+    docentes = UsuarioPersonalizado.objects.filter(rol="Docente")
 
     if query:
         materias = materias.filter(Q(nombre_materia__icontains=query))
@@ -733,6 +977,7 @@ def GestionMateria(request):
         "GestionMateria.html",
         {
             "materias": materias,
+            "docentes": docentes,
             "ciclos": ciclos,
             "query": query,
         },
@@ -1194,55 +1439,288 @@ def CargarInforme(request):
     return render(request, "CargarInforme.html")
 
 
-def parse_university_data(content):
-    pattern = re.compile(
-        r"Universidad:\s*(.*?)\s*Direccion:\s*(.*?)\s*Telefono:\s*(.*?)\s*Correo:\s*(.*?)\s*Fecha de fundación:\s*(.*?)\s*(?=Universidad:|$)"
-    )
-    matches = pattern.findall(content)
-
-    universities = []
-    for match in matches:
-        universities.append(
-            {
-                "nombre_universidad": match[0],
-                "direccion_universidad": match[1],
-                "telefono_universidad": match[2],
-                "correo_universidad": match[3],
-                "fecha_fundacion": match[4],
-            }
-        )
-
-    return universities
-
-
-@csrf_exempt
 def upload_universities(request):
-    if request.method == "POST" and request.FILES.get("document"):
-        file = request.FILES["document"]
-        file_extension = file.name.split(".")[-1].lower()
-
-        path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
-        tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+    if request.method == "POST":
+        file = request.FILES["file"]
 
         try:
-            if file_extension == "docx":
-                data = extract_docs(tmp_file)
-            elif file_extension == "pdf":
-                data = extract_pdf(tmp_file)
-            elif file_extension in ["xlsx", "xls"]:
-                data = extract_xlsx(tmp_file)
-            else:
-                return JsonResponse(
-                    {"success": False, "message": "Formato de archivo no soportado."}
+            content = file.read().decode("utf-8")
+
+            universities = content.strip().split("\n\n")
+
+            for uni_data in universities:
+                nombre = re.search(r"Universidad:\s*(.*)", uni_data).group(1)
+                direccion = re.search(r"Direccion:\s*(.*)", uni_data).group(1)
+                telefono = re.search(r"Telefono:\s*(.*)", uni_data).group(1)
+                correo = re.search(r"Correo:\s*(.*)", uni_data).group(1)
+                fecha_fundacion = re.search(
+                    r"Fecha de fundación:\s*(.*)", uni_data
+                ).group(1)
+
+                universidad, created = Universidad.objects.get_or_create(
+                    nombre_universidad=nombre,
+                    defaults={
+                        "direccion_universidad": direccion,
+                        "telefono_universidad": telefono,
+                        "correo_universidad": correo,
+                        "fecha_fundacion": fecha_fundacion,
+                    },
                 )
+                if not created:
+                    universidad.direccion_universidad = direccion
+                    universidad.telefono_universidad = telefono
+                    universidad.correo_universidad = correo
+                    universidad.fecha_fundacion = fecha_fundacion
+                    universidad.save()
 
-            save_entities(data)
-            return JsonResponse({"success": True})
+        except UnicodeDecodeError as e:
+            return render(
+                request,
+                "upload.html",
+                {"error": f"Error de codificación del archivo: {e}"},
+            )
         except Exception as e:
-            return JsonResponse({"success": False, "message": str(e)})
-        finally:
-            default_storage.delete(tmp_file)
+            return render(
+                request, "upload.html", {"error": f"Error procesando el archivo: {e}"}
+            )
 
-    return JsonResponse(
-        {"success": False, "message": "No se ha subido ningún archivo."}
+    return render(request, "upload.html")
+
+
+# @csrf_exempt
+# def upload_universities(request):
+#     if request.method == "POST" and request.FILES.get("document"):
+#         document = request.FILES["document"]
+#         content = document.read().decode("utf-8")
+
+#         universities = parse_university_data(content)
+#         for university in universities:
+#             Universidad.objects.create(**university)
+
+#         return JsonResponse({"success": True})
+
+#     return JsonResponse({"success": False})
+
+# def parse_university_data(content):
+#     pattern = re.compile(
+#         r"Universidad:\s*(.*?)\s*Direccion:\s*(.*?)\s*Telefono:\s*(.*?)\s*Correo:\s*(.*?)\s*Fecha de fundación:\s*(.*?)\s*(?=Universidad:|$)"
+#     )
+#     matches = pattern.findall(content)
+
+#     universities = []
+#     for match in matches:
+#         universities.append(
+#             {
+#                 "nombre_universidad": match[0],
+#                 "direccion_universidad": match[1],
+#                 "telefono_universidad": match[2],
+#                 "correo_universidad": match[3],
+#                 "fecha_fundacion": match[4],
+#             }
+#         )
+
+#     return universities
+
+
+# def parse_university_data(content):
+#     pattern = re.compile(
+#         r"Universidad:\s*(.*?)\s*Direccion:\s*(.*?)\s*Telefono:\s*(.*?)\s*Correo:\s*(.*?)\s*Fecha de fundación:\s*(.*?)\s*(?=Universidad:|$)"
+#     )
+#     matches = pattern.findall(content)
+
+#     universities = []
+#     for match in matches:
+#         universities.append(
+#             {
+#                 "nombre_universidad": match[0],
+#                 "direccion_universidad": match[1],
+#                 "telefono_universidad": match[2],
+#                 "correo_universidad": match[3],
+#                 "fecha_fundacion": match[4],
+#             }
+#         )
+
+#     return universities
+
+
+# @csrf_exempt
+# def upload_universities(request):
+#     if request.method == "POST" and request.FILES.get("document"):
+#         file = request.FILES["document"]
+#         file_extension = file.name.split(".")[-1].lower()
+
+#         path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
+#         tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+
+#         try:
+#             if file_extension == "docx":
+#                 data = extract_docs(tmp_file)
+#             elif file_extension == "pdf":
+#                 data = extract_pdf(tmp_file)
+#             elif file_extension in ["xlsx", "xls"]:
+#                 data = extract_xlsx(tmp_file)
+#             else:
+#                 return JsonResponse(
+#                     {"success": False, "message": "Formato de archivo no soportado."}
+#                 )
+
+#             save_entities(data)
+#             return JsonResponse({"success": True})
+#         except Exception as e:
+#             return JsonResponse({"success": False, "message": str(e)})
+#         finally:
+#             default_storage.delete(tmp_file)
+
+#     return JsonResponse(
+#         {"success": False, "message": "No se ha subido ningún archivo."}
+#     )
+
+
+def PredecirDesercion(request):
+    params = params_list[0] 
+    
+    y0 = [500, 0, 0, 0]
+
+    t_span = [0, 180]
+    t_eval = np.linspace(t_span[0], t_span[1], 1000)
+
+    sol = solve_ivp(
+        model,
+        t_span,
+        y0,
+        t_eval=t_eval,
+        args=(
+            params["ciclo"],
+            params["for"],
+            params["trab"],
+            params["disc"],
+            params["edu"],
+            params["hijos"],
+            params["gen"],
+        ),
     )
+
+    S_sol = sol.y[0]
+    R_sol = sol.y[1]
+    D_sol = sol.y[2]
+    A_sol = sol.y[3]
+
+    prob_desercion = np.clip((D_sol / 500) * 100, 1, 100)
+
+    prob_desercion_final = prob_desercion[-1]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(sol.t, S_sol, label="Estudiantes Matriculados (S(t))")
+    plt.plot(sol.t, R_sol, label="Estudiantes Reprobados (R(t))")
+    plt.plot(sol.t, D_sol, label="Estudiantes Desertores (D(t))")
+    plt.plot(sol.t, A_sol, label="Estudiantes Aprobados (A(t))")
+    plt.xlabel("Tiempo (días)")
+    plt.ylabel("Número de estudiantes")
+    plt.title(
+        f'Parámetros para Género {params["gen"]}: Ciclo {params["ciclo"]}, Foráneo {params["for"]}, Trabaja {params["trab"]}, Discapacidad {params["disc"]}, Educación {params["edu"]}, Hijos {params["hijos"]}'
+    )
+    plt.legend()
+    plt.grid()
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(sol.t, prob_desercion, label="Probabilidad de Deserción (%)")
+    plt.xlabel("Tiempo (días)")
+    plt.ylabel("Probabilidad de Deserción (%)")
+    plt.title(f'Probabilidad de Deserción para Género {params["gen"]}')
+    plt.legend()
+    plt.grid()
+    plt.ylim(1, 100)
+
+    plt.tight_layout()
+
+    filename = os.path.join(
+        settings.STATIC_ROOT, 
+        "Predicciones",  
+        "prediccion.png", 
+    )
+
+    try:
+        plt.savefig(filename)
+        plt.close()
+
+    except Exception as e:
+        print(f"Error al guardar la imagen: {e}")
+
+    relative_filename = os.path.join(
+        settings.STATIC_URL,  
+        "Predicciones",
+        "prediccion.png",
+    )
+
+    return render(
+        request, "PredecirDesercion.html", {"prediccion": prob_desercion_final, "imagen": relative_filename}
+    )
+
+# def PredecirDesercion(request):
+#     params = params_list[0]
+
+#     y0 = [500, 0, 0, 0]
+
+#     t_span = [0, 180]
+#     t_eval = np.linspace(t_span[0], t_span[1], 1000)
+
+#     sol = solve_ivp(
+#         model,
+#         t_span,
+#         y0,
+#         t_eval=t_eval,
+#         args=(
+#             params["ciclo"],
+#             params["for"],
+#             params["trab"],
+#             params["disc"],
+#             params["edu"],
+#             params["hijos"],
+#             params["gen"],
+#         ),
+#     )
+
+#     S_sol = sol.y[0]
+#     R_sol = sol.y[1]
+#     D_sol = sol.y[2]
+#     A_sol = sol.y[3]
+
+#     prob_desercion = np.clip((D_sol / 500) * 100, 1, 100)
+
+#     prob_desercion_final = prob_desercion[-1]
+
+#     plt.figure(figsize=(10, 6))
+#     plt.plot(sol.t, S_sol, label="Estudiantes Matriculados (S(t))")
+#     plt.plot(sol.t, R_sol, label="Estudiantes Reprobados (R(t))")
+#     plt.plot(sol.t, D_sol, label="Estudiantes Desertores (D(t))")
+#     plt.plot(sol.t, A_sol, label="Estudiantes Aprobados (A(t))")
+#     plt.xlabel("Tiempo (días)")
+#     plt.ylabel("Número de estudiantes")
+#     plt.title(
+#         f'Parámetros para Género {params["gen"]}: Ciclo {params["ciclo"]}, Foráneo {params["for"]}, Trabaja {params["trab"]}, Discapacidad {params["disc"]}, Educación {params["edu"]}, Hijos {params["hijos"]}'
+#     )
+#     plt.legend()
+#     plt.grid()
+
+#     plt.figure(figsize=(10, 6))
+#     plt.plot(sol.t, prob_desercion, label="Probabilidad de Deserción (%)")
+#     plt.xlabel("Tiempo (días)")
+#     plt.ylabel("Probabilidad de Deserción (%)")
+#     plt.title(f'Probabilidad de Deserción para Género {params["gen"]}')
+#     plt.legend()
+#     plt.grid()
+#     plt.ylim(1, 100)
+
+#     plt.tight_layout()
+#     filename = os.path.join(
+#         "C:\\Users\\Victor\\Documents\\Proyectos 4 ciclo\\PIS-CUARTO_CICLO\\PIS\\Static\\Predicciones",
+#         "prediccion.png",
+#     )
+#     plt.savefig(filename)
+#     plt.close()
+#     # plt.savefig("../Static/Predicciones/prediccion.png")
+
+#     return render(
+#         request, "PredecirDesercion.html", {"prediccion": prob_desercion_final}
+#     )
+

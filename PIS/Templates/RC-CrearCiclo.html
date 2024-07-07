@@ -32,7 +32,7 @@
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 500px;
+            max-width: 450px;
             padding: 30px;
             margin: auto;
         }
@@ -69,6 +69,17 @@
             font-size: 16px;
             margin-top: 5px;
             box-sizing: border-box;
+            color: #555;
+        }
+
+        input[type="date"],
+        select {
+            color: #aaa;
+        }
+
+        input.has-value,
+        select.has-value {
+            color: #333;
         }
 
         button[type="submit"],
@@ -114,14 +125,6 @@
             <form method="POST">
                 <h1 class="t">Crear ciclo</h1>
                 {% csrf_token %}
-                <!-- {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}" role="alert">
-                    {{ message }}
-                </div>
-                {% endfor %}
-                {% endif %} -->
-
                 <div class="row">
                     <div class="form-group">
                         <label for="{{ form.nombre_ciclo.id_for_label }}">Nombre del ciclo:</label>
@@ -129,11 +132,17 @@
                     </div>
                     <div class="form-group">
                         <label for="{{ form.fecha_inicio.id_for_label }}">Fecha inicio:</label>
-                        {{ form.fecha_inicio }}
+                        <input type="date" id="id_fecha_inicio" name="fecha_inicio"
+                            placeholder="Ingrese la fecha de inicio" required>
                     </div>
                     <div class="form-group">
                         <label for="{{ form.fecha_fin.id_for_label }}">Fecha fin:</label>
-                        {{ form.fecha_fin }}
+                        <input type="date" id="id_fecha_fin" name="fecha_fin" placeholder="Ingrese la fecha de fin"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.periodo_academico.id_for_label }}">Periodo Académico:</label>
+                        {{ form.periodo_academico }}
                     </div>
                     <div class="form-group">
                         <label for="{{ form.carrera.id_for_label }}">Carrera:</label>
@@ -141,7 +150,7 @@
                     </div>
                     <div class="button-group">
                         <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
-                        <button type="submit">Crear carrera</button>
+                        <button type="submit">Crear ciclo</button>
                     </div>
                 </div>
             </form>
@@ -161,6 +170,38 @@
         function recordarPaginaAnterior() {
             localStorage.setItem('paginaAnterior', document.referrer);
         }
+
+        var dateInputs = document.querySelectorAll('input[type="date"]');
+
+        dateInputs.forEach(function (input) {
+            input.addEventListener('input', function () {
+                if (this.value.trim() !== '') {
+                    this.classList.add('has-value');
+                } else {
+                    this.classList.remove('has-value');
+                }
+            });
+
+            if (input.value.trim() !== '') {
+                input.classList.add('has-value');
+            }
+        });
+
+        var selectInputs = document.querySelectorAll('select');
+
+        selectInputs.forEach(function (select) {
+            select.addEventListener('change', function () {
+                if (this.value.trim() !== '') {
+                    this.classList.add('has-value');
+                } else {
+                    this.classList.remove('has-value');
+                }
+            });
+
+            if (select.value.trim() !== '') {
+                select.classList.add('has-value');
+            }
+        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
