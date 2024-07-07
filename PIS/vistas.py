@@ -365,7 +365,6 @@ def CerrarSesion(request):
 
 # prueba 2
 
-
 def RecuperarContrasenia(request):
     if request.method == "POST":
         form = RecuperarContraseniaForm(request.POST)
@@ -502,7 +501,6 @@ def CambiarContrasenia(request):
         form = CambiarContraseniaForm()
 
     return render(request, "CambiarContrasenia.html", {"form": form})
-
 
 def RegistrarTipoDNI(request):
     if request.method == "POST":
@@ -1725,3 +1723,4 @@ def PredecirDesercion(request):
 #     return render(
 #         request, "PredecirDesercion.html", {"prediccion": prob_desercion_final}
 #     )
+
