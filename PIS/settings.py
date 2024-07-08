@@ -83,6 +83,10 @@ STATIC_URL = '/Static/'
 
 STATIC_ROOT = BASE_DIR / 'Static'
 
+MEDIA_URL = '/Fotos/'
+
+MEDIA_ROOT = BASE_DIR / 'Fotos'
+
 LOGIN_URL = "/Iniciar-Sesion"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

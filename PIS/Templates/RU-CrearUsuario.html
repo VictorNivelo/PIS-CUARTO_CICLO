@@ -69,7 +69,7 @@
             border-radius: 5px;
             font-size: 16px;
             margin-top: 5px;
-            color: #555;
+            color: #333;
         }
 
         select option {
@@ -228,13 +228,13 @@
         });
 
         var formInputs = document.querySelectorAll('input, select');
-        formInputs.forEach(function(input) {
+        formInputs.forEach(function (input) {
             input.addEventListener('input', setInputHasValue);
             setInputHasValue.call(input);
         });
 
         function setInputHasValue() {
-            if (this.value.trim() !== '') {
+            if (this.value.trim() !== '' || (this.tagName === 'SELECT' && this.value !== '')) {
                 this.classList.add('has-value');
             } else {
                 this.classList.remove('has-value');

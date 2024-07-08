@@ -247,6 +247,7 @@
                 <thead>
                     <tr>
                         <th>Nombre del ciclo</th>
+                        <th>Numero del ciclo</th>
                         <th>Fecha inicio</th>
                         <th>Fecha fin</th>
                         <th>Carrera</th>
@@ -259,12 +260,12 @@
                             {% csrf_token %}
                             <input type="hidden" name="ciclo_id" value="{{ ciclo.id }}">
                             <td><input type="text" name="nombre_ciclo" value="{{ ciclo.nombre_ciclo }}"></td>
-                            <!-- <td><input type="text" name="fecha_inicio" value="{{ ciclo.fecha_inicio }}"></td> -->
-                            <!-- <td><input type="text" name="fecha_fin" value="{{ ciclo.fecha_fin }}"></td> -->
+                            <td class="actions-column10"><input type="number" name="numero_ciclo"
+                                    value="{{ ciclo.numero_ciclo}}"></td>
                             <td class="actions-column10"><input type="date" name="fecha_inicio"
-                                value="{{ ciclo.fecha_inicio|date:'Y-m-d' }}"></td>
+                                    value="{{ ciclo.fecha_inicio|date:'Y-m-d' }}"></td>
                             <td class="actions-column10"><input type="date" name="fecha_fin"
-                                value="{{ ciclo.fecha_fin|date:'Y-m-d' }}"></td>
+                                    value="{{ ciclo.fecha_fin|date:'Y-m-d' }}"></td>
                             <td>
                                 <select name="carrera">
                                     {% for carrera in carreras %}

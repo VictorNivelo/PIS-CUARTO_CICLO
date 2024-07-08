@@ -266,6 +266,7 @@
                         <th>Codigo del Período</th>
                         <th>Fecha de Inicio</th>
                         <th>Fecha de Fin</th>
+                        <th>Estado</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -276,8 +277,8 @@
                             {% csrf_token %}
                             <input type="hidden" name="PeriodoAcademico_id" value="{{ PeriodoAcademico.id }}">
                             <td><input type="text" name="codigo_periodo_academico" value="{{ PeriodoAcademico.codigo_periodo_academico }}"></td>
-                            <td><input type="date" name="fecha_inicio" value="{{ PeriodoAcademico.fecha_inicio|date:'Y-m-d' }}"></td>
-                            <td><input type="date" name="fecha_fin" value="{{ PeriodoAcademico.fecha_fin|date:'Y-m-d' }}"></td>
+                            <td class="actions-column10"><input type="date" name="fecha_inicio" value="{{ PeriodoAcademico.fecha_inicio|date:'Y-m-d' }}"></td>
+                            <td class="actions-column10"><input type="date" name="fecha_fin" value="{{ PeriodoAcademico.fecha_fin|date:'Y-m-d' }}"></td>
                             <td>
                                 <select name="estado">
                                     <option value="Activo" {% if PeriodoAcademico.estado_periodo_academico == "Activo" %}selected{% endif %}>Activo</option>

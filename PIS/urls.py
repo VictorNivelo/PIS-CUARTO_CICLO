@@ -11,6 +11,7 @@ from .vistas import (
     RegistrarUsuario,
     RecuperarContrasenia,
     CambiarContrasenia,
+    CorreoEnviado,
     
     InformeMateria,
     InformeCiclo,
@@ -41,6 +42,7 @@ from .vistas import (
     RegistrarCiclo,
     RegistrarMateria,
     RegistrarPeriodoAcademico,
+    RegistrarEstudiante,
     
     GestionUsuario,
     GestionGenero,
@@ -49,6 +51,8 @@ from .vistas import (
     GestionCarrera,
     GestionCiclo,
     GestionMateria,
+    GestionEstudiante,
+    
     upload_universities,
     PredecirDesercion,
 )
@@ -69,11 +73,13 @@ urlpatterns = [
     path("Registrar-Ciclo/", RegistrarCiclo, name="Registrar_Ciclo"),
     path("Registrar-PeriodoAcademico/", RegistrarPeriodoAcademico, name="Registrar_PeriodoAcademico"),
     path("Registrar-Materia/", RegistrarMateria, name="Registrar_Materia"),
+    path("Registrar-Estudiante/", RegistrarEstudiante, name="Registrar_Estudiante"),
     
     path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
     path("Cerrar-Sesion/", CerrarSesion, name="Cerrar_Sesion"),
     path("Recuperar-Contrasenia/", RecuperarContrasenia, name="Recuperar_Contrasenia"),
-    path("Cambiar-Contrasenia/", CambiarContrasenia, name="Cambiar_Contrasenia"),
+    path("Cambiar-Contrasenia/<uidb64>/<token>/", CambiarContrasenia, name="Cambiar_Contrasenia"),
+    path("Correo-Enviado/<str:uidb64>/<str:token>/", CorreoEnviado, name="Correo_Enviado"),
     
     path("Informe-Materia/", InformeMateria, name="Informe_Materia"),
     path("Informe-Ciclo/", InformeCiclo, name="Informe_Ciclo"),
@@ -100,6 +106,7 @@ urlpatterns = [
     path("Gestion-PeriodoAcademico/", GestionPeriodoAcademico, name="Gestion_PeriodoAcademico"),
     path("Gestion-Ciclo/", GestionCiclo, name="Gestion_Ciclo"),
     path("Gestion-Materia/", GestionMateria, name="Gestion_Materia"),
+    path("Gestion-Estudiante/", GestionEstudiante, name="Gestion_Estudiante"),
 
     path('upload-universities/', upload_universities, name='upload_universities'),
 
