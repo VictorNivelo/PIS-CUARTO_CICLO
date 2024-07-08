@@ -234,9 +234,10 @@ class Materia(models.Model):
         limit_choices_to={"rol": "Docente"},
     )
     ciclo = models.ForeignKey(Ciclo, on_delete=models.CASCADE, verbose_name="Ciclo")
-    datos_historicos = models.ForeignKey(
-        "Datos_Historicos", on_delete=models.CASCADE, verbose_name="Datos Históricos"
-    )
+    # esta si va pero luego
+    # datos_historicos = models.ForeignKey(
+    #     "Datos_Historicos", on_delete=models.CASCADE, verbose_name="Datos Históricos"
+    # )
 
     def __str__(self):
         return self.nombre_materia
