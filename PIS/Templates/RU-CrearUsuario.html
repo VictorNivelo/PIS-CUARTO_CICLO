@@ -222,7 +222,8 @@
                 confirmButtonText: 'OK'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    document.getElementById('registerForm').submit();
+                    window.location.href = "{% url 'Iniciar_Sesion' %}";
+                    // document.getElementById('registerForm').submit();
                 }
             });
         });
