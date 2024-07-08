@@ -80,7 +80,7 @@
 
         input.has-value,
         select.has-value {
-            color: #333; 
+            color: #333;
         }
 
         button[type="submit"],
@@ -163,8 +163,8 @@
         }
 
         var carreraInput = document.querySelector('input[name="nombre_carrera"]');
-        
-        carreraInput.addEventListener('input', function() {
+
+        carreraInput.addEventListener('input', function () {
             if (this.value.trim() !== '') {
                 this.classList.add('has-value');
             } else {
@@ -176,9 +176,23 @@
             carreraInput.classList.add('has-value');
         }
 
+        var duracionInput = document.querySelector('input[name="duracion"]');
+
+        duracionInput.addEventListener('input', function () {
+            if (this.value.trim() !== '') {
+                this.classList.add('has-value');
+            } else {
+                this.classList.remove('has-value');
+            }
+        });
+
+        if (duracionInput.value.trim() !== '') {
+            duracionInput.classList.add('has-value');
+        }
+
         var facultadSelect = document.querySelector('select[name="facultad"]');
-        
-        facultadSelect.addEventListener('change', function() {
+
+        facultadSelect.addEventListener('change', function () {
             if (this.value.trim() !== '') {
                 this.classList.add('has-value');
             } else {

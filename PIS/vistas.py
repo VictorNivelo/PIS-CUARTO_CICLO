@@ -1,10 +1,13 @@
+import token
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.contrib.auth.forms import SetPasswordForm
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail import send_mail
+from django.utils.encoding import force_str
 import re
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -44,6 +47,7 @@ from PIS.models import (
     Ciclo,
     Materia,
     Genero,
+    Estudiante,
 )
 from .forms import (
     GeneroForm,
@@ -52,6 +56,7 @@ from .forms import (
     InformeMateriaForm,
     PeriodoAcademicoForm,
     RecuperarContraseniaForm,
+    RegistrarEstudianteForm,
     RegistrarUsuarioForm,
     UniversidadForm,
     FacultadForm,
@@ -198,6 +203,19 @@ def GestionMateria(request):
 # funciones de autenticacion
 
 
+def SubirImagenPerfil(request):
+    if request.method == "POST":
+        if request.FILES["Fotos"]:
+            imagen = request.FILES["Fotos"]
+            usuario = request.user
+            usuario.foto = imagen
+            usuario.save()
+            messages.success(request, "Imagen de perfil actualizada exitosamente.")
+        else:
+            messages.error(request, "No se ha seleccionado ninguna imagen.")
+    return redirect("Perfil_Usuario")
+
+
 def RegistrarUsuario(request):
     if request.method == "POST":
         form = RegistrarUsuarioForm(request.POST)
@@ -337,6 +355,93 @@ def CerrarSesion(request):
     return redirect("Iniciar_Sesion")
 
 
+def RegistrarEstudiante(request):
+    if request.method == "POST":
+        form = RegistrarEstudianteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Estudiante registrado exitosamente.")
+            return redirect("Gestion_Estudiante")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Error en el campo {field}: {error}")
+    else:
+        form = RegistrarEstudianteForm()
+
+    return render(request, "RE-CrearEstudiante.html", {"form": form})
+
+
+def GestionEstudiante(request):
+    query = request.GET.get("search_query", "")
+    filter_genero = request.GET.get("genero", "")
+    filter_modalidad = request.GET.get("modalidad_estudio", "")
+    filter_tipo_educacion = request.GET.get("tipo_educacion", "")
+    # filter_tipo_dni = request.GET.get("tipo_dni", "")
+
+    estudiantes = Estudiante.objects.all()
+    generos = Genero.objects.all()
+    tipos_dni = TipoDNI.objects.all()
+    materias = Materia.objects.all()
+
+    if query:
+        estudiantes = estudiantes.filter(
+            Q(nombre_estudiante__icontains=query) | Q(dni_estudiante__icontains=query)
+        )
+    if filter_genero:
+        estudiantes = estudiantes.filter(genero_id=filter_genero)
+    # if filter_tipo_dni:
+    #     estudiantes = estudiantes.filter(tipo_DNI=filter_tipo_dni)
+    if filter_modalidad:
+        estudiantes = estudiantes.filter(modalidad_estudio=filter_modalidad)
+    if filter_tipo_educacion:
+        estudiantes = estudiantes.filter(tipo_educacion=filter_tipo_educacion)
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            estudiante_id = request.POST.get("estudiante_id")
+            estudiante = Estudiante.objects.get(id=estudiante_id)
+            estudiante.nombre_estudiante = request.POST.get("nombre_estudiante")
+            estudiante.apellido_estudiante = request.POST.get("apellido_estudiante")
+            estudiante.genero_id = request.POST.get("genero")
+            estudiante.tipo_dni_id = request.POST.get("tipo_dni")
+            estudiante.dni_estudiante = request.POST.get("dni_estudiante")
+            estudiante.modalidad_estudio = request.POST.get("modalidad_estudio")
+            estudiante.tipo_educacion = request.POST.get("tipo_educacion")
+            estudiante.origen = request.POST.get("origen")
+            estudiante.trabajo = request.POST.get("trabajo")
+            estudiante.discapacidad = request.POST.get("discapacidad")
+            estudiante.hijos = request.POST.get("hijos")
+            materias_ids = request.POST.getlist("materia")
+            estudiante.materia.set(materias_ids)
+            estudiante.save()
+            messages.success(
+                request, "Información del estudiante actualizada correctamente."
+            )
+        elif "delete" in request.POST:
+            estudiante_id = request.POST.get("estudiante_id")
+            estudiante = Estudiante.objects.get(id=estudiante_id)
+            estudiante.delete()
+            messages.success(request, "Estudiante eliminado correctamente.")
+        return redirect("Gestion_Estudiante")
+
+    return render(
+        request,
+        "GestionEstudiante.html",
+        {
+            "estudiantes": estudiantes,
+            "generos": generos,
+            "tipos_dni": tipos_dni,
+            "materias": materias,
+            "query": query,
+            "filter_genero": filter_genero,
+            "filter_modalidad": filter_modalidad,
+            "filter_tipo_educacion": filter_tipo_educacion,
+            # "filter_tipo_dni": filter_tipo_dni,
+        },
+    )
+
+
 # def RecuperarContrasenia(request):
 #     if request.method == "POST":
 #         form = RecuperarContraseniaForm(request.POST)
@@ -365,23 +470,29 @@ def CerrarSesion(request):
 
 # prueba 2
 
+
+def CorreoEnviado(request, uidb64, token):
+    return render(request, "CorreoRecuperacionEnviado.html")
+
+
+User = get_user_model()
+
+
 def RecuperarContrasenia(request):
     if request.method == "POST":
         form = RecuperarContraseniaForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data["username"]
             try:
-                user = UsuarioPersonalizado.objects.get(username=username)
-            except UsuarioPersonalizado.DoesNotExist:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
                 messages.error(request, "El usuario no existe.")
                 return render(request, "RecuperarContrasenia.html", {"form": form})
 
             token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
 
-            return render(
-                request, "CambiarContrasenia.html", {"uid": uid, "token": token}
-            )
+            return redirect("Correo_Enviado", uidb64=uidb64, token=token)
         else:
             messages.error(request, "Error al enviar el enlace de recuperación.")
     else:
@@ -389,38 +500,111 @@ def RecuperarContrasenia(request):
     return render(request, "RecuperarContrasenia.html", {"form": form})
 
 
-User = get_user_model()
+def CambiarContrasenia(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
 
-
-def CambiarContrasenia(request):
-    if request.method == "POST":
-        uid = request.POST.get("uid")
-        token = request.POST.get("token")
-        new_password1 = request.POST.get("new_password1")
-        new_password2 = request.POST.get("new_password2")
-
-        if new_password1 != new_password2:
-            messages.error(request, "Las contraseñas no coinciden.")
-            return redirect("cambiar_contrasenia")
-
-        try:
-            uid = urlsafe_base64_decode(uid).decode()
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
-
-        if user is not None and default_token_generator.check_token(user, token):
-            user.password = make_password(new_password1)
-            user.save()
-            messages.success(request, "Contraseña cambiada con éxito.")
-            return redirect("Iniciar_Sesion")
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == "POST":
+            form = CambiarContraseniaForm(request.POST)
+            if form.is_valid():
+                user.set_password(form.cleaned_data["Contrasenia"])
+                user.save()
+                messages.success(request, "Contraseña cambiada con éxito.")
+                return redirect("Iniciar_Sesion")
         else:
-            messages.error(
-                request, "El enlace de restablecimiento de contraseña no es válido."
-            )
-            return redirect("Recuperar_Contrasenia")
+            form = CambiarContraseniaForm()
+        return render(request, "CambiarContrasenia.html", {"form": form})
     else:
-        return render(request, "CambiarContrasenia.html")
+        messages.error(
+            request, "El enlace de restablecimiento de contraseña no es válido."
+        )
+        return redirect("Recuperar_Contrasenia")
+
+
+# def RecuperarContrasenia(request):
+#     if request.method == "POST":
+#         form = RecuperarContraseniaForm(request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data["username"]
+#             try:
+#                 user = UsuarioPersonalizado.objects.get(username=username)
+#             except UsuarioPersonalizado.DoesNotExist:
+#                 messages.error(request, "El usuario no existe.")
+#                 return render(request, "RecuperarContrasenia.html", {"form": form})
+
+#             token = default_token_generator.make_token(user)
+#             uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+#             return render(
+#                 request, "CambiarContrasenia.html", {"uid": uid, "token": token}
+#             )
+#         else:
+#             messages.error(request, "Error al enviar el enlace de recuperación.")
+#     else:
+#         form = RecuperarContraseniaForm()
+#     return render(request, "RecuperarContrasenia.html", {"form": form})
+
+
+# User = get_user_model()
+
+# def CambiarContrasenia(request, uidb64, token):
+#     try:
+#         uid = force_str(urlsafe_base64_decode(uidb64))
+#         user = User.objects.get(pk=uid)
+#     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+#         user = None
+
+#     if user is not None and default_token_generator.check_token(user, token):
+#         if request.method == "POST":
+#             form = SetPasswordForm(user, request.POST)
+#             if form.is_valid():
+#                 form.save()
+#                 messages.success(request, 'Contraseña cambiada con éxito.')
+#                 return redirect('Iniciar_Sesion')
+#         else:
+#             form = SetPasswordForm(user)
+#         return render(request, 'CambiarContrasenia.html', {'form': form})
+#     else:
+#         messages.error(request, 'El enlace de restablecimiento de contraseña no es válido.')
+#         return redirect('Recuperar_Contrasenia')
+
+
+# User = get_user_model()
+
+
+# def CambiarContrasenia(request):
+#     if request.method == "POST":
+#         uid = request.POST.get("uid")
+#         token = request.POST.get("token")
+#         new_password1 = request.POST.get("new_password1")
+#         new_password2 = request.POST.get("new_password2")
+
+#         if new_password1 != new_password2:
+#             messages.error(request, "Las contraseñas no coinciden.")
+#             return redirect("cambiar_contrasenia")
+
+#         try:
+#             uid = urlsafe_base64_decode(uid).decode()
+#             user = User.objects.get(pk=uid)
+#         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+#             user = None
+
+#         if user is not None and default_token_generator.check_token(user, token):
+#             user.password = make_password(new_password1)
+#             user.save()
+#             messages.success(request, "Contraseña cambiada con éxito.")
+#             return redirect("Iniciar_Sesion")
+#         else:
+#             messages.error(
+#                 request, "El enlace de restablecimiento de contraseña no es válido."
+#             )
+#             return redirect("Recuperar_Contrasenia")
+#     else:
+#         return render(request, "CambiarContrasenia.html")
 
 
 # def RecuperarContrasenia(request):
@@ -483,24 +667,25 @@ def CambiarContrasenia(request):
 #     return render(request, "RecuperarContrasenia.html", {"form": form})
 
 
-def CambiarContrasenia(request):
-    if request.method == "POST":
-        form = CambiarContraseniaForm(request.POST)
-        if form.is_valid():
-            nueva_contrasenia = form.cleaned_data["Contrasenia"]
-            request.user.set_password(nueva_contrasenia)
-            request.user.save()
-            update_session_auth_hash(request, request.user)
-            messages.success(request, "Contraseña cambiada exitosamente.")
-            return redirect("Iniciar_Sesion")
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
-    else:
-        form = CambiarContraseniaForm()
+# def CambiarContrasenia(request):
+#     if request.method == "POST":
+#         form = CambiarContraseniaForm(request.POST)
+#         if form.is_valid():
+#             nueva_contrasenia = form.cleaned_data["Contrasenia"]
+#             request.user.set_password(nueva_contrasenia)
+#             request.user.save()
+#             update_session_auth_hash(request, request.user)
+#             messages.success(request, "Contraseña cambiada exitosamente.")
+#             return redirect("Iniciar_Sesion")
+#         else:
+#             for field, errors in form.errors.items():
+#                 for error in errors:
+#                     messages.error(request, f"{field}: {error}")
+#     else:
+#         form = CambiarContraseniaForm()
 
-    return render(request, "CambiarContrasenia.html", {"form": form})
+#     return render(request, "CambiarContrasenia.html", {"form": form})
+
 
 def RegistrarTipoDNI(request):
     if request.method == "POST":
@@ -801,6 +986,7 @@ def GestionCiclo(request):
             ciclo_id = request.POST.get("ciclo_id")
             ciclo = Ciclo.objects.get(id=ciclo_id)
             ciclo.nombre_ciclo = request.POST.get("nombre_ciclo")
+            ciclo.numero_ciclo = request.POST.get("numero_ciclo")
             fecha_inicio_str = request.POST.get("fecha_inicio")
             if fecha_inicio_str:
                 try:
@@ -1577,8 +1763,8 @@ def upload_universities(request):
 
 
 def PredecirDesercion(request):
-    params = params_list[0] 
-    
+    params = params_list[0]
+
     y0 = [500, 0, 0, 0]
 
     t_span = [0, 180]
@@ -1634,9 +1820,9 @@ def PredecirDesercion(request):
     plt.tight_layout()
 
     filename = os.path.join(
-        settings.STATIC_ROOT, 
-        "Predicciones",  
-        "prediccion.png", 
+        settings.STATIC_ROOT,
+        "Predicciones",
+        "prediccion.png",
     )
 
     try:
@@ -1647,14 +1833,17 @@ def PredecirDesercion(request):
         print(f"Error al guardar la imagen: {e}")
 
     relative_filename = os.path.join(
-        settings.STATIC_URL,  
+        settings.STATIC_URL,
         "Predicciones",
         "prediccion.png",
     )
 
     return render(
-        request, "PredecirDesercion.html", {"prediccion": prob_desercion_final, "imagen": relative_filename}
+        request,
+        "PredecirDesercion.html",
+        {"prediccion": prob_desercion_final, "imagen": relative_filename},
     )
+
 
 # def PredecirDesercion(request):
 #     params = params_list[0]
@@ -1723,4 +1912,3 @@ def PredecirDesercion(request):
 #     return render(
 #         request, "PredecirDesercion.html", {"prediccion": prob_desercion_final}
 #     )
-

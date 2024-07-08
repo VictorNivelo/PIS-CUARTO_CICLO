@@ -13,6 +13,7 @@ from .models import (
     Materia,
     Ciclo,
     PeriodoAcademico,
+    Estudiante,
 )
 
 
@@ -117,6 +118,86 @@ class RegistrarUsuarioForm(UserCreationForm):
             "password1": forms.PasswordInput(),
             "password2": forms.PasswordInput(),
         }
+
+
+class RegistrarEstudianteForm(forms.ModelForm):
+    tipo_dni = forms.ModelChoiceField(
+        queryset=TipoDNI.objects.all(),
+        to_field_name="nombre_tipo_dni",
+        empty_label="Seleccione un Tipo de DNI",
+        label="Tipo de DNI",
+    )
+
+    dni_estudiante = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su DNI"}),
+        max_length=10,
+        label="DNI",
+    )
+
+    nombre_estudiante = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su nombre"}),
+        label="Nombre",
+    )
+
+    apellido_estudiante = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese su apellido"}),
+        label="Apellido",
+    )
+
+    genero = forms.ModelChoiceField(
+        queryset=Genero.objects.all(),
+        to_field_name="nombre_genero",
+        empty_label="Seleccione un genero",
+        label="Genero",
+    )
+
+    modalidad_estudio = forms.ChoiceField(
+        choices=Estudiante.MODALIDAD_ESTUDIO_CHOICES,
+        label="Modalidad de Estudio",
+    )
+
+    tipo_educacion = forms.ChoiceField(
+        choices=Estudiante.TIPO_EDUCACION_CHOICES,
+        label="Tipo de Educación",
+    )
+
+    origen = forms.ChoiceField(
+        choices=Estudiante.ORIGEN_CHOICES,
+        label="Origen",
+    )
+
+    trabajo = forms.ChoiceField(
+        choices=Estudiante.TRABAJA_CHOICES,
+        label="Trabajo",
+    )
+
+    discapacidad = forms.ChoiceField(
+        choices=Estudiante.DISCAPACIDAD_CHOICES,
+        label="Discapacidad",
+    )
+
+    hijos = forms.ChoiceField(
+        choices=Estudiante.HIJOS_CHOICES,
+        label="Hijos",
+    )
+
+    class Meta:
+        model = Estudiante
+        fields = [
+            "tipo_dni",
+            "dni_estudiante",
+            "nombre_estudiante",
+            "apellido_estudiante",
+            "genero",
+            "modalidad_estudio",
+            "tipo_educacion",
+            "origen",
+            "trabajo",
+            "discapacidad",
+            "hijos",
+            "materia",
+        ]
+        
 
 
 class TipoDNIForm(forms.ModelForm):
@@ -358,13 +439,6 @@ class CicloForm(forms.ModelForm):
         ),
         label="Fecha de Fin",
     )
-    periodo_academico = forms.ModelChoiceField(
-        queryset=PeriodoAcademico.objects.all(),
-        # queryset=PeriodoAcademico.objects.filter(estado='Activo'),
-        to_field_name="codigo_periodo_academico",
-        empty_label="Seleccione un periodo académico",
-        label="Periodo Académico",
-    )
     carrera = forms.ModelChoiceField(
         queryset=Carrera.objects.all(),
         to_field_name="nombre_carrera",
@@ -378,7 +452,6 @@ class CicloForm(forms.ModelForm):
             "nombre_ciclo",
             "fecha_inicio",
             "fecha_fin",
-            "periodo_academico",
             "carrera",
         ]
 
@@ -396,7 +469,9 @@ class MateriaForm(forms.ModelForm):
         min_value=1,
     )
     unidades = forms.IntegerField(
-        widget=forms.NumberInput(attrs={"placeholder": "Ingrese el número de unidades"}),
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese el número de unidades"}
+        ),
         label="Unidades",
         min_value=1,
     )
@@ -412,21 +487,28 @@ class MateriaForm(forms.ModelForm):
         empty_label="Seleccione un ciclo",
         label="Ciclo",
     )
-    datos_historicos = forms.ModelChoiceField(
-        queryset=Datos_Historicos.objects.all(),
-        to_field_name="codigo_datos_historicos",
-        empty_label="Seleccione datos historicos",
-        label="Datos Historicos",
+    periodo_academico = forms.ModelChoiceField(
+        queryset=PeriodoAcademico.objects.all(),
+        to_field_name="codigo_periodo_academico",
+        empty_label="Seleccione un periodo académico",
+        label="Periodo Académico",
     )
+    # datos_historicos = forms.ModelChoiceField(
+    #     queryset=Datos_Historicos.objects.all(),
+    #     to_field_name="codigo_datos_historicos",
+    #     empty_label="Seleccione datos historicos",
+    #     label="Datos Historicos",
+    # )
 
     class Meta:
         model = Materia
         fields = [
             "nombre_materia",
             "numero_horas",
+            "unidades",
             "docente_encargado",
             "ciclo",
-            "datos_historicos",
+            "periodo_academico",
         ]
 
 
@@ -471,8 +553,11 @@ class PeriodoAcademicoForm(forms.ModelForm):
 
 
 class DatosHistoricosForm(forms.Form):
-    fecha = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}), label="Fecha", required=False
+    materia = forms.ModelChoiceField(
+        queryset=Materia.objects.all(),
+        to_field_name="nombre_materia",
+        empty_label="Seleccione una materia",
+        label="Materia",
     )
     cantidad_matriculados = forms.IntegerField(
         widget=forms.NumberInput(
@@ -497,7 +582,7 @@ class DatosHistoricosForm(forms.Form):
     class Meta:
         model = Datos_Historicos
         fields = [
-            "fecha",
+            "materia",
             "cantidad_matriculados",
             "cantidad_aprobados",
             "cantidad_reprobados",
