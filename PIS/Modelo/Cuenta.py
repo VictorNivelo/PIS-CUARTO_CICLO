@@ -1,39 +1,44 @@
 class Cuenta:
-    def __init__(self, id, nombre, email, tipo, estado='activo'):
-        self.id = id
-        self.nombre = nombre
-        self.email = email
-        self.tipo = tipo
-        self.estado = estado
+    def __init__(self, correo, contrasena):
+        self.correo = correo
+        self.contrasena = contrasena
 
-    def actualizar_email(self, nuevo_email):
-        self.email = nuevo_email
-        print(f"Email actualizado a: {self.email}")
+    def iniciar_sesion(self):
+        return f"Sesión iniciada para el correo '{self.correo}'."
 
-    def actualizar_estado(self, nuevo_estado):
-        self.estado = nuevo_estado
-        print(f"Estado actualizado a: {self.estado}")
+    def cerrar_sesion(self):
+        return f"Sesión cerrada para el correo '{self.correo}'."
 
-    def mostrar_informacion(self):
-        print(f"ID: {self.id}")
-        print(f"Nombre: {self.nombre}")
-        print(f"Email: {self.email}")
-        print(f"Tipo: {self.tipo}")
-        print(f"Estado: {self.estado}")
+    def crear_cuenta(self):
+        return f"Cuenta con correo '{self.correo}' creada con éxito."
 
-# Ejemplo de uso
-if __name__ == "__main__":
-    # Crear una nueva cuenta de estudiante
-    cuenta_estudiante = Cuenta(id="2024001", nombre="Ana López", email="ana.lopez@example.com", tipo="estudiante")
+    def modificar_cuenta(self, correo=None, contrasena=None):
+        if correo:
+            self.correo = correo
+        if contrasena:
+            self.contrasena = contrasena
+        return f"Cuenta con correo '{self.correo}' modificada con éxito."
 
-    # Mostrar información de la cuenta
-    cuenta_estudiante.mostrar_informacion()
+    def eliminar_cuenta(self):
+        correo = self.correo
+        self.correo = None
+        self.contrasena = None
+        return f"Cuenta con correo '{correo}' eliminada con éxito."
 
-    # Actualizar el email de la cuenta
-    cuenta_estudiante.actualizar_email("ana.lopez123@example.com")
+    def recuperar_contrasena(self):
+        return f"Contraseña para el correo '{self.correo}' recuperada."
 
-    # Actualizar el estado de la cuenta
-    cuenta_estudiante.actualizar_estado("inactivo")
+    def subir_imagen_perfil(self, imagen):
+        return f"Imagen de perfil '{imagen}' subida para la cuenta '{self.correo}'."
 
-    # Mostrar información de la cuenta nuevamente
-    cuenta_estudiante.mostrar_informacion()
+    def get_correo(self):
+        return self.correo
+
+    def set_correo(self, correo):
+        self.correo = correo
+
+    def get_contrasena(self):
+        return self.contrasena
+
+    def set_contrasena(self, contrasena):
+        self.contrasena = contrasena

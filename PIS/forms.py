@@ -21,7 +21,7 @@ class TelefonoInput(forms.TextInput):
     input_type = "tel"
 
     def __init__(self, attrs=None):
-        default_attrs = {"pattern": "[0-9]{1,10}", "maxlength": "10"}
+        default_attrs = {"pattern": "[0-9]{1,10}", "maxlength": "13"}
         if attrs:
             default_attrs.update(attrs)
         super().__init__(default_attrs)
@@ -31,16 +31,19 @@ class RegistrarUsuarioForm(UserCreationForm):
 
     username = forms.EmailField(
         widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electrónico"}),
+        max_length=100,
         label="Correo Electrónico",
     )
 
     first_name = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Ingrese su nombre"}),
+        max_length=100,
         label="Nombre",
     )
 
     last_name = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Ingrese su apellido"}),
+        max_length=100,
         label="Apellido",
     )
 
@@ -54,7 +57,6 @@ class RegistrarUsuarioForm(UserCreationForm):
     telefono = forms.CharField(
         widget=TelefonoInput(attrs={"placeholder": "Ingrese su número de teléfono"}),
         max_length=10,
-        required=False,
         label="Numero de teléfono",
     )
 
@@ -68,7 +70,7 @@ class RegistrarUsuarioForm(UserCreationForm):
     dni = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Ingrese su DNI"}),
         max_length=10,
-        required=False,
+        required=True,
         label="DNI",
     )
 
@@ -79,7 +81,7 @@ class RegistrarUsuarioForm(UserCreationForm):
                 "Placeholder": "Ingrese su fecha de nacimiento",
             }
         ),
-        required=False,
+        required=True,
         label="Fecha de Nacimiento",
     )
 
@@ -136,11 +138,13 @@ class RegistrarEstudianteForm(forms.ModelForm):
 
     nombre_estudiante = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Ingrese su nombre"}),
+        max_length=100,
         label="Nombre",
     )
 
     apellido_estudiante = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Ingrese su apellido"}),
+        max_length=100,
         label="Apellido",
     )
 
@@ -197,7 +201,6 @@ class RegistrarEstudianteForm(forms.ModelForm):
             "hijos",
             "materia",
         ]
-        
 
 
 class TipoDNIForm(forms.ModelForm):
@@ -205,12 +208,16 @@ class TipoDNIForm(forms.ModelForm):
         widget=forms.TextInput(
             attrs={"placeholder": "Ingrese el nombre del tipo de DNI"}
         ),
+        max_length=100,
+        required=True,
         label="Nombre del Tipo de DNI",
     )
     descripcion_tipo_dni = forms.CharField(
         widget=forms.TextInput(
             attrs={"placeholder": "Ingrese la descripción del tipo de DNI"}
         ),
+        max_length=100,
+        required=True,
         label="Descripción",
     )
 
@@ -222,12 +229,14 @@ class TipoDNIForm(forms.ModelForm):
 class GeneroForm(forms.ModelForm):
     nombre_genero = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Ingrese el nombre del genero"}),
+        max_length=100,
         label="Nombre del Genero",
     )
     descripcion_genero = forms.CharField(
         widget=forms.TextInput(
             attrs={"placeholder": "Ingrese la descripción del genero"}
         ),
+        max_length=100,
         label="Descripción",
     )
 
@@ -325,18 +334,23 @@ class UniversidadForm(forms.ModelForm):
         widget=forms.TextInput(
             attrs={"placeholder": "Ingrese el nombre de la universidad"}
         ),
+        max_length=100,
+        required=True,
         label="Nombre de la Universidad",
     )
     direccion_universidad = forms.CharField(
         widget=forms.TextInput(
             attrs={"placeholder": "Ingrese la dirección de la universidad"}
         ),
+        max_length=100,
+        required=True,
         label="Dirección",
     )
     telefono_universidad = forms.CharField(
-        widget=TelefonoInput(
+        widget=forms.TextInput(
             attrs={"placeholder": "Ingrese el teléfono de la universidad"}
         ),
+        max_length=13,
         label="Teléfono",
     )
     correo_universidad = forms.EmailField(
@@ -368,6 +382,7 @@ class FacultadForm(forms.ModelForm):
         widget=forms.TextInput(
             attrs={"placeholder": "Ingrese el nombre de la facultad"}
         ),
+        max_length=100,
         label="Nombre de la Facultad",
     )
     fecha_fundacion = forms.DateField(
@@ -397,6 +412,7 @@ class CarreraForm(forms.ModelForm):
         widget=forms.TextInput(
             attrs={"placeholder": "Ingrese el nombre de la carrera"}
         ),
+        max_length=100,
         label="Nombre de la Carrera",
     )
     duracion = forms.IntegerField(
@@ -425,6 +441,7 @@ class CarreraForm(forms.ModelForm):
 class CicloForm(forms.ModelForm):
     nombre_ciclo = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Ingrese el nombre del ciclo"}),
+        max_length=100,
         label="Nombre del Ciclo",
     )
     fecha_inicio = forms.DateField(
@@ -564,19 +581,19 @@ class DatosHistoricosForm(forms.Form):
             attrs={"placeholder": "Ingrese la cantidad de matriculados"}
         ),
         label="Cantidad de Matriculados",
-        required=False,
+        required=True,
     )
     cantidad_aprobados = forms.IntegerField(
-        widget=forms.NumberInput(), label="Cantidad de Aprobados", required=False
+        widget=forms.NumberInput(), label="Cantidad de Aprobados", required=True
     )
     cantidad_reprobados = forms.IntegerField(
-        widget=forms.NumberInput(), label="Cantidad de Reprobados", required=False
+        widget=forms.NumberInput(), label="Cantidad de Reprobados", required=True
     )
     cantidad_desertores = forms.IntegerField(
-        widget=forms.NumberInput(), label="Cantidad de Desertores", required=False
+        widget=forms.NumberInput(), label="Cantidad de Desertores", required=True
     )
     cantidad_retirados = forms.IntegerField(
-        widget=forms.NumberInput(), label="Cantidad de Retirados", required=False
+        widget=forms.NumberInput(), label="Cantidad de Retirados", required=True
     )
 
     class Meta:

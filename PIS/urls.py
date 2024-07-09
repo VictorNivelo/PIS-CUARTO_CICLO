@@ -54,6 +54,7 @@ from .vistas import (
     GestionEstudiante,
     
     upload_universities,
+    ImportarEstudiante,
     PredecirDesercion,
 )
 
@@ -109,6 +110,7 @@ urlpatterns = [
     path("Gestion-Estudiante/", GestionEstudiante, name="Gestion_Estudiante"),
 
     path('upload-universities/', upload_universities, name='upload_universities'),
+    path("Importar-Estudiante/", ImportarEstudiante, name="Importar_Estudiante"),
 
     path("Predecir/", PredecirDesercion, name="Predecir_Desercion"),
 

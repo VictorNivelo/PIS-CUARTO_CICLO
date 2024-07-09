@@ -83,7 +83,7 @@
 
         input.has-value,
         select.has-value {
-            color: #333; 
+            color: #333;
         }
 
         button[type="submit"],
@@ -213,34 +213,130 @@
             localStorage.setItem('paginaAnterior', document.referrer);
         }
 
-        document.getElementById('registerForm').addEventListener('submit', function (event) {
-            event.preventDefault();
+        function soloLetras(e) {
+            var key = e.keyCode || e.which;
+            var tecla = String.fromCharCode(key).toLowerCase();
+            var letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+            var especiales = "8-37-39-46";
+
+            var tecla_especial = false
+            for (var i in especiales) {
+                if (key == especiales[i]) {
+                    tecla_especial = true;
+                    break;
+                }
+            }
+
+            if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Solo se permiten letras en este campo',
+                });
+                return false;
+            }
+        }
+
+        function soloNumeros(e) {
+            var key = e.keyCode || e.which;
+            var tecla = String.fromCharCode(key);
+            var numeros = "0123456789";
+
+            if (numeros.indexOf(tecla) == -1) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Solo se permiten números en este campo',
+                });
+                return false;
+            }
+        }
+
+        function validarContrasenia(password) {
+            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            return regex.test(password);
+        }
+
+        function validarTelefono(telefono) {
+            return telefono.startsWith('09');
+        }
+
+        document.getElementById('id_first_name').onkeypress = soloLetras;
+        document.getElementById('id_last_name').onkeypress = soloLetras;
+        document.getElementById('id_telefono').onkeypress = soloNumeros;
+        document.getElementById('id_dni').onkeypress = soloNumeros;
+
+        document.getElementById('id_password1').addEventListener('input', function () {
+            var password = this.value;
+            if (password && !validarContrasenia(password)) {
+                this.setCustomValidity('La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        document.getElementById('id_telefono').addEventListener('input', function () {
+            if (!validarTelefono(this.value)) {
+                this.setCustomValidity('El número de teléfono debe comenzar con 09');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        document.getElementById('registerForm').onsubmit = function (e) {
+            e.preventDefault();
+
+            var password1 = document.getElementById('id_password1').value;
+            var password2 = document.getElementById('id_password2').value;
+            var telefono = document.getElementById('id_telefono').value;
+
+            if (!validarContrasenia(password1)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Contraseña no segura',
+                    text: 'La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.',
+                });
+                return false;
+            }
+
+            if (password1 !== password2) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Las contraseñas no coinciden',
+                });
+                return false;
+            }
+
+            if (!validarTelefono(telefono)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'El número de teléfono debe comenzar con 09',
+                });
+                return false;
+            }
+
+            var inputs = this.querySelectorAll('input, select');
+            for (var i = 0; i < inputs.length; i++) {
+                if (!inputs[i].value) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Por favor, complete todos los campos',
+                    });
+                    return false;
+                }
+            }
 
             Swal.fire({
                 title: 'Usuario creado exitosamente',
                 icon: 'success',
                 confirmButtonText: 'OK'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "{% url 'Iniciar_Sesion' %}";
-                    // document.getElementById('registerForm').submit();
-                }
             });
-        });
 
-        var formInputs = document.querySelectorAll('input, select');
-        formInputs.forEach(function (input) {
-            input.addEventListener('input', setInputHasValue);
-            setInputHasValue.call(input);
-        });
-
-        function setInputHasValue() {
-            if (this.value.trim() !== '' || (this.tagName === 'SELECT' && this.value !== '')) {
-                this.classList.add('has-value');
-            } else {
-                this.classList.remove('has-value');
-            }
-        }
+            this.submit();
+        };
     </script>
 </body>
 

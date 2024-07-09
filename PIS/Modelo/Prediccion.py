@@ -1,33 +1,35 @@
+class Prediccion:
+    def __init__(self, periodo_academico, fecha_creacion):
+        self.periodo_academico = periodo_academico
+        self.fecha_creacion = fecha_creacion
 
-class Predicciones:
-    def __init__(self, modelo):
-        self.modelo = modelo
-        self.predicciones = []
+    def generar_prediccion(self):
+        return (
+            f"Predicción generada para el periodo académico '{self.periodo_academico}'."
+        )
 
-    def predecir(self, datos):
-        self.predicciones = self.modelo.predict(datos)
-        return self.predicciones
+    def guardar_prediccion(self):
+        return (
+            f"Predicción guardada para el periodo académico '{self.periodo_academico}'."
+        )
 
-    def obtener_predicciones(self):
-        return self.predicciones
+    def eliminar_prediccion(self):
+        periodo_academico = self.periodo_academico
+        self.periodo_academico = None
+        self.fecha_creacion = None
+        return f"Predicción del periodo académico '{periodo_academico}' eliminada."
 
-    def obtener_modelo(self):
-        return self.modelo
+    def generar_informe(self):
+        return f"Informe generado para la predicción del periodo académico '{self.periodo_academico}'."
 
+    def get_periodo_academico(self):
+        return self.periodo_academico
 
-# if __name__ == "__main__":
-#     # Crear un nuevo modelo de predicción
-#     modelo = RandomForestClassifier()
-#     predicciones = Predicciones(modelo)
+    def set_periodo_academico(self, periodo_academico):
+        self.periodo_academico = periodo_academico
 
-#     # Crear datos de prueba
-#     datos = [[5.1, 3.5, 1.4, 0.2], [4.9, 3.0, 1.4, 0.2], [6.2, 2.9, 4.3, 1.3]]
+    def get_fecha_creacion(self):
+        return self.fecha_creacion
 
-#     # Realizar predicciones
-#     predicciones.predecir(datos)
-
-#     # Obtener las predicciones
-#     print(predicciones.obtener_predicciones())
-
-#     # Obtener el modelo utilizado
-#     print(predicciones.obtener_modelo())
+    def set_fecha_creacion(self, fecha_creacion):
+        self.fecha_creacion = fecha_creacion
