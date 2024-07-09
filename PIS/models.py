@@ -39,9 +39,7 @@ class UsuarioPersonalizado(AbstractUser):
         max_length=10, blank=True, null=True, verbose_name="Teléfono"
     )
 
-    rol = models.CharField(
-        max_length=50, choices=ROLES, default="Docente", verbose_name="Rol"
-    )
+    rol = models.CharField(max_length=100, choices=ROLES, verbose_name="Rol")
 
     foto = models.ImageField(
         upload_to="Fotos/", null=True, blank=True, verbose_name="Foto"
@@ -144,7 +142,7 @@ class Estudiante(models.Model):
 
 class Genero(models.Model):
     nombre_genero = models.CharField(max_length=100, verbose_name="Nombre")
-    descripcion_genero = models.CharField(max_length=200, verbose_name="Descripción")
+    descripcion_genero = models.CharField(max_length=100, verbose_name="Descripción")
 
     def __str__(self):
         return self.nombre_genero
@@ -152,7 +150,7 @@ class Genero(models.Model):
 
 class TipoDNI(models.Model):
     nombre_tipo_dni = models.CharField(max_length=100, verbose_name="Nombre")
-    descripcion_tipo_dni = models.CharField(max_length=200, verbose_name="Descripción")
+    descripcion_tipo_dni = models.CharField(max_length=100, verbose_name="Descripción")
 
     def __str__(self):
         return self.nombre_tipo_dni
@@ -163,7 +161,7 @@ class Universidad(models.Model):
         max_length=100, verbose_name="Nombre universidad"
     )
     direccion_universidad = models.CharField(max_length=100, verbose_name="Dirección")
-    telefono_universidad = models.CharField(max_length=10, verbose_name="Teléfono")
+    telefono_universidad = models.CharField(max_length=13, verbose_name="Teléfono")
     correo_universidad = models.EmailField(
         max_length=100, verbose_name="Correo Electrónico"
     )
@@ -293,6 +291,9 @@ class Datos_Historicos(models.Model):
         return self.materia.nombre_materia
 
 
+# Poco usadas
+
+
 class Informe(models.Model):
 
     fecha_creacion = models.DateField(verbose_name="Fecha de Creación")
@@ -344,12 +345,9 @@ class InformeMateria(models.Model):
         return self.materia
 
 
-# Poco usadas
-
-
 class Factor(models.Model):
     nombre_factor = models.CharField(max_length=100, verbose_name="Nombre")
-    descripcion = models.CharField(max_length=200, verbose_name="Descripción")
+    descripcion = models.CharField(max_length=100, verbose_name="Descripción")
 
     def __str__(self):
         return self.nombre_factor
@@ -370,8 +368,8 @@ class Usuario(models.Model):
 
 
 class Rol(models.Model):
-    nombre_rol = models.CharField(max_length=50, verbose_name="Nombre de Rol")
-    descripcion = models.CharField(max_length=200, verbose_name="Descripción")
+    nombre_rol = models.CharField(max_length=100, verbose_name="Nombre de Rol")
+    descripcion = models.CharField(max_length=100, verbose_name="Descripción")
 
     def __str__(self):
         return self.nombre_rol

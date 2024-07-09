@@ -1,3 +1,4 @@
+import csv
 import token
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
@@ -32,7 +33,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from django.shortcuts import render
 from .models import Datos_Historicos
-from .ModeloMatematico import model, params_list
+from .Modelo.ModeloMatematico import model, params_list
 from django.contrib.auth.hashers import make_password
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import get_user_model
@@ -222,10 +223,15 @@ def RegistrarUsuario(request):
         if form.is_valid():
             user = form.save(commit=False)
 
-            if UsuarioPersonalizado.objects.count() == 0:
+            num_usuarios = UsuarioPersonalizado.objects.count()
+
+            if num_usuarios == 0:
                 user.is_superuser = True
                 user.is_staff = True
                 user.rol = "Personal Administrativo"
+            elif num_usuarios == 1:
+                user.is_staff = True
+                user.rol = "Secretaria"
             else:
                 user.rol = "Docente"
 
@@ -440,6 +446,78 @@ def GestionEstudiante(request):
             # "filter_tipo_dni": filter_tipo_dni,
         },
     )
+
+
+def ImportarEstudiante(request):
+    if request.method == "POST":
+        csv_file = request.FILES.get("archivo_csv")
+        if not csv_file.name.endswith(".csv"):
+            messages.error(request, "El archivo debe ser formato CSV.")
+            return redirect("Gestion_Estudiante")
+
+        csv_data = csv.reader(csv_file.read().decode("utf-8").splitlines())
+
+        next(csv_data, None)
+
+        for row in csv_data:
+            tipo_dni_nombre = [0].strip()
+            dni_estudiante = row[1].strip()
+            nombre_estudiante = row[2].strip()
+            apellido_estudiante = row[3].strip()
+            genero_nombre = row[4].strip()
+            modalidad_estudio = int(row[5].strip())
+            tipo_educacion = int(row[6].strip())
+            origen = int(row[7].strip())
+            trabajo = int(row[8].strip())
+            discapacidad = int(row[9].strip())
+            hijos = int(row[10].strip())
+            materias_nombres = [m.strip() for m in row[11].split(",")]
+
+            try:
+                tipo_dni = TipoDNI.objects.get(nombre_tipo_dni=tipo_dni_nombre)
+            except TipoDNI.DoesNotExist:
+                messages.error(
+                    request, f'El tipo de DNI "{tipo_dni_nombre}" no existe.'
+                )
+                return redirect("Gestion_Estudiante")
+
+            try:
+                genero = Genero.objects.get(nombre_genero=genero_nombre)
+            except Genero.DoesNotExist:
+                messages.error(request, f'El género "{genero_nombre}" no existe.')
+                return redirect("Gestion_Estudiante")
+
+            estudiante = Estudiante(
+                tipo_dni=tipo_dni,
+                dni_estudiante=dni_estudiante,
+                nombre_estudiante=nombre_estudiante,
+                apellido_estudiante=apellido_estudiante,
+                genero=genero,
+                modalidad_estudio=modalidad_estudio,
+                tipo_educacion=tipo_educacion,
+                origen=origen,
+                trabajo=trabajo,
+                discapacidad=discapacidad,
+                hijos=hijos,
+            )
+            estudiante.save()
+
+            for materia_nombre in materias_nombres:
+                try:
+                    materia = Materia.objects.get(nombre_materia=materia_nombre)
+                    estudiante.materia.add(materia)
+                except Materia.DoesNotExist:
+                    messages.warning(
+                        request,
+                        f'La materia "{materia_nombre}" no existe. No se agregó.',
+                    )
+
+        messages.success(
+            request, "Estudiantes importados exitosamente desde el archivo CSV."
+        )
+        return redirect("Gestion_Estudiante")
+
+    return render(request, "SubirEstudiante.html")
 
 
 # def RecuperarContrasenia(request):

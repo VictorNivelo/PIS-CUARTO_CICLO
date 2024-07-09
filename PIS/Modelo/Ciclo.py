@@ -1,39 +1,60 @@
 class Ciclo:
-    def __init__(self, numero_ciclo, anio_academico, asignaturas, fecha_inicio, fecha_fin, horario, profesorado):
-        self.numero_ciclo = numero_ciclo
-        self.anio_academico = anio_academico
-        self.asignaturas = asignaturas
+    def __init__(self, nombre, numero, fecha_inicio, fecha_fin):
+        self.nombre = nombre
+        self.numero = numero
         self.fecha_inicio = fecha_inicio
         self.fecha_fin = fecha_fin
-        self.horario = horario
-        self.profesorado = profesorado
 
-    def mostrar_informacion(self):
-        info = f"""
-        Número de Ciclo: {self.numero_ciclo}
-        Año Académico: {self.anio_academico}
-        Fecha de Inicio: {self.fecha_inicio}
-        Fecha de Fin: {self.fecha_fin}
-        Horario: {self.horario}
-        Profesorado: {', '.join(self.profesorado)}
-        Asignaturas:
-        """
-        for asignatura in self.asignaturas:
-            info += f"    - {asignatura}\n"
-        print(info)
+    def crear_ciclo(self):
+        return f"Ciclo '{self.nombre}' creado con éxito."
 
-# Ejemplo de uso para un ciclo académico
-asignaturas_ciclo1 = ["Matemáticas I", "Física I", "Introducción a la Programación", "Álgebra"]
-profesorado_ciclo1 = ["Dr. Juan Pérez", "Ing. María García", "Dr. Ana López"]
+    def modificar_ciclo(
+        self, nombre=None, numero=None, fecha_inicio=None, fecha_fin=None
+    ):
+        if nombre:
+            self.nombre = nombre
+        if numero:
+            self.numero = numero
+        if fecha_inicio:
+            self.fecha_inicio = fecha_inicio
+        if fecha_fin:
+            self.fecha_fin = fecha_fin
+        return f"Ciclo '{self.nombre}' modificado con éxito."
 
-ciclo1 = Ciclo(
-    numero_ciclo=1,
-    anio_academico=2024,
-    asignaturas=asignaturas_ciclo1,
-    fecha_inicio="01-02-2024",
-    fecha_fin="30-06-2024",
-    horario="Lunes a Viernes de 8:00 a 14:00",
-    profesorado=profesorado_ciclo1
-)
+    def eliminar_ciclo(self):
+        nombre = self.nombre
+        self.nombre = None
+        self.numero = None
+        self.fecha_inicio = None
+        self.fecha_fin = None
+        return f"Ciclo '{nombre}' eliminado con éxito."
 
-ciclo1.mostrar_informacion()
+    def buscar_ciclo(self, nombre):
+        if self.nombre == nombre:
+            return f"Ciclo encontrado: {self.nombre}, Número: {self.numero}, Fecha de Inicio: {self.fecha_inicio}, Fecha de Fin: {self.fecha_fin}"
+        else:
+            return "Ciclo no encontrado."
+
+    def get_nombre(self):
+        return self.nombre
+
+    def set_nombre(self, nombre):
+        self.nombre = nombre
+
+    def get_numero(self):
+        return self.numero
+
+    def set_numero(self, numero):
+        self.numero = numero
+
+    def get_fecha_inicio(self):
+        return self.fecha_inicio
+
+    def set_fecha_inicio(self, fecha_inicio):
+        self.fecha_inicio = fecha_inicio
+
+    def get_fecha_fin(self):
+        return self.fecha_fin
+
+    def set_fecha_fin(self, fecha_fin):
+        self.fecha_fin = fecha_fin

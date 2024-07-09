@@ -1,38 +1,40 @@
 class Materia:
-    def __init__(self, nombre, codigo, creditos, descripcion, prerrequisitos=None, profesor=None, horario=None):
+    def __init__(self, nombre, num_horas):
         self.nombre = nombre
-        self.codigo = codigo
-        self.creditos = creditos
-        self.descripcion = descripcion
-        self.prerrequisitos = prerrequisitos or []
-        self.profesor = profesor
-        self.horario = horario
-    
-    def agregar_prerrequisito(self, prerrequisito):
-        self.prerrequisitos.append(prerrequisito)
-    
-    def mostrar_informacion(self):
-        info = f"""
-        Nombre: {self.nombre}
-        Código: {self.codigo}
-        Créditos: {self.creditos}
-        Descripción: {self.descripcion}
-        Profesor: {self.profesor}
-        Horario: {self.horario}
-        Prerrequisitos: {', '.join(self.prerrequisitos)}
-        """
-        print(info)
+        self.num_horas = num_horas
 
-# Ejemplo de uso
-materia_ejemplo = Materia(
-    nombre="Programación I",
-    codigo="PROG101",
-    creditos=4,
-    descripcion="Introducción a la programación con Python",
-    profesor="Dr. Juan Pérez",
-    horario="Lunes y Miércoles de 8:00 a 10:00",
-)
-materia_ejemplo.agregar_prerrequisito("Introducción a la Informática")
-materia_ejemplo.agregar_prerrequisito("Matemáticas Básicas")
+    def crear_materia(self):
+        return f"Materia '{self.nombre}' creada con éxito."
 
-materia_ejemplo.mostrar_informacion()
+    def modificar_materia(self, nombre=None, num_horas=None):
+        if nombre:
+            self.nombre = nombre
+        if num_horas:
+            self.num_horas = num_horas
+        return f"Materia '{self.nombre}' modificada con éxito."
+
+    def eliminar_materia(self):
+        nombre = self.nombre
+        self.nombre = None
+        self.num_horas = None
+        return f"Materia '{nombre}' eliminada con éxito."
+
+    def buscar_materia(self, nombre):
+        if self.nombre == nombre:
+            return (
+                f"Materia encontrada: {self.nombre}, Número de Horas: {self.num_horas}"
+            )
+        else:
+            return "Materia no encontrada."
+
+    def get_nombre(self):
+        return self.nombre
+
+    def set_nombre(self, nombre):
+        self.nombre = nombre
+
+    def get_num_horas(self):
+        return self.num_horas
+
+    def set_num_horas(self, num_horas):
+        self.num_horas = num_horas

@@ -79,13 +79,13 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = '/Static/'
+STATIC_URL = "/Static/"
 
-STATIC_ROOT = BASE_DIR / 'Static'
+STATIC_ROOT = BASE_DIR / "Static"
 
-MEDIA_URL = '/Fotos/'
+MEDIA_URL = "/Fotos/"
 
-MEDIA_ROOT = BASE_DIR / 'Fotos'
+MEDIA_ROOT = BASE_DIR / "Fotos"
 
 LOGIN_URL = "/Iniciar-Sesion"
 
@@ -100,11 +100,9 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 # 587
 
-EMAIL_HOST_USER = "victor.nivelo0909@gmail.com"
+EMAIL_HOST_USER = "pis.cuarto.ciclo@gmail.com"
 
-EMAIL_HOST_PASSWORD = "aquilaclave"
+EMAIL_HOST_PASSWORD = "phir craq yuwc cnpq"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
-# PIS.Cuarto.Ciclo@gmail.com
-# PisCuartoCiclo2024
