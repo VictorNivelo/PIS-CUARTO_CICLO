@@ -15,8 +15,9 @@
             font-family: Arial, sans-serif;
             background: url('../Static/Imagen/b.png') no-repeat center center fixed;
             background-size: cover;
-            padding: 20px;
+            padding: 10px;
             margin: 0;
+            font-size: 14px;
         }
 
         .container {
@@ -30,7 +31,7 @@
 
         h1 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-family: 'Lobster', cursive;
             color: #333;
         }
@@ -39,14 +40,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .actions form {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
         .actions input[type="text"],
@@ -54,116 +55,81 @@
         .actions input[type="email"],
         .actions select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             box-sizing: border-box;
         }
 
         .actions button[type="submit"],
         .btn-registrar,
-        .btn-regresar {
-            padding: 10px 20px;
-            background-color: #f0ad4e;
+        .btn-regresar,
+        .btn-crear,
+        .btn-buscar,
+        .btn-eliminar,
+        .btn-guardar,
+        .btn-importar {
+            padding: 8px 12px;
+            font-size: 14px;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            width: 150px;
+            width: 120px;
             display: inline-block;
-            text-align: center;
-            margin-right: 10px;
-        }
-
-        .actions button[type="submit"]:hover,
-        .btn-registrar:hover,
-        .btn-regresar:hover {
-            background-color: #eea236;
-        }
-
-        .btn-crear {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            margin-right: 10px;
-        }
-
-        .btn-crear:hover {
-            background-color: #45a049;
-        }
-
-        .btn-buscar {
-            background-color: #2b96c7;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-buscar:hover {
-            background-color: #0a4f7c;
+            margin-right: 8px;
         }
 
         .btn-eliminar {
-            background-color: #df423d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            background-color: #dc3545 !important;
         }
 
         .btn-eliminar:hover {
-            background-color: #da1c1c;
+            background-color: #c82333 !important;
+        }
+
+        .btn-regresar {
+            background-color: #e74c3c !important;
+            color: #ffffff !important;
+        }
+
+        .btn-regresar:hover {
+            background-color: #af3a2d !important;
         }
 
         .btn-guardar {
-            background-color: #5057b8;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            background-color: #215894 !important;
         }
 
         .btn-guardar:hover {
-            background-color: #180488;
+            background-color: #0c325a !important;
+        }
+
+        .btn-crear {
+            background-color: #28a745 !important;
+        }
+
+        .btn-crear:hover {
+            background-color: #218838 !important;
         }
 
         .btn-importar {
-            background-color: #17a2b8;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            margin-right: 10px;
+            background-color: #17a2b8 !important;
         }
 
         .btn-importar:hover {
-            background-color: #138496;
+            background-color: #138496 !important;
+        }
+
+        .btn-buscar {
+            background-color: #17b888 !important;
+        }
+
+        .btn-buscar:hover {
+            background-color: #13805f !important;
         }
 
         table {
@@ -208,14 +174,14 @@
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .form-group label {
             color: #555;
             font-weight: bold;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .form-group input[type="text"],
@@ -223,10 +189,10 @@
         .form-group input[type="email"],
         .form-group select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             box-sizing: border-box;
         }
 
@@ -235,23 +201,25 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 10px 16px;
+            font-size: 14px;
             cursor: pointer;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .form-group button[type="submit"]:hover {
             background-color: #0056b3;
         }
     </style>
+
 </head>
 
 <body>
     <div class="container">
         <h1>Gestión de universidad</h1>
         <div class="actions">
+            <a href="#" class="btn-regresar">Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
                 <input type="text" name="search_query"
                     placeholder="Buscar por correo electrónico o nombre de universidad" value="{{ search_query }}">
@@ -260,7 +228,7 @@
             <a href="{% url 'Registrar_Universidad' %}" class="btn-crear">Crear Universidad</a>
             <a href="#" class="btn-importar" id="importButton">Importar Universidades</a>
             <input type="file" id="fileInput" style="display: none;" accept=".pdf,.docx,.xlsx">
-            <a href="#" class="btn-regresar">Regresar</a>
+
         </div>
         <div class="form-group">
             <table>

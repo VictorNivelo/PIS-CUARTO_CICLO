@@ -68,7 +68,7 @@ class UsuarioPersonalizado(AbstractUser):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.username}"
+        return f"{self.first_name} {self.last_name} {self.dni}"
 
 
 class Estudiante(models.Model):
@@ -83,7 +83,9 @@ class Estudiante(models.Model):
     apellido_estudiante = models.CharField(max_length=100, verbose_name="Apellido")
 
     genero = models.ForeignKey(
-        "Genero", on_delete=models.CASCADE, verbose_name="Género"
+        "Genero",
+        on_delete=models.CASCADE,
+        verbose_name="Género",
     )
 
     MODALIDAD_ESTUDIO_CHOICES = (
@@ -134,10 +136,23 @@ class Estudiante(models.Model):
 
     hijos = models.IntegerField(choices=HIJOS_CHOICES, verbose_name="Hijos")
 
+    ESTADO_CHOICES = (
+        ("Cursando", "Cursando"),
+        ("Aprobado", "Aprobado"),
+        ("Reprovado", "Reprovado"),
+        ("Desertor", "Desertor"),
+    )
+
+    estado = models.CharField(
+        choices=ESTADO_CHOICES, max_length=100, verbose_name="Estado"
+    )
+
     materia = models.ManyToManyField("Materia", verbose_name="Materias")
 
     def __str__(self):
-        return f"{self.nombre_estudiante} {self.apellido_estudiante}"
+        return (
+            f"{self.nombre_estudiante} {self.apellido_estudiante} {self.dni_estudiante}"
+        )
 
 
 class Genero(models.Model):

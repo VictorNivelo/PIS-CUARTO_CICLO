@@ -15,8 +15,9 @@
             font-family: Arial, sans-serif;
             background: url('../Static/Imagen/b.png') no-repeat center center fixed;
             background-size: cover;
-            padding: 20px;
+            padding: 10px;
             margin: 0;
+            font-size: 14px;
         }
 
         .container {
@@ -30,7 +31,7 @@
 
         h1 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-family: 'Lobster', cursive;
             color: #333;
         }
@@ -39,31 +40,39 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .actions form {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
         .actions input[type="text"],
         .actions input[type="date"],
+        .actions input[type="number"],
+        .actions input[type="email"],
         .actions select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             box-sizing: border-box;
         }
 
         .actions button[type="submit"],
         .btn-registrar,
-        .btn-regresar {
-            padding: 10px 20px;
+        .btn-regresar,
+        .btn-crear,
+        .btn-buscar,
+        .btn-eliminar,
+        .btn-guardar,
+        .btn-importar {
+            padding: 8px 12px;
+            font-size: 14px;
             background-color: #f0ad4e;
             color: white;
             border: none;
@@ -71,98 +80,80 @@
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            width: 150px;
+            width: 120px;
             display: inline-block;
             text-align: center;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
-        .actions button[type="submit"]:hover,
-        .btn-registrar:hover,
-        .btn-regresar:hover {
-            background-color: #eea236;
-        }
-
-        .btn-crear {
-            background-color: #4CAF50;
+        .actions button[type="submit"],
+        .btn-registrar,
+        .btn-regresar,
+        .btn-crear,
+        .btn-buscar,
+        .btn-eliminar,
+        .btn-guardar,
+        .btn-importar {
+            padding: 8px 12px;
+            font-size: 14px;
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            margin-right: 10px;
-        }
-
-        .btn-crear:hover {
-            background-color: #45a049;
-        }
-
-        .btn-buscar {
-            background-color: #2b96c7;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-buscar:hover {
-            background-color: #0a4f7c;
+            width: 120px;
+            display: inline-block;
+            margin-right: 8px;
         }
 
         .btn-eliminar {
-            background-color: #df423d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            background-color: #dc3545 !important;
         }
 
         .btn-eliminar:hover {
-            background-color: #da1c1c;
+            background-color: #c82333 !important;
+        }
+
+        .btn-regresar {
+            background-color: #e74c3c !important;
+            color: #ffffff !important;
+        }
+
+        .btn-regresar:hover {
+            background-color: #af3a2d !important;
         }
 
         .btn-guardar {
-            background-color: #5057b8;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            background-color: #215894 !important;
         }
 
         .btn-guardar:hover {
-            background-color: #180488;
+            background-color: #0c325a !important;
+        }
+
+        .btn-crear {
+            background-color: #28a745 !important;
+        }
+
+        .btn-crear:hover {
+            background-color: #218838 !important;
         }
 
         .btn-importar {
-            background-color: #17a2b8;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            margin-right: 10px;
+            background-color: #17a2b8 !important;
         }
 
         .btn-importar:hover {
-            background-color: #138496;
+            background-color: #138496 !important;
+        }
+
+        .btn-buscar {
+            background-color: #17b888 !important;
+        }
+
+        .btn-buscar:hover {
+            background-color: #13805f !important;
         }
 
         table {
@@ -206,25 +197,36 @@
             justify-content: center;
         }
 
+        td.actions-columnD {
+            width: 120px;
+        }
+
+        td.actions-columnD form {
+            display: flex;
+            justify-content: center;
+        }
+
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .form-group label {
             color: #555;
             font-weight: bold;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .form-group input[type="text"],
         .form-group input[type="date"],
-        .form-group select {
+        .form-group input[type="email"],
+        .form-group select,
+        .form-group input[type="number"] {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             box-sizing: border-box;
         }
 
@@ -233,11 +235,11 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 10px 16px;
+            font-size: 14px;
             cursor: pointer;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .form-group button[type="submit"]:hover {
@@ -250,13 +252,13 @@
     <div class="container">
         <h1>Gestión de período académico</h1>
         <div class="actions">
+            <a href="#" class="btn-regresar">Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
-                <input type="text" name="search_query"
-                    placeholder="Buscar por codigo de período académico" value="{{ search_query }}">
+                <input type="text" name="search_query" placeholder="Buscar por codigo de período académico"
+                    value="{{ search_query }}">
                 <button type="submit" class="btn-buscar">Buscar</button>
             </form>
-            <a href="{% url 'Registrar_PeriodoAcademico' %}" class="btn-crear">Crear Período Académico</a>
-            <a href="#" class="btn-regresar">Regresar</a>
+            <a href="{% url 'Registrar_PeriodoAcademico' %}" class="btn-crear">Crear Período</a>
         </div>
 
         <div class="form-group">
@@ -276,13 +278,20 @@
                         <form method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="PeriodoAcademico_id" value="{{ PeriodoAcademico.id }}">
-                            <td><input type="text" name="codigo_periodo_academico" value="{{ PeriodoAcademico.codigo_periodo_academico }}"></td>
-                            <td class="actions-column10"><input type="date" name="fecha_inicio" value="{{ PeriodoAcademico.fecha_inicio|date:'Y-m-d' }}"></td>
-                            <td class="actions-column10"><input type="date" name="fecha_fin" value="{{ PeriodoAcademico.fecha_fin|date:'Y-m-d' }}"></td>
-                            <td>
+                            <td><input type="text" name="codigo_periodo_academico"
+                                    value="{{ PeriodoAcademico.codigo_periodo_academico }}"></td>
+                            <td class="actions-columnD"><input type="date" name="fecha_inicio"
+                                    value="{{ PeriodoAcademico.fecha_inicio|date:'Y-m-d' }}"></td>
+                            <td class="actions-columnD"><input type="date" name="fecha_fin"
+                                    value="{{ PeriodoAcademico.fecha_fin|date:'Y-m-d' }}"></td>
+                            <td class="actions-columnD">
                                 <select name="estado">
-                                    <option value="Activo" {% if PeriodoAcademico.estado_periodo_academico == "Activo" %}selected{% endif %}>Activo</option>
-                                    <option value="Inactivo" {% if PeriodoAcademico.estado_periodo_academico == "Inactivo" %}selected{% endif %}>Inactivo</option>
+                                    <option value="Activo"
+                                        {% if PeriodoAcademico.estado_periodo_academico == "Activo" %}selected{% endif %}>
+                                        Activo</option>
+                                    <option value="Inactivo"
+                                        {% if PeriodoAcademico.estado_periodo_academico == "Inactivo" %}selected{% endif %}>
+                                        Inactivo</option>
                                 </select>
                             </td>
                             <td class="actions-column">

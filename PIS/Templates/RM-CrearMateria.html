@@ -59,9 +59,10 @@
 
         input[type="text"],
         input[type="email"],
+        input[type="number"],
+        input[type="password"],
         input[type="date"],
         input[type="tel"],
-        input[type="number"],
         select {
             width: 100%;
             padding: 10px;
@@ -69,8 +70,25 @@
             border-radius: 5px;
             font-size: 16px;
             margin-top: 5px;
-            box-sizing: border-box;
             color: #333;
+            box-sizing: border-box;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="password"],
+        input[type="date"],
+        input[type="tel"] {
+            height: 40px;
+        }
+
+        select {
+            height: 40px;
+        }
+
+        select option {
+            color: initial;
         }
 
         input::placeholder,
@@ -78,23 +96,21 @@
             color: #aaa;
         }
 
-        .input-placeholder {
-            color: #aaa;
-        }
-
-        .input-value {
+        input.has-value,
+        select.has-value {
             color: #333;
         }
 
         button[type="submit"],
         .btn-regresar {
-            width: 48%;
+            width: calc(50% - 5px);
             padding: 10px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-top: 10px;
         }
 
         button[type="submit"] {
@@ -118,21 +134,56 @@
         .button-group {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
         }
 
-        .row {
-            display: flex;
-            flex-wrap: wrap;
+        .button-group button {
+            margin-top: 0;
         }
 
-        .form-group {
-            flex: 1 1 45%;
-            margin-right: 10px;
+        ::placeholder,
+        select:invalid,
+        input[type="date"]:invalid {
+            color: #999 !important;
         }
 
-        .form-group:nth-child(2n) {
-            margin-right: 0;
+        input,
+        select,
+        input[type="date"] {
+            color: #999;
+        }
+
+        input:focus,
+        select:focus,
+        input[type="date"]:focus,
+        input:not(:placeholder-shown),
+        select:not(:invalid),
+        input[type="date"]:not(:invalid) {
+            color: #000 !important;
+        }
+
+        select option {
+            color: #000;
+        }
+
+        select option:first-child {
+            color: #999;
+        }
+
+        input[type="date"]:not(:valid):not(:focus) {
+            color: #999;
+        }
+
+        .column {
+            float: left;
+            width: 50%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
         }
     </style>
 </head>
@@ -144,34 +195,38 @@
                 <h1 class="t">Crear materia</h1>
                 {% csrf_token %}
                 <div class="row">
-                    <div class="form-group">
-                        <label for="{{ form.nombre_materia.id_for_label }}">Nombre de la materia:</label>
-                        {{ form.nombre_materia }}
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="{{ form.nombre_materia.id_for_label }}">Nombre de la materia:</label>
+                            {{ form.nombre_materia }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.numero_horas.id_for_label }}">Número de horas:</label>
+                            {{ form.numero_horas }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.unidades.id_for_label }}">Unidades:</label>
+                            {{ form.unidades }}
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.numero_horas.id_for_label }}">Numero de horas:</label>
-                        {{ form.numero_horas }}
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="{{ form.docente_encargado.id_for_label }}">Docente encargado:</label>
+                            {{ form.docente_encargado }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.ciclo.id_for_label }}">Ciclo:</label>
+                            {{ form.ciclo }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.periodo_academico.id_for_label }}">Período académico:</label>
+                            {{ form.periodo_academico }}
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.unidades.id_for_label }}">Unidades:</label>
-                        {{ form.unidades }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.docente_encargado.id_for_label }}">Docente encargado:</label>
-                        {{ form.docente_encargado }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.ciclo.id_for_label }}">Ciclo:</label>
-                        {{ form.ciclo }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.periodo_academico.id_for_label }}">Periodo academico:</label>
-                        {{ form.periodo_academico }}
-                    </div>
-                    <div class="button-group">
-                        <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
-                        <button type="submit">Crear materia</button>
-                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
+                    <button type="submit">Crear materia</button>
                 </div>
             </form>
         </div>

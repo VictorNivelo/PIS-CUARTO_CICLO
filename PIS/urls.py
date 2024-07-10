@@ -56,6 +56,11 @@ from .vistas import (
     upload_universities,
     ImportarEstudiante,
     PredecirDesercion,
+
+    obtener_carreras,
+    obtener_ciclos,
+    obtener_materias,
+    realizar_prediccion,
 )
 
 urlpatterns = [
@@ -116,6 +121,11 @@ urlpatterns = [
 
     path('Recuperar-Contrasenia/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('Recuperar-Contrasenia/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
+    path('obtener_carreras/', obtener_carreras, name='obtener_carreras'),
+    path('obtener_ciclos/', obtener_ciclos, name='obtener_ciclos'),
+    path('obtener_materias/', obtener_materias, name='obtener_materias'),
+    path('realizar_prediccion/', realizar_prediccion, name='realizar_prediccion'),
 
     # path('Recuperar-Contrasenia/', auth_views.PasswordResetView.as_view(), name='Recuperar_Contrasenia'),
     # path('Recuperar-Contrasenia/confirmar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),

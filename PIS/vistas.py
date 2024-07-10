@@ -81,7 +81,15 @@ def PaginaAdministrador(request):
 
 @login_required
 def PaginaDocente(request):
-    return render(request, "PaginaDocente.html")
+    user = request.user
+    materias = Materia.objects.filter(docente_encargado=user)
+
+    context = {
+        "user": user,
+        "materias": materias,
+    }
+
+    return render(request, "PaginaDocente.html", context)
 
 
 @login_required
@@ -383,7 +391,6 @@ def GestionEstudiante(request):
     filter_genero = request.GET.get("genero", "")
     filter_modalidad = request.GET.get("modalidad_estudio", "")
     filter_tipo_educacion = request.GET.get("tipo_educacion", "")
-    # filter_tipo_dni = request.GET.get("tipo_dni", "")
 
     estudiantes = Estudiante.objects.all()
     generos = Genero.objects.all()
@@ -396,8 +403,6 @@ def GestionEstudiante(request):
         )
     if filter_genero:
         estudiantes = estudiantes.filter(genero_id=filter_genero)
-    # if filter_tipo_dni:
-    #     estudiantes = estudiantes.filter(tipo_DNI=filter_tipo_dni)
     if filter_modalidad:
         estudiantes = estudiantes.filter(modalidad_estudio=filter_modalidad)
     if filter_tipo_educacion:
@@ -418,6 +423,7 @@ def GestionEstudiante(request):
             estudiante.trabajo = request.POST.get("trabajo")
             estudiante.discapacidad = request.POST.get("discapacidad")
             estudiante.hijos = request.POST.get("hijos")
+            estudiante.estado = request.POST.get("estado")
             materias_ids = request.POST.getlist("materia")
             estudiante.materia.set(materias_ids)
             estudiante.save()
@@ -560,22 +566,85 @@ def RecuperarContrasenia(request):
     if request.method == "POST":
         form = RecuperarContraseniaForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data["username"]
+            username_or_email = form.cleaned_data["username"]
             try:
-                user = User.objects.get(username=username)
+                user = UsuarioPersonalizado.objects.get(username=username_or_email)
             except User.DoesNotExist:
-                messages.error(request, "El usuario no existe.")
-                return render(request, "RecuperarContrasenia.html", {"form": form})
+                try:
+                    user = UsuarioPersonalizado.objects.get(email=username_or_email)
+                except User.DoesNotExist:
+                    messages.error(
+                        request, "El usuario o correo electrónico no existe."
+                    )
+                    return render(request, "RecuperarContrasenia.html", {"form": form})
 
             token = default_token_generator.make_token(user)
             uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
 
+            reset_url = request.build_absolute_uri(
+                reverse(
+                    "Cambiar_Contrasenia", kwargs={"uidb64": uidb64, "token": token}
+                )
+            )
+
+            subject = "Recuperación de contraseña"
+            message = f"""
+            Hola {user.username},
+
+            Has solicitado restablecer tu contraseña. Sigue estos pasos:
+
+            1. Haz clic en el siguiente enlace: {reset_url}
+            2. Se te dirigirá a una página donde podrás ingresar tu nueva contraseña.
+            3. Ingresa tu nueva contraseña y confírmala.
+            4. Haz clic en "Cambiar".
+
+            Si no solicitaste este cambio, ignora este correo.
+
+            Saludos,
+            El equipo de soporte
+            """
+
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+
+            messages.success(
+                request,
+                "Se ha enviado un correo con instrucciones para recuperar tu contraseña.",
+            )
             return redirect("Correo_Enviado", uidb64=uidb64, token=token)
+            # return redirect("Correo_Enviado")
         else:
             messages.error(request, "Error al enviar el enlace de recuperación.")
     else:
         form = RecuperarContraseniaForm()
     return render(request, "RecuperarContrasenia.html", {"form": form})
+
+
+# def RecuperarContrasenia(request):
+#     if request.method == "POST":
+#         form = RecuperarContraseniaForm(request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data["username"]
+#             try:
+#                 user = User.objects.get(username=username)
+#             except User.DoesNotExist:
+#                 messages.error(request, "El usuario no existe.")
+#                 return render(request, "RecuperarContrasenia.html", {"form": form})
+
+#             token = default_token_generator.make_token(user)
+#             uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+
+#             return redirect("Correo_Enviado", uidb64=uidb64, token=token)
+#         else:
+#             messages.error(request, "Error al enviar el enlace de recuperación.")
+#     else:
+#         form = RecuperarContraseniaForm()
+#     return render(request, "RecuperarContrasenia.html", {"form": form})
 
 
 def CambiarContrasenia(request, uidb64, token):
@@ -945,7 +1014,6 @@ def GestionFacultad(request):
             facultad_id = request.POST.get("facultad_id")
             facultad = Facultad.objects.get(id=facultad_id)
             facultad.nombre_facultad = request.POST.get("nombre_facultad")
-
             fecha_fundacion_str = request.POST.get("fecha_fundacion")
             try:
                 fecha_fundacion = datetime.strptime(
@@ -1217,6 +1285,7 @@ def GestionMateria(request):
     query = request.GET.get("search_query", "")
     materias = Materia.objects.all()
     ciclos = Ciclo.objects.all()
+    periodosAcademicos = PeriodoAcademico.objects.all()
     docentes = UsuarioPersonalizado.objects.filter(rol="Docente")
 
     if query:
@@ -1227,13 +1296,40 @@ def GestionMateria(request):
             materia_id = request.POST.get("materia_id")
             materia = Materia.objects.get(id=materia_id)
             materia.nombre_materia = request.POST.get("nombre_materia")
-            materia.save()
-            messages.success(request, "Materia actualizada exitosamente.")
+            materia.numero_horas = request.POST.get("numero_horas")
+            materia.unidades = request.POST.get("unidades")
+
+            periodo_academico_id = request.POST.get("periodo_academico")
+            docente_encargado_id = request.POST.get("docente_encargado")
+            ciclo_id = request.POST.get("ciclo")
+
+            try:
+                periodo = PeriodoAcademico.objects.get(id=periodo_academico_id)
+                docente = UsuarioPersonalizado.objects.get(id=docente_encargado_id)
+                ciclo = Ciclo.objects.get(id=ciclo_id)
+
+                materia.periodo_academico = periodo
+                materia.docente_encargado = docente
+                materia.ciclo = ciclo
+
+                materia.save()
+                messages.success(request, "Materia actualizada exitosamente.")
+
+            except (
+                PeriodoAcademico.DoesNotExist,
+                UsuarioPersonalizado.DoesNotExist,
+                Ciclo.DoesNotExist,
+            ):
+                messages.error(
+                    request, "Error: Uno de los objetos requeridos no existe."
+                )
+
         elif "delete" in request.POST:
             materia_id = request.POST.get("materia_id")
             materia = Materia.objects.get(id=materia_id)
             materia.delete()
             messages.success(request, "Materia eliminada exitosamente.")
+
         return redirect("Gestion_Materia")
 
     return render(
@@ -1243,9 +1339,62 @@ def GestionMateria(request):
             "materias": materias,
             "docentes": docentes,
             "ciclos": ciclos,
+            "periodosAcademicos": periodosAcademicos,
             "query": query,
         },
     )
+
+
+# def GestionMateria(request):
+#     query = request.GET.get("search_query", "")
+#     materias = Materia.objects.all()
+#     ciclos = Ciclo.objects.all()
+#     periodosAcademicos = PeriodoAcademico.objects.all()
+#     docentes = UsuarioPersonalizado.objects.filter(rol="Docente")
+
+#     if query:
+#         materias = materias.filter(Q(nombre_materia__icontains=query))
+
+#     if request.method == "POST":
+#         if "modify" in request.POST:
+#             materia_id = request.POST.get("materia_id")
+#             materia = Materia.objects.get(id=materia_id)
+#             materia.nombre_materia = request.POST.get("nombre_materia")
+#             materia.numero_horas = request.POST.get("numero_horas")
+#             materia.unidades = request.POST.get("unidades")
+
+#             periodo_academico_id = request.POST.get("periodo_academico")
+#             periodo = PeriodoAcademico.objects.get(id=periodo_academico_id)
+#             materia.periodo_academico = periodo
+
+#             docente_encargado_id = request.POST.get("docente_encargado")
+#             docente = UsuarioPersonalizado.objects.get(id=docente_encargado_id)
+#             materia.docente_encargado = docente
+
+#             ciclo_id = request.POST.get("ciclo")
+#             ciclo = Ciclo.objects.get(id=ciclo_id)
+#             materia.ciclo = ciclo
+
+#             materia.save()
+#             messages.success(request, "Materia actualizada exitosamente.")
+#         elif "delete" in request.POST:
+#             materia_id = request.POST.get("materia_id")
+#             materia = Materia.objects.get(id=materia_id)
+#             materia.delete()
+#             messages.success(request, "Materia eliminada exitosamente.")
+#         return redirect("Gestion_Materia")
+
+#     return render(
+#         request,
+#         "GestionMateria.html",
+#         {
+#             "materias": materias,
+#             "docentes": docentes,
+#             "ciclos": ciclos,
+#             "periodosAcademicos": periodosAcademicos,
+#             "query": query,
+#         },
+#     )
 
 
 # Funcionalidad de subir archivo para su procesamiento
@@ -1990,3 +2139,44 @@ def PredecirDesercion(request):
 #     return render(
 #         request, "PredecirDesercion.html", {"prediccion": prob_desercion_final}
 #     )
+
+def predecir_desercion(request):
+    facultades = Facultad.objects.all()
+    return render(request, 'predecir.html', {'facultades': facultades})
+
+def obtener_carreras(request):
+    facultad_id = request.GET.get('facultad_id')
+    carreras = Carrera.objects.filter(facultad_id=facultad_id).values('id', 'nombre_carrera')
+    return JsonResponse({'carreras': list(carreras)})
+
+def obtener_ciclos(request):
+    carrera_id = request.GET.get('carrera_id')
+    ciclos = Ciclo.objects.filter(carrera_id=carrera_id).values('id', 'nombre_ciclo')
+    return JsonResponse({'ciclos': list(ciclos)})
+
+def obtener_materias(request):
+    ciclo_id = request.GET.get('ciclo_id')
+    materias = Materia.objects.filter(ciclo_id=ciclo_id).values('id', 'nombre_materia')
+    return JsonResponse({'materias': list(materias)})
+
+def realizar_prediccion(request):
+    materia_id = request.GET.get('materia_id')
+    
+    materia = Materia.objects.get(id=materia_id)
+    estudiantes = Estudiante.objects.filter(materia=materia)
+    total_estudiantes = estudiantes.count()
+    desertores = estudiantes.filter(estado='Desertor').count()
+    cursando = estudiantes.filter(estado='Cursando').count()
+    aprobado = estudiantes.filter(estado='Aprobado').count()
+    reprobado = estudiantes.filter(estado='Reprobado').count()
+    
+    data = {
+        'nombre_materia': materia.nombre_materia,
+        'total_estudiantes': total_estudiantes,
+        'desertores': desertores,
+        'cursando': cursando,
+        'aprobado': aprobado,
+        'reprobado': reprobado,
+    }
+    
+    return JsonResponse({'prediccion': data})

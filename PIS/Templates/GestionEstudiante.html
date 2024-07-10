@@ -17,6 +17,7 @@
             background-size: cover;
             padding: 20px;
             margin: 0;
+            font-size: 14px;
         }
 
         .container {
@@ -50,19 +51,26 @@
         }
 
         .actions input[type="text"],
-        .actions select {
+        .actions select,
+        .form-group input[type="text"],
+        .form-group select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             box-sizing: border-box;
         }
 
         .actions button[type="submit"],
         .btn-registrar,
-        .btn-regresar {
-            padding: 10px 20px;
+        .btn-regresar,
+        .btn-crear,
+        .btn-buscar,
+        .btn-eliminar,
+        .btn-guardar {
+            padding: 8px 16px;
+            font-size: 14px;
             background-color: #f0ad4e;
             color: white;
             border: none;
@@ -70,81 +78,80 @@
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            width: 150px;
+            width: auto;
             display: inline-block;
             text-align: center;
             margin-right: 10px;
         }
 
-        .actions button[type="submit"]:hover,
-        .btn-registrar:hover,
-        .btn-regresar:hover {
-            background-color: #eea236;
-        }
-
-        .btn-crear {
-            background-color: #4CAF50;
+        .actions button[type="submit"],
+        .btn-registrar,
+        .btn-regresar,
+        .btn-crear,
+        .btn-buscar,
+        .btn-eliminar,
+        .btn-guardar,
+        .btn-importar {
+            padding: 8px 12px;
+            font-size: 14px;
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            margin-right: 10px;
-        }
-
-        .btn-crear:hover {
-            background-color: #45a049;
-        }
-
-        .btn-buscar {
-            background-color: #2b96c7;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-buscar:hover {
-            background-color: #0a4f7c;
+            width: 120px;
+            display: inline-block;
+            margin-right: 8px;
         }
 
         .btn-eliminar {
-            background-color: #df423d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            background-color: #dc3545 !important;
         }
 
         .btn-eliminar:hover {
-            background-color: #da1c1c;
+            background-color: #c82333 !important;
+        }
+
+        .btn-regresar {
+            background-color: #e74c3c !important;
+            color: #ffffff !important;
+        }
+
+        .btn-regresar:hover {
+            background-color: #af3a2d !important;
         }
 
         .btn-guardar {
-            background-color: #5057b8;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            background-color: #215894 !important;
         }
 
         .btn-guardar:hover {
-            background-color: #180488;
+            background-color: #0c325a !important;
+        }
+
+        .btn-crear {
+            background-color: #28a745 !important;
+        }
+
+        .btn-crear:hover {
+            background-color: #218838 !important;
+        }
+
+        .btn-importar {
+            background-color: #17a2b8 !important;
+        }
+
+        .btn-importar:hover {
+            background-color: #138496 !important;
+        }
+
+        .btn-buscar {
+            background-color: #17b888 !important;
+        }
+
+        .btn-buscar:hover {
+            background-color: #13805f !important;
         }
 
         table {
@@ -157,7 +164,7 @@
         th,
         td {
             border: 1px solid #ccc;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
         }
 
@@ -179,6 +186,15 @@
             justify-content: center;
         }
 
+        td.actions-column10 {
+            width: 120px;
+        }
+
+        td.actions-column10 form {
+            display: flex;
+            justify-content: center;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -188,16 +204,6 @@
             font-weight: bold;
             display: block;
             margin-bottom: 5px;
-        }
-
-        .form-group input[type="text"],
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
         }
 
         .form-group button[type="submit"] {
@@ -223,6 +229,7 @@
     <div class="container">
         <h1>Gestión de Estudiantes</h1>
         <div class="actions">
+            <a href="#" class="btn-regresar">Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
                 <input type="text" name="search_query" placeholder="Buscar por nombre, apellido, o número de DNI"
                     value="{{ search_query }}">
@@ -248,7 +255,6 @@
                 <button type="submit" class="btn-buscar">Buscar</button>
             </form>
             <a href="{% url 'Registrar_Estudiante' %}" class="btn-crear">Registrar Estudiante</a>
-            <a href="#" class="btn-regresar">Regresar</a>
             <a href="{% url 'Importar_Estudiante' %}" class="btn-crear">Subir Estudiantes</a>
         </div>
 
@@ -256,6 +262,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th>Estado de estudio</th>
                         <th>Tipo DNI</th>
                         <th>Numero DNI</th>
                         <th>Nombre</th>
@@ -266,7 +273,7 @@
                         <th>Origen</th>
                         <th>Trabajo</th>
                         <th>Discapacidad</th>
-                        <th>Hijos</th>
+                        <th>Hijo(s)</th>
                         <th>Materias</th>
                         <th></th>
                     </tr>
@@ -278,21 +285,37 @@
                             {% csrf_token %}
                             <input type="hidden" name="estudiante_id" value="{{ estudiante.id }}">
                             <td>
+                                <select name="estado">
+                                    <option value="Cursando"
+                                        {% if estudiante.estado == 'Cursando' %}selected{% endif %}>Cursando</option>
+                                    <option value="Aprobado"
+                                        {% if estudiante.estado == 'Aprobado' %}selected{% endif %}>Aprobado
+                                    </option>
+                                    <option value="Reprovado"
+                                        {% if estudiante.estado == 'Reprovado' %}selected{% endif %}>
+                                        Reprovado</option>
+                                    <option value="Desertor"
+                                        {% if estudiante.estado == 'Desertor' %}selected{% endif %}>Desertor
+                                    </option>
+                                </select>
+                            </td>
+                            <td>
                                 <select name="tipo_dni">
                                     {% for tipo_dni in tipos_dni %}
-                                    <option value="{{ tipo_dni.id }}" {% if estudiante.tipo_dni_id == tipo_dni.id %}selected{% endif %}>
+                                    <option value="{{ tipo_dni.id }}"
+                                        {% if estudiante.tipo_dni_id == tipo_dni.id %}selected{% endif %}>
                                         {{ tipo_dni.nombre_tipo_dni }}
                                     </option>
                                     {% endfor %}
                                 </select>
                             </td>
-                            <td><input type="text" name="dni_estudiante" value="{{ estudiante.dni_estudiante }}">
+                            <td class="actions-column10"><input type="text" name="dni_estudiante"
+                                    value="{{ estudiante.dni_estudiante }}">
                             </td>
                             <td><input type="text" name="nombre_estudiante" value="{{ estudiante.nombre_estudiante }}">
                             </td>
                             <td><input type="text" name="apellido_estudiante"
                                     value="{{ estudiante.apellido_estudiante }}">
-                            </td>
                             <td>
                                 <select name="genero">
                                     {% for genero in generos %}
@@ -357,7 +380,7 @@
                                     {% endfor %}
                                 </select>
                             </td>
-                            <td class="actions-column">
+                            <td class="actions-column10">
                                 <button type="submit" class="btn-guardar" name="modify">Guardar</button>
                                 <button type="submit" class="btn-eliminar" name="delete">Eliminar</button>
                             </td>
