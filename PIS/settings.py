@@ -102,7 +102,8 @@ EMAIL_PORT = 587
 
 EMAIL_HOST_USER = "pis.cuarto.ciclo@gmail.com"
 
-EMAIL_HOST_PASSWORD = "phir craq yuwc cnpq"
+EMAIL_HOST_PASSWORD = "yfgu cizf mmld zxsl"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

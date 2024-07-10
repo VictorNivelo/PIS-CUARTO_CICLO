@@ -59,15 +59,17 @@
 
         input[type="text"],
         input[type="email"],
+        input[type="password"],
         input[type="date"],
-        input[type="tel"] {
+        input[type="tel"],
+        select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
             margin-top: 5px;
-            color: #555;
+            color: #333;
         }
 
         select option {
@@ -118,6 +120,39 @@
             justify-content: space-between;
             margin-top: 20px;
         }
+
+        ::placeholder,
+        select:invalid,
+        input[type="date"]:invalid {
+            color: #999 !important;
+        }
+
+        input,
+        select,
+        input[type="date"] {
+            color: #999;
+        }
+
+        input:focus,
+        select:focus,
+        input[type="date"]:focus,
+        input:not(:placeholder-shown),
+        select:not(:invalid),
+        input[type="date"]:not(:invalid) {
+            color: #000 !important;
+        }
+
+        select option {
+            color: #000;
+        }
+
+        select option:first-child {
+            color: #999;
+        }
+
+        input[type="date"]:not(:valid):not(:focus) {
+            color: #999;
+        }
     </style>
 </head>
 
@@ -167,16 +202,16 @@
                 window.location.href = '/';
             }
         });
-    
+
         function recordarPaginaAnterior() {
             localStorage.setItem('paginaAnterior', document.referrer);
         }
-    
+
         function soloNumeros(e) {
             var key = e.keyCode || e.which;
             var tecla = String.fromCharCode(key);
             var numeros = "0123456789";
-    
+
             if (numeros.indexOf(tecla) == -1) {
                 Swal.fire({
                     icon: 'error',
@@ -186,21 +221,21 @@
                 return false;
             }
         }
-    
+
         document.getElementById('id_telefono_universidad').onkeypress = soloNumeros;
-    
+
         var nombreInput = document.querySelector('input[name="nombre_universidad"]');
         var direccionInput = document.querySelector('input[name="direccion_universidad"]');
         var telefonoInput = document.querySelector('input[name="telefono_universidad"]');
         var correoInput = document.querySelector('input[name="correo_universidad"]');
         var fechaInput = document.querySelector('input[name="fecha_fundacion"]');
-    
+
         nombreInput.addEventListener('input', setInputHasValue);
         direccionInput.addEventListener('input', setInputHasValue);
         telefonoInput.addEventListener('input', setInputHasValue);
         correoInput.addEventListener('input', setInputHasValue);
         fechaInput.addEventListener('input', setInputHasValue);
-    
+
         function setInputHasValue() {
             if (this.value.trim() !== '') {
                 this.classList.add('has-value');
@@ -208,18 +243,18 @@
                 this.classList.remove('has-value');
             }
         }
-    
+
         setInputHasValue.call(nombreInput);
         setInputHasValue.call(direccionInput);
         setInputHasValue.call(telefonoInput);
         setInputHasValue.call(correoInput);
         setInputHasValue.call(fechaInput);
-    
+
         telefonoInput.addEventListener('input', function (e) {
             var cleaned = ('' + this.value).replace(/\D/g, '');
             var match = cleaned.match(/^(\d{0,2})(\d{0,3})(\d{0,4})$/);
             var formattedNumber = '';
-    
+
             if (match[1]) {
                 formattedNumber = '(' + match[1];
             }
@@ -229,19 +264,19 @@
             if (match[3]) {
                 formattedNumber += '-' + match[3];
             }
-    
+
             this.value = formattedNumber;
         });
-    
+
         document.getElementById('registerForm').onsubmit = function (e) {
             e.preventDefault();
-    
+
             var nombre = nombreInput.value.trim();
             var direccion = direccionInput.value.trim();
             var telefono = telefonoInput.value.trim();
             var correo = correoInput.value.trim();
             var fecha = fechaInput.value.trim();
-    
+
             if (!nombre || !direccion || !telefono || !correo || !fecha) {
                 Swal.fire({
                     icon: 'error',
@@ -250,7 +285,7 @@
                 });
                 return false;
             }
-    
+
             Swal.fire({
                 title: 'Universidad creada exitosamente',
                 icon: 'success',

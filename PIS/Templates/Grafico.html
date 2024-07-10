@@ -11,10 +11,11 @@
     <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
         body {
             background: url('../Static/Imagen/b.png') no-repeat center center fixed;
             background-size: cover;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
         }
 
         .container {
@@ -22,20 +23,18 @@
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             padding: 30px;
-            margin-top: 50px; 
+            margin-top: 50px;
         }
 
         h1 {
-            font-family: Arial, sans-serif;
+            font-family: 'Lobster', cursive;
             text-align: center;
             margin-bottom: 30px;
             color: #333;
         }
 
         .form-control {
-            width: 100%;
             padding: 10px;
-            border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
             margin-top: 5px;
@@ -47,13 +46,13 @@
         .btn-regresar {
             width: 100%;
             margin-top: 10px;
-            font-family: var(--bs-btn-font-family);
             font-size: 18px;
         }
 
         .btn-primary,
         .btn-secondary,
         .btn-success {
+            font-family: 'Arial', sans-serif;
             background-color: #5bc0de;
             border-color: #5bc0de;
             color: white;
@@ -67,8 +66,9 @@
         }
 
         .btn-regresar {
+            font-family: 'Arial', sans-serif;
             background-color: #f0ad4e;
-            border-color: #f0ad4e; 
+            border-color: #f0ad4e;
             color: white;
         }
 
@@ -81,18 +81,18 @@
             margin-bottom: 10px;
         }
 
-        .t {
-            font-family: 'Lobster', cursive;
-            text-align: center;
-            margin-bottom: 30px;
-            color: #333;
+        .piechart-container {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            height: 350px;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1 class="t">Generador de Gráficos</h1>
+        <h1>Generador de Gráficos</h1>
         <div class="row">
             <div class="col-md-6">
                 <form id="form-grafico">
@@ -133,7 +133,7 @@
                 </form>
             </div>
             <div class="col-md-6">
-                <div id="piechart" class="border border-secondary rounded p-3"></div>
+                <div id="piechart" class="piechart-container"></div>
             </div>
         </div>
     </div>

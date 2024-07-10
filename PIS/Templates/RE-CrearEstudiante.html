@@ -62,16 +62,26 @@
         input[type="password"],
         input[type="date"],
         input[type="tel"],
-        select {
+        select,
+        textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
             margin-top: 5px;
+            color: #333;
         }
 
-        select:not(.has-value) {
+        select option:first-child {
+            color: #aaa;
+        }
+
+        select option {
+            color: #333;
+        }
+
+        select:not(.first-child) {
             color: #aaa;
         }
 
@@ -81,7 +91,7 @@
 
         button[type="submit"],
         .btn-regresar {
-            width: 100%;
+            width: 48%;
             padding: 10px;
             border: none;
             border-radius: 5px;
@@ -113,17 +123,65 @@
             justify-content: space-between;
             margin-top: 20px;
         }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            background: white;
+            z-index: 1000;
+        }
+
+        .search-results div {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .search-results div:hover {
+            background: #f0f0f0;
+        }
+
+        .selected-materias {
+            margin-top: 10px;
+        }
+
+        .selected-materias span {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .selected-materias span button {
+            background: none;
+            border: none;
+            margin-left: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body onload="recordarPaginaAnterior()">
     <div class="caja">
         <div class="form-wrapper">
-            <form id="registerForm" action="{% url 'Registrar_Estudiante' %}" method="POST" onsubmit="return validateForm()">
+            <form id="registerForm" action="{% url 'Registrar_Estudiante' %}" method="POST"
+                onsubmit="return validateForm()">
                 <h1 class="t">Crear Estudiante</h1>
                 {% csrf_token %}
                 <div class="row gx-3">
                     <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.estado.id_for_label }}">Estado de estudio:</label>
+                            {{ form.estado }}
+                        </div>
                         <div class="form-group">
                             <label for="{{ form.tipo_dni.id_for_label }}">Tipo de DNI:</label>
                             {{ form.tipo_dni }}
@@ -146,7 +204,7 @@
                         </div>
                         <div class="form-group">
                             <label for="id_modalidad_estudio">Modalidad de Estudio:</label>
-                            <select name="modalidad_estudio" id="id_modalidad_estudio" class="form-control">
+                            <select name="modalidad_estudio" id="id_modalidad_estudio">
                                 <option value="" disabled selected hidden>Elegir modalidad</option>
                                 <option value="0">Presencial</option>
                                 <option value="1">Virtual</option>
@@ -156,7 +214,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="id_tipo_educacion">Tipo de Educación:</label>
-                            <select name="tipo_educacion" id="id_tipo_educacion" class="form-control">
+                            <select name="tipo_educacion" id="id_tipo_educacion">
                                 <option value="" disabled selected hidden>Elegir tipo de educación</option>
                                 <option value="0">Público</option>
                                 <option value="1">Privado</option>
@@ -164,7 +222,7 @@
                         </div>
                         <div class="form-group">
                             <label for="id_origen">Origen:</label>
-                            <select name="origen" id="id_origen" class="form-control">
+                            <select name="origen" id="id_origen">
                                 <option value="" disabled selected hidden>Elegir origen</option>
                                 <option value="0">No Foráneo</option>
                                 <option value="1">Foráneo</option>
@@ -172,7 +230,7 @@
                         </div>
                         <div class="form-group">
                             <label for="id_trabajo">Trabajo:</label>
-                            <select name="trabajo" id="id_trabajo" class="form-control">
+                            <select name="trabajo" id="id_trabajo">
                                 <option value="" disabled selected hidden>Elegir si trabaja</option>
                                 <option value="0">No</option>
                                 <option value="1">Sí</option>
@@ -180,7 +238,7 @@
                         </div>
                         <div class="form-group">
                             <label for="id_discapacidad">Discapacidad:</label>
-                            <select name="discapacidad" id="id_discapacidad" class="form-control">
+                            <select name="discapacidad" id="id_discapacidad">
                                 <option value="" disabled selected hidden>Elegir si presenta discapacidad</option>
                                 <option value="0">No</option>
                                 <option value="1">Sí</option>
@@ -188,7 +246,7 @@
                         </div>
                         <div class="form-group">
                             <label for="id_hijos">Hijos:</label>
-                            <select name="hijos" id="id_hijos" class="form-control">
+                            <select name="hijos" id="id_hijos">
                                 <option value="" disabled selected hidden>Elegir si tiene hijos</option>
                                 <option value="0">No</option>
                                 <option value="1">Sí</option>
@@ -198,6 +256,15 @@
                             <label for="{{ form.materia.id_for_label }}">Materias:</label>
                             {{ form.materia }}
                         </div>
+                        <!-- <div class="form-group">
+                            <label for="materia-search">Materias:</label>
+                            <div class="search-container">
+                                <input type="text" id="materia-search" placeholder="Buscar materias">
+                                <div id="search-results" class="search-results"></div>
+                            </div>
+                            <div id="selected-materias" class="selected-materias"></div>
+                            <input type="hidden" name="materias" id="materias">
+                        </div> -->
                     </div>
                 </div>
 
@@ -271,6 +338,47 @@
                 } else {
                     e.target.classList.remove('has-value');
                 }
+            }
+
+            const materias = ["Matemáticas", "Física", "Química", "Biología", "Historia"]; // Lista de materias de ejemplo
+            const searchInput = document.getElementById('materia-search');
+            const searchResults = document.getElementById('search-results');
+            const selectedMaterias = document.getElementById('selected-materias');
+            const hiddenMaterias = document.getElementById('materias');
+
+            searchInput.addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                searchResults.innerHTML = '';
+                if (query) {
+                    const filteredMaterias = materias.filter(materia => materia.toLowerCase().includes(query));
+                    filteredMaterias.forEach(materia => {
+                        const div = document.createElement('div');
+                        div.textContent = materia;
+                        div.addEventListener('click', () => {
+                            addMateria(materia);
+                        });
+                        searchResults.appendChild(div);
+                    });
+                }
+            });
+
+            function addMateria(materia) {
+                const span = document.createElement('span');
+                span.textContent = materia;
+                const removeButton = document.createElement('button');
+                removeButton.textContent = 'x';
+                removeButton.addEventListener('click', () => {
+                    selectedMaterias.removeChild(span);
+                    updateHiddenInput();
+                });
+                span.appendChild(removeButton);
+                selectedMaterias.appendChild(span);
+                updateHiddenInput();
+            }
+
+            function updateHiddenInput() {
+                const materiasArray = Array.from(selectedMaterias.children).map(span => span.firstChild.textContent);
+                hiddenMaterias.value = materiasArray.join(',');
             }
         });
     </script>

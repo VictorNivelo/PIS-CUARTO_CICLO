@@ -32,7 +32,7 @@
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 600px;
+            max-width: 600px; /* Aumentado para mostrar dos columnas */
             padding: 30px;
             margin: auto;
         }
@@ -70,6 +70,17 @@
             font-size: 16px;
             margin-top: 5px;
             color: #333;
+            box-sizing: border-box; /* Para incluir el padding y el borde en el ancho total */
+        }
+
+        /* Ajuste de altura para alinear campos */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="date"],
+        input[type="tel"],
+        select {
+            height: 40px; /* Ajustar la altura según tus necesidades */
         }
 
         select option {
@@ -88,13 +99,14 @@
 
         button[type="submit"],
         .btn-regresar {
-            width: 48%;
+            width: calc(50% - 5px); /* Ajustado para agregar separación */
             padding: 10px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-top: 10px;
         }
 
         button[type="submit"] {
@@ -119,6 +131,62 @@
             display: flex;
             justify-content: space-between;
             margin-top: 20px;
+        }
+
+        .button-group button {
+            margin-top: 0; /* Ajuste para eliminar el espacio superior adicional */
+        }
+
+        ::placeholder,
+        select:invalid,
+        input[type="date"]:invalid {
+            color: #999 !important;
+        }
+
+        input,
+        select,
+        input[type="date"] {
+            color: #999;
+        }
+
+        input:focus,
+        select:focus,
+        input[type="date"]:focus,
+        input:not(:placeholder-shown),
+        select:not(:invalid),
+        input[type="date"]:not(:invalid) {
+            color: #000 !important;
+        }
+
+        select option {
+            color: #000;
+        }
+
+        select option:first-child {
+            color: #999;
+        }
+
+        input[type="date"]:not(:valid):not(:focus) {
+            color: #999;
+        }
+
+        /* Estilos para distribuir en dos columnas */
+        .col-md-6 {
+            width: 50%;
+            float: left;
+            padding-right: 15px; /* Espaciado entre columnas */
+            box-sizing: border-box; /* Incluir padding en el ancho total */
+        }
+
+        .col-md-6:nth-child(even) {
+            padding-right: 0; /* Eliminar espaciado adicional en la última columna */
+        }
+
+        /* Limpiar el float después de las columnas */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
         }
     </style>
 </head>

@@ -15,8 +15,9 @@
             font-family: Arial, sans-serif;
             background: url('../Static/Imagen/b.png') no-repeat center center fixed;
             background-size: cover;
-            padding: 20px;
+            padding: 10px;
             margin: 0;
+            font-size: 14px;
         }
 
         .container {
@@ -25,12 +26,12 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             max-width: 1600px;
             margin: auto;
-            padding: 20px;
+            padding: 10px;
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-family: 'Lobster', cursive;
             color: #333;
         }
@@ -39,30 +40,35 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .actions form {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
         .actions input[type="text"],
         .actions select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             box-sizing: border-box;
         }
 
         .actions button[type="submit"],
         .btn-registrar,
-        .btn-regresar {
-            padding: 10px 20px;
+        .btn-regresar,
+        .btn-crear,
+        .btn-buscar,
+        .btn-eliminar,
+        .btn-guardar {
+            padding: 8px 12px;
+            font-size: 14px;
             background-color: #f0ad4e;
             color: white;
             border: none;
@@ -70,94 +76,93 @@
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            width: 150px;
+            width: 120px;
             display: inline-block;
             text-align: center;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
-        .actions button[type="submit"]:hover,
-        .btn-registrar:hover,
-        .btn-regresar:hover {
-            background-color: #eea236;
-        }
-
-        .btn-crear {
-            background-color: #4CAF50;
+        .actions button[type="submit"],
+        .btn-registrar,
+        .btn-regresar,
+        .btn-crear,
+        .btn-buscar,
+        .btn-eliminar,
+        .btn-guardar,
+        .btn-importar {
+            padding: 8px 12px;
+            font-size: 14px;
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            margin-right: 10px;
-        }
-
-        .btn-crear:hover {
-            background-color: #45a049;
-        }
-
-        .btn-buscar {
-            background-color: #2b96c7;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-buscar:hover {
-            background-color: #0a4f7c;
+            width: 120px;
+            display: inline-block;
+            margin-right: 8px;
         }
 
         .btn-eliminar {
-            background-color: #df423d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            background-color: #dc3545 !important;
         }
 
         .btn-eliminar:hover {
-            background-color: #da1c1c;
+            background-color: #c82333 !important;
+        }
+
+        .btn-regresar {
+            background-color: #e74c3c !important;
+            color: #ffffff !important;
+        }
+
+        .btn-regresar:hover {
+            background-color: #af3a2d !important;
         }
 
         .btn-guardar {
-            background-color: #5057b8;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            background-color: #215894 !important;
         }
 
         .btn-guardar:hover {
-            background-color: #180488;
+            background-color: #0c325a !important;
+        }
+
+        .btn-crear {
+            background-color: #28a745 !important;
+        }
+
+        .btn-crear:hover {
+            background-color: #218838 !important;
+        }
+
+        .btn-importar {
+            background-color: #17a2b8 !important;
+        }
+
+        .btn-importar:hover {
+            background-color: #138496 !important;
+        }
+
+        .btn-buscar {
+            background-color: #17b888 !important;
+        }
+
+        .btn-buscar:hover {
+            background-color: #13805f !important;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         table,
         th,
         td {
             border: 1px solid #ccc;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
         }
 
@@ -171,7 +176,7 @@
         }
 
         td.actions-column {
-            width: 100px;
+            width: 90px;
         }
 
         td.actions-column form {
@@ -180,7 +185,7 @@
         }
 
         td.actions-column10 {
-            width: 135px;
+            width: 120px;
         }
 
         td.actions-column10 form {
@@ -188,42 +193,24 @@
             justify-content: center;
         }
 
-        td.actions-columnF {
-            width: 122px;
-        }
-
-        td.actions-columnF form {
-            display: flex;
-            justify-content: center;
-        }
-
-        td.actions-columnI {
-            width: 175px;
-        }
-
-        td.actions-columnI form {
-            display: flex;
-            justify-content: center;
-        }
-
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .form-group label {
             color: #555;
             font-weight: bold;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .form-group input[type="text"],
         .form-group select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             box-sizing: border-box;
         }
 
@@ -232,11 +219,11 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 10px 16px;
+            font-size: 14px;
             cursor: pointer;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .form-group button[type="submit"]:hover {
@@ -250,6 +237,7 @@
     <div class="container">
         <h1>Gestión de Usuarios</h1>
         <div class="actions">
+            <a href="#" class="btn-regresar">Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
                 <input type="text" name="search_query" placeholder="Buscar por correo electrónico o DNI"
                     value="{{ search_query }}">
@@ -265,7 +253,8 @@
                 <select name="genero">
                     <option value="">Todos los géneros</option>
                     {% for genero in generos %}
-                    <option value="{{ genero.id }}" {% if filter_genero == genero.id|stringformat:"s" %}selected{% endif %}>
+                    <option value="{{ genero.id }}"
+                        {% if filter_genero == genero.id|stringformat:"s" %}selected{% endif %}>
                         {{ genero.nombre_genero }}
                     </option>
                     {% endfor %}
@@ -273,7 +262,8 @@
                 <select name="tipo_dni">
                     <option value="">Todos los tipo de DNI</option>
                     {% for tipo_dni in tipos_dni %}
-                    <option value="{{ tipo_dni.id }}" {% if filter_tipo_DNI == tipo_DNI.id|stringformat:"s" %}selected{% endif %}>
+                    <option value="{{ tipo_dni.id }}"
+                        {% if filter_tipo_DNI == tipo_DNI.id|stringformat:"s" %}selected{% endif %}>
                         {{ tipo_dni.nombre_tipo_dni }}
                     </option>
                     {% endfor %}
@@ -287,7 +277,6 @@
                 <button type="submit" class="btn-buscar">Buscar</button>
             </form>
             <a href="{% url 'Registrar_Usuario' %}" class="btn-crear">Crear Usuario</a>
-            <a href="#" class="btn-regresar">Regresar</a>
         </div>
 
         <div class="form-group">
@@ -312,8 +301,10 @@
                             {% csrf_token %}
                             <input type="hidden" name="user_id" value="{{ usuario.id }}">
                             <td><input type="text" name="username" value="{{ usuario.username }}"></td>
-                            <td class="actions-columnI"><input type="text" name="first_name" value="{{ usuario.first_name }}"></td>
-                            <td class="actions-columnI"><input type="text" name="last_name" value="{{ usuario.last_name }}"></td>
+                            <td class="actions-columnI"><input type="text" name="first_name"
+                                    value="{{ usuario.first_name }}"></td>
+                            <td class="actions-columnI"><input type="text" name="last_name"
+                                    value="{{ usuario.last_name }}"></td>
                             <td>
                                 <select name="rol">
                                     <option value="Personal Administrativo"
@@ -328,25 +319,28 @@
                             <td>
                                 <select name="genero">
                                     {% for genero in generos %}
-                                    <option value="{{ genero.id }}" {% if usuario.genero_id == genero.id %}selected{% endif %}>
+                                    <option value="{{ genero.id }}"
+                                        {% if usuario.genero_id == genero.id %}selected{% endif %}>
                                         {{ genero.nombre_genero }}
                                     </option>
                                     {% endfor %}
                                 </select>
                             </td>
-                            <td class="actions-columnF"><input type="text" name="fecha_nacimiento"
+                            <td class="actions-column10"><input type="text" name="fecha_nacimiento"
                                     value="{{ usuario.fecha_nacimiento|date:'d/m/Y' }}"></td>
                             <td>
                                 <select name="tipo_dni">
                                     {% for tipo_dni in tipos_dni %}
-                                    <option value="{{ tipo_dni.id }}" {% if usuario.tipo_dni_id == tipo_dni.id %}selected{% endif %}>
+                                    <option value="{{ tipo_dni.id }}"
+                                        {% if usuario.tipo_dni_id == tipo_dni.id %}selected{% endif %}>
                                         {{ tipo_dni.nombre_tipo_dni }}
                                     </option>
                                     {% endfor %}
                                 </select>
                             </td>
                             <td class="actions-column10"><input type="text" name="dni" value="{{ usuario.dni }}"></td>
-                            <td class="actions-column10"><input type="text" name="telefono" value="{{ usuario.telefono }}"></td>
+                            <td class="actions-column10"><input type="text" name="telefono"
+                                    value="{{ usuario.telefono }}"></td>
                             <td class="actions-column">
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
                                 <form method="POST" style="display: inline-block; margin-left: 5px;">
