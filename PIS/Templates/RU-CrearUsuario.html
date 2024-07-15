@@ -32,7 +32,7 @@
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 600px; /* Aumentado para mostrar dos columnas */
+            max-width: 600px;
             padding: 30px;
             margin: auto;
         }
@@ -70,17 +70,16 @@
             font-size: 16px;
             margin-top: 5px;
             color: #333;
-            box-sizing: border-box; /* Para incluir el padding y el borde en el ancho total */
+            box-sizing: border-box;
         }
 
-        /* Ajuste de altura para alinear campos */
         input[type="text"],
         input[type="email"],
         input[type="password"],
         input[type="date"],
         input[type="tel"],
         select {
-            height: 40px; /* Ajustar la altura según tus necesidades */
+            height: 40px;
         }
 
         select option {
@@ -99,7 +98,7 @@
 
         button[type="submit"],
         .btn-regresar {
-            width: calc(50% - 5px); /* Ajustado para agregar separación */
+            width: calc(50% - 5px);
             padding: 10px;
             border: none;
             border-radius: 5px;
@@ -134,7 +133,7 @@
         }
 
         .button-group button {
-            margin-top: 0; /* Ajuste para eliminar el espacio superior adicional */
+            margin-top: 0;
         }
 
         ::placeholder,
@@ -170,19 +169,17 @@
             color: #999;
         }
 
-        /* Estilos para distribuir en dos columnas */
         .col-md-6 {
             width: 50%;
             float: left;
-            padding-right: 15px; /* Espaciado entre columnas */
-            box-sizing: border-box; /* Incluir padding en el ancho total */
+            padding-right: 15px;
+            box-sizing: border-box;
         }
 
         .col-md-6:nth-child(even) {
-            padding-right: 0; /* Eliminar espaciado adicional en la última columna */
+            padding-right: 0;
         }
 
-        /* Limpiar el float después de las columnas */
         .row:after {
             content: "";
             display: table;
@@ -320,13 +317,25 @@
             }
         }
 
+        function validarLongitud(input, longitud, nombreCampo) {
+            if (input.value.length !== longitud) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: `El ${nombreCampo} debe tener exactamente ${longitud} dígitos.`,
+                });
+                return false;
+            }
+            return true;
+        }
+
         function validarContrasenia(password) {
             var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
             return regex.test(password);
         }
 
         function validarTelefono(telefono) {
-            return telefono.startsWith('09');
+            return telefono.startsWith('09') && telefono.length === 10;
         }
 
         document.getElementById('id_first_name').onkeypress = soloLetras;
@@ -345,7 +354,15 @@
 
         document.getElementById('id_telefono').addEventListener('input', function () {
             if (!validarTelefono(this.value)) {
-                this.setCustomValidity('El número de teléfono debe comenzar con 09');
+                this.setCustomValidity('El número de teléfono debe comenzar con 09 y tener 10 dígitos');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        document.getElementById('id_dni').addEventListener('input', function () {
+            if (this.value.length !== 10) {
+                this.setCustomValidity('El DNI debe tener exactamente 10 dígitos');
             } else {
                 this.setCustomValidity('');
             }
@@ -357,6 +374,7 @@
             var password1 = document.getElementById('id_password1').value;
             var password2 = document.getElementById('id_password2').value;
             var telefono = document.getElementById('id_telefono').value;
+            var dni = document.getElementById('id_dni').value;
 
             if (!validarContrasenia(password1)) {
                 Swal.fire({
@@ -380,8 +398,12 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'El número de teléfono debe comenzar con 09',
+                    text: 'El número de teléfono debe comenzar con 09 y tener 10 dígitos',
                 });
+                return false;
+            }
+
+            if (!validarLongitud(document.getElementById('id_dni'), 10, 'DNI')) {
                 return false;
             }
 
@@ -397,14 +419,56 @@
                 }
             }
 
-            Swal.fire({
-                title: 'Usuario creado exitosamente',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            });
+            var formData = new FormData(this);
+            var jsonData = {};
+            formData.forEach((value, key) => { jsonData[key] = value });
 
-            this.submit();
+            fetch('{% url "Registrar_Usuario" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(jsonData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            title: 'Éxito',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '{% url "Iniciar_Sesion" %}';
+                            }
+                        });
+                    } else {
+                        let errorMessage = data.message;
+                        if (data.errors) {
+                            errorMessage += '\n' + data.errors.join('\n');
+                        }
+                        Swal.fire({
+                            title: 'Error',
+                            text: errorMessage,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Hubo un problema al procesar su solicitud.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                });
         };
+
+        window.onload = recordarPaginaAnterior;
     </script>
 </body>
 

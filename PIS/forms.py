@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
-    Datos_Historicos,
+    DatosHistoricos,
     Genero,
     InformeCarrera,
     InformeMateria,
@@ -623,18 +623,18 @@ class PeriodoAcademicoForm(forms.ModelForm):
     )
 
     ESTADO_CHOICES = [
-        ("activo", "Activo"),
-        ("inactivo", "Inactivo"),
+        ("Activo", "Activo"),
+        ("Inactivo", "Inactivo"),
     ]
 
-    estado = forms.ChoiceField(choices=ESTADO_CHOICES, required=True, label="Estado")
+    estado_periodo_academico = forms.ChoiceField(choices=ESTADO_CHOICES, required=True, label="Estado")
 
     class Meta:
         model = PeriodoAcademico
         fields = [
             "fecha_inicio",
             "fecha_fin",
-            "estado",
+            "estado_periodo_academico",
         ]
 
     def clean(self):
@@ -650,19 +650,21 @@ class PeriodoAcademicoForm(forms.ModelForm):
         return cleaned_data
 
 
-class DatosHistoricosForm(forms.Form):
-    materia = forms.ModelChoiceField(
-        queryset=Materia.objects.all(),
-        to_field_name="nombre_materia",
-        empty_label="Seleccione una materia",
-        required=True,
-        label="Materia",
-    )
+class DatosHistoricosForm(forms.ModelForm):
+
+    # materia = forms.ModelChoiceField(
+    #     queryset=Materia.objects.all(),
+    #     to_field_name="nombre_materia",
+    #     empty_label="Seleccione una materia",
+    #     required=True,
+    #     label="Materia",
+    # )
 
     cantidad_matriculados = forms.IntegerField(
         widget=forms.NumberInput(
             attrs={"placeholder": "Ingrese la cantidad de matriculados"}
         ),
+        min_value=0,
         required=True,
         label="Cantidad de Matriculados",
     )
@@ -671,6 +673,7 @@ class DatosHistoricosForm(forms.Form):
         widget=forms.NumberInput(
             attrs={"placeholder": "Ingrese la cantidad de aprovados"}
         ),
+        min_value=0,
         required=True,
         label="Cantidad de Aprobados",
     )
@@ -679,6 +682,7 @@ class DatosHistoricosForm(forms.Form):
         widget=forms.NumberInput(
             attrs={"placeholder": "Ingrese la cantidad de reprovados"}
         ),
+        min_value=0,
         required=True,
         label="Cantidad de Reprobados",
     )
@@ -687,27 +691,18 @@ class DatosHistoricosForm(forms.Form):
         widget=forms.NumberInput(
             attrs={"placeholder": "Ingrese la cantidad de desertores"}
         ),
+        min_value=0,
         required=True,
         label="Cantidad de Desertores",
     )
 
-    cantidad_retirados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={"placeholder": "Ingrese la cantidad de retirados"}
-        ),
-        required=True,
-        label="Cantidad de Retirados",
-    )
-
     class Meta:
-        model = Datos_Historicos
+        model = DatosHistoricos
         fields = [
-            "materia",
             "cantidad_matriculados",
             "cantidad_aprobados",
             "cantidad_reprobados",
             "cantidad_desertores",
-            "cantidad_retirados",
         ]
 
 

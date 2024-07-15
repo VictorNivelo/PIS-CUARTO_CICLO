@@ -1,5 +1,8 @@
 import csv
+import json
 import token
+from django.views import View
+from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
@@ -12,12 +15,13 @@ from django.utils.encoding import force_str
 import re
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from docx import Document
+from django.db import transaction
 import PyPDF2
 import pdfplumber
 import openpyxl
@@ -32,7 +36,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from django.shortcuts import render
-from .models import Datos_Historicos
 from .Modelo.ModeloMatematico import model, params_list
 from django.contrib.auth.hashers import make_password
 from django.utils.http import urlsafe_base64_decode
@@ -49,8 +52,10 @@ from PIS.models import (
     Materia,
     Genero,
     Estudiante,
+    DatosHistoricos,
 )
 from .forms import (
+    DatosHistoricosForm,
     GeneroForm,
     InformeCarreraForm,
     InformeCicloForm,
@@ -225,43 +230,66 @@ def SubirImagenPerfil(request):
     return redirect("Perfil_Usuario")
 
 
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def RegistrarUsuario(request):
     if request.method == "POST":
-        form = RegistrarUsuarioForm(request.POST)
+        data = json.loads(request.body)
+        form = RegistrarUsuarioForm(data)
         if form.is_valid():
-            user = form.save(commit=False)
+            try:
+                user = form.save(commit=False)
 
-            num_usuarios = UsuarioPersonalizado.objects.count()
+                if UsuarioPersonalizado.objects.filter(username=user.username).exists():
+                    return JsonResponse(
+                        {
+                            "status": "error",
+                            "message": "El correo electrónico ya está registrado.",
+                        }
+                    )
 
-            if num_usuarios == 0:
-                user.is_superuser = True
-                user.is_staff = True
-                user.rol = "Personal Administrativo"
-            elif num_usuarios == 1:
-                user.is_staff = True
-                user.rol = "Secretaria"
-            else:
-                user.rol = "Docente"
+                if UsuarioPersonalizado.objects.filter(dni=user.dni).exists():
+                    return JsonResponse(
+                        {
+                            "status": "error",
+                            "message": "El número de DNI ya está registrado.",
+                        }
+                    )
 
-            user.set_password(form.cleaned_data["password1"])
-            user.save()
-            messages.success(request, "Usuario registrado exitosamente.")
-            return redirect("Iniciar_Sesion")
+                num_usuarios = UsuarioPersonalizado.objects.count()
+                if num_usuarios == 0:
+                    user.is_superuser = True
+                    user.is_staff = True
+                    user.rol = "Personal Administrativo"
+                elif num_usuarios == 1:
+                    user.is_staff = True
+                    user.rol = "Secretaria"
+                else:
+                    user.rol = "Docente"
+
+                user.set_password(form.cleaned_data["password1"])
+                user.save()
+                login(request, user)
+                return JsonResponse(
+                    {"status": "success", "message": "Usuario registrado exitosamente."}
+                )
+            except Exception as e:
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": f"Error al guardar el usuario: {str(e)}",
+                    }
+                )
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    if field == "username":
-                        messages.error(
-                            request, f"Error en el nombre de usuario: {error}"
-                        )
-                    elif field == "password1":
-                        messages.error(request, f"Contraseña no segura: {error}")
-                    elif field == "password2":
-                        messages.error(
-                            request, f"Las contraseñas no coinciden: {error}"
-                        )
-                    else:
-                        messages.error(request, f"Error en el campo {field}: {error}")
+            error_message = "Por favor, corrija los siguientes errores:"
+            if "username" in form.errors:
+                error_message = "El correo electrónico ya está registrado."
+            elif "dni" in form.errors:
+                error_message = "El número de DNI ya está registrado."
+            else:
+                error_message = "Por favor, verifique los datos ingresados."
+
+            return JsonResponse({"status": "error", "message": error_message})
     else:
         form = RegistrarUsuarioForm()
 
@@ -303,7 +331,7 @@ def GestionUsuario(request):
             fecha_nacimiento_str = request.POST.get("fecha_nacimiento")
             try:
                 fecha_nacimiento = datetime.strptime(
-                    fecha_nacimiento_str, "%d/%m/%Y"
+                    fecha_nacimiento_str, "%Y-%m-%d"
                 ).date()
                 usuario.fecha_nacimiento = fecha_nacimiento
             except ValueError:
@@ -526,35 +554,6 @@ def ImportarEstudiante(request):
     return render(request, "SubirEstudiante.html")
 
 
-# def RecuperarContrasenia(request):
-#     if request.method == "POST":
-#         form = RecuperarContraseniaForm(request.POST)
-#         if form.is_valid():
-#             username = form.cleaned_data["username"]
-#             try:
-#                 user = UsuarioPersonalizado.objects.get(username=username)
-#             except UsuarioPersonalizado.DoesNotExist:
-#                 messages.error(request, "El usuario no existe.")
-#                 return render(request, "RecuperarContrasenia.html", {"form": form})
-
-#             token = default_token_generator.make_token(user)
-#             uid = urlsafe_base64_encode(force_bytes(user.pk))
-
-#             reset_url = reverse(
-#                 "password_reset_confirm", kwargs={"uidb64": uid, "token": token}
-#             )
-
-#             return redirect(reset_url)
-#         else:
-#             messages.error(request, "Error al enviar el enlace de recuperación.")
-#     else:
-#         form = RecuperarContraseniaForm()
-#     return render(request, "RecuperarContrasenia.html", {"form": form})
-
-
-# prueba 2
-
-
 def CorreoEnviado(request, uidb64, token):
     return render(request, "CorreoRecuperacionEnviado.html")
 
@@ -625,28 +624,6 @@ def RecuperarContrasenia(request):
     return render(request, "RecuperarContrasenia.html", {"form": form})
 
 
-# def RecuperarContrasenia(request):
-#     if request.method == "POST":
-#         form = RecuperarContraseniaForm(request.POST)
-#         if form.is_valid():
-#             username = form.cleaned_data["username"]
-#             try:
-#                 user = User.objects.get(username=username)
-#             except User.DoesNotExist:
-#                 messages.error(request, "El usuario no existe.")
-#                 return render(request, "RecuperarContrasenia.html", {"form": form})
-
-#             token = default_token_generator.make_token(user)
-#             uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-
-#             return redirect("Correo_Enviado", uidb64=uidb64, token=token)
-#         else:
-#             messages.error(request, "Error al enviar el enlace de recuperación.")
-#     else:
-#         form = RecuperarContraseniaForm()
-#     return render(request, "RecuperarContrasenia.html", {"form": form})
-
-
 def CambiarContrasenia(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -670,168 +647,6 @@ def CambiarContrasenia(request, uidb64, token):
             request, "El enlace de restablecimiento de contraseña no es válido."
         )
         return redirect("Recuperar_Contrasenia")
-
-
-# def RecuperarContrasenia(request):
-#     if request.method == "POST":
-#         form = RecuperarContraseniaForm(request.POST)
-#         if form.is_valid():
-#             username = form.cleaned_data["username"]
-#             try:
-#                 user = UsuarioPersonalizado.objects.get(username=username)
-#             except UsuarioPersonalizado.DoesNotExist:
-#                 messages.error(request, "El usuario no existe.")
-#                 return render(request, "RecuperarContrasenia.html", {"form": form})
-
-#             token = default_token_generator.make_token(user)
-#             uid = urlsafe_base64_encode(force_bytes(user.pk))
-
-#             return render(
-#                 request, "CambiarContrasenia.html", {"uid": uid, "token": token}
-#             )
-#         else:
-#             messages.error(request, "Error al enviar el enlace de recuperación.")
-#     else:
-#         form = RecuperarContraseniaForm()
-#     return render(request, "RecuperarContrasenia.html", {"form": form})
-
-
-# User = get_user_model()
-
-# def CambiarContrasenia(request, uidb64, token):
-#     try:
-#         uid = force_str(urlsafe_base64_decode(uidb64))
-#         user = User.objects.get(pk=uid)
-#     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-#         user = None
-
-#     if user is not None and default_token_generator.check_token(user, token):
-#         if request.method == "POST":
-#             form = SetPasswordForm(user, request.POST)
-#             if form.is_valid():
-#                 form.save()
-#                 messages.success(request, 'Contraseña cambiada con éxito.')
-#                 return redirect('Iniciar_Sesion')
-#         else:
-#             form = SetPasswordForm(user)
-#         return render(request, 'CambiarContrasenia.html', {'form': form})
-#     else:
-#         messages.error(request, 'El enlace de restablecimiento de contraseña no es válido.')
-#         return redirect('Recuperar_Contrasenia')
-
-
-# User = get_user_model()
-
-
-# def CambiarContrasenia(request):
-#     if request.method == "POST":
-#         uid = request.POST.get("uid")
-#         token = request.POST.get("token")
-#         new_password1 = request.POST.get("new_password1")
-#         new_password2 = request.POST.get("new_password2")
-
-#         if new_password1 != new_password2:
-#             messages.error(request, "Las contraseñas no coinciden.")
-#             return redirect("cambiar_contrasenia")
-
-#         try:
-#             uid = urlsafe_base64_decode(uid).decode()
-#             user = User.objects.get(pk=uid)
-#         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-#             user = None
-
-#         if user is not None and default_token_generator.check_token(user, token):
-#             user.password = make_password(new_password1)
-#             user.save()
-#             messages.success(request, "Contraseña cambiada con éxito.")
-#             return redirect("Iniciar_Sesion")
-#         else:
-#             messages.error(
-#                 request, "El enlace de restablecimiento de contraseña no es válido."
-#             )
-#             return redirect("Recuperar_Contrasenia")
-#     else:
-#         return render(request, "CambiarContrasenia.html")
-
-
-# def RecuperarContrasenia(request):
-#     if request.method == "POST":
-#         form = RecuperarContraseniaForm(request.POST)
-#         if form.is_valid():
-#             username = form.cleaned_data["username"]
-#             try:
-#                 user = UsuarioPersonalizado.objects.get(username=username)
-#             except UsuarioPersonalizado.DoesNotExist:
-#                 messages.error(request, "El usuario no existe.")
-#                 return render(request, "RecuperarContrasenia.html", {"form": form})
-
-#             token = default_token_generator.make_token(user)
-#             uid = urlsafe_base64_encode(force_bytes(user.pk))
-
-#             reset_url = reverse(
-#                 "password_reset_confirm", kwargs={"uidb64": uid, "token": token}
-#             )
-#             reset_url = request.build_absolute_uri(reset_url)
-
-#             subject = "Recuperación de Contraseña"
-#             message = render_to_string(
-#                 "CambiarContrasenia.html",
-#                 {
-#                     "user": user,
-#                     "reset_url": reset_url,
-#                 },
-#             )
-#             from_email = settings.EMAIL_HOST_USER
-#             to_email = form.cleaned_data["username"]
-#             send_mail(subject, message, from_email, [to_email])
-
-#             messages.success(
-#                 request,
-#                 "Se ha enviado un enlace de recuperación a su correo electrónico.",
-#             )
-#             return redirect("Iniciar_Sesion")
-#         else:
-#             messages.error(request, "Error al enviar el enlace de recuperación.")
-#     else:
-#         form = RecuperarContraseniaForm()
-#     return render(request, "RecuperarContrasenia.html", {"form": form})
-
-
-# def RecuperarContrasenia(request):
-#     if request.method == "POST":
-#         form = RecuperarContraseniaForm(request.POST)
-#         if form.is_valid():
-#             username = form.cleaned_data["username"]
-#             messages.success(
-#                 request,
-#                 "Se ha enviado un enlace de recuperación a su correo electrónico.",
-#             )
-#             return redirect("Iniciar_Sesion")
-#         else:
-#             messages.error(request, "Error al enviar el enlace de recuperación.")
-#     else:
-#         form = RecuperarContraseniaForm()
-#     return render(request, "RecuperarContrasenia.html", {"form": form})
-
-
-# def CambiarContrasenia(request):
-#     if request.method == "POST":
-#         form = CambiarContraseniaForm(request.POST)
-#         if form.is_valid():
-#             nueva_contrasenia = form.cleaned_data["Contrasenia"]
-#             request.user.set_password(nueva_contrasenia)
-#             request.user.save()
-#             update_session_auth_hash(request, request.user)
-#             messages.success(request, "Contraseña cambiada exitosamente.")
-#             return redirect("Iniciar_Sesion")
-#         else:
-#             for field, errors in form.errors.items():
-#                 for error in errors:
-#                     messages.error(request, f"{field}: {error}")
-#     else:
-#         form = CambiarContraseniaForm()
-
-#     return render(request, "CambiarContrasenia.html", {"form": form})
 
 
 def RegistrarTipoDNI(request):
@@ -1345,381 +1160,68 @@ def GestionMateria(request):
     )
 
 
-# def GestionMateria(request):
-#     query = request.GET.get("search_query", "")
-#     materias = Materia.objects.all()
-#     ciclos = Ciclo.objects.all()
-#     periodosAcademicos = PeriodoAcademico.objects.all()
-#     docentes = UsuarioPersonalizado.objects.filter(rol="Docente")
+def RegistrarDatosHistorico(request):
+    if request.method == "POST":
+        form = DatosHistoricosForm(request.POST)
+        if form.is_valid():
+            datos_historicos = form.save(commit=False)
+            datos_historicos.save()
+            messages.success(request, "Datos históricos registrados exitosamente.")
+            return redirect("Gestion_DatosHistorico")
+        else:
+            messages.error(request, "Por favor, corrija los errores del formulario.")
+    else:
+        form = DatosHistoricosForm()
 
-#     if query:
-#         materias = materias.filter(Q(nombre_materia__icontains=query))
+    return render(request, "RDH-CrearDatosHistoricos.html", {"form": form})
 
-#     if request.method == "POST":
-#         if "modify" in request.POST:
-#             materia_id = request.POST.get("materia_id")
-#             materia = Materia.objects.get(id=materia_id)
-#             materia.nombre_materia = request.POST.get("nombre_materia")
-#             materia.numero_horas = request.POST.get("numero_horas")
-#             materia.unidades = request.POST.get("unidades")
 
-#             periodo_academico_id = request.POST.get("periodo_academico")
-#             periodo = PeriodoAcademico.objects.get(id=periodo_academico_id)
-#             materia.periodo_academico = periodo
+def GestionDatosHistoricos(request):
+    query = request.GET.get("search_query", "")
+    datos_Historicos = DatosHistoricos.objects.all()
 
-#             docente_encargado_id = request.POST.get("docente_encargado")
-#             docente = UsuarioPersonalizado.objects.get(id=docente_encargado_id)
-#             materia.docente_encargado = docente
+    if query:
+        datos_Historicos = datos_Historicos.filter(
+            Q(cantidad_matriculados__icontains=query)
+        )
 
-#             ciclo_id = request.POST.get("ciclo")
-#             ciclo = Ciclo.objects.get(id=ciclo_id)
-#             materia.ciclo = ciclo
+    if request.method == "POST":
+        if "modify" in request.POST:
+            datos_historicos_id = request.POST.get("datos_historicos_id")
+            datos_historicos = DatosHistoricos.objects.get(id=datos_historicos_id)
+            datos_historicos.cantidad_matriculados = request.POST.get(
+                "cantidad_matriculados"
+            )
+            datos_historicos.cantidad_aprobados = request.POST.get("cantidad_aprobados")
+            datos_historicos.cantidad_reprobados = request.POST.get(
+                "cantidad_reprobados"
+            )
+            datos_historicos.cantidad_desertores = request.POST.get(
+                "cantidad_desertores"
+            )
 
-#             materia.save()
-#             messages.success(request, "Materia actualizada exitosamente.")
-#         elif "delete" in request.POST:
-#             materia_id = request.POST.get("materia_id")
-#             materia = Materia.objects.get(id=materia_id)
-#             materia.delete()
-#             messages.success(request, "Materia eliminada exitosamente.")
-#         return redirect("Gestion_Materia")
+            datos_historicos.save()
+            messages.success(request, "Dato histórico actualizado exitosamente.")
 
-#     return render(
-#         request,
-#         "GestionMateria.html",
-#         {
-#             "materias": materias,
-#             "docentes": docentes,
-#             "ciclos": ciclos,
-#             "periodosAcademicos": periodosAcademicos,
-#             "query": query,
-#         },
-#     )
+        elif "delete" in request.POST:
+            datos_historicos_id = request.POST.get("datos_historicos_id")
+            datos_historicos = DatosHistoricos.objects.get(id=datos_historicos_id)
+            datos_historicos.delete()
+            messages.success(request, "Dato histórico eliminado exitosamente.")
+
+        return redirect("Gestion_DatosHistorico")
+
+    return render(
+        request,
+        "GestionDatosHistoricos.html",
+        {
+            "datos_Historicos": datos_Historicos,
+            "query": query,
+        },
+    )
 
 
 # Funcionalidad de subir archivo para su procesamiento
-
-
-# def Extraer_DOCS(file):
-#     document = Document(file)
-#     data = {}
-#     for para in document.paragraphs:
-#         text = para.text.strip()
-#         if "Materia:" in text:
-#             data["materia"] = text.replace("Materia:", "").strip()
-#         elif "Docente encargado:" in text:
-#             data["docente_encargado"] = text.replace("Docente encargado:", "").strip()
-#         elif "Numero de estudiante:" in text:
-#             data["numero_estudiantes"] = int(
-#                 text.replace("Numero de estudiante:", "").strip()
-#             )
-#         elif "Aprobados:" in text:
-#             data["aprobados"] = int(text.replace("Aprobados:", "").strip())
-#         elif "Reprobados:" in text:
-#             data["reprobados"] = int(text.replace("Reprobados:", "").strip())
-#         elif "Desertores:" in text:
-#             data["desertores"] = int(text.replace("Desertores:", "").strip())
-#         elif "Retirados:" in text:
-#             data["retirados"] = int(text.replace("Retirados:", "").strip())
-#     return data
-
-
-# def Extraer_PDF(file):
-#     data = {}
-#     with pdfplumber.open(file) as pdf:
-#         for page in pdf.pages:
-#             text = page.extract_text()
-#             if text:
-#                 for line in text.split("\n"):
-#                     line = line.strip()
-#                     if "Materia:" in line:
-#                         data["materia"] = line.replace("Materia:", "").strip()
-#                     elif "Docente encargado:" in line:
-#                         data["docente_encargado"] = line.replace(
-#                             "Docente encargado:", ""
-#                         ).strip()
-#                     elif "Numero de estudiante:" in line:
-#                         data["numero_estudiantes"] = int(
-#                             line.replace("Numero de estudiante:", "").strip()
-#                         )
-#                     elif "Aprobados:" in line:
-#                         data["aprobados"] = int(line.replace("Aprobados:", "").strip())
-#                     elif "Reprobados:" in line:
-#                         data["reprobados"] = int(
-#                             line.replace("Reprobados:", "").strip()
-#                         )
-#                     elif "Desertores:" in line:
-#                         data["desertores"] = int(
-#                             line.replace("Desertores:", "").strip()
-#                         )
-#                     elif "Retirados:" in line:
-#                         data["retirados"] = int(line.replace("Retirados:", "").strip())
-#     return data
-
-# valido
-# def Extraer_XLSX(file):
-#     data = {}
-#     workbook = openpyxl.load_workbook(file, data_only=True)
-#     sheet = workbook.active
-
-#     for row in sheet.iter_rows(min_row=1, max_col=7, values_only=True):
-#         for cell_value in row:
-#             if isinstance(cell_value, str):
-#                 if "Materia:" in cell_value:
-#                     data["materia"] = cell_value.replace("Materia:", "").strip()
-#                 elif "Docente encargado:" in cell_value:
-#                     data["docente_encargado"] = cell_value.replace("Docente encargado:", "").strip()
-#             elif isinstance(cell_value, (int, float)):
-#                 if "Numero de estudiante:" in str(cell_value):
-#                     data["numero_estudiantes"] = int(str(cell_value).replace("Numero de estudiante:", "").strip())
-#                 elif "Aprobados:" in str(cell_value):
-#                     data["aprobados"] = int(str(cell_value).replace("Aprobados:", "").strip())
-#                 elif "Reprobados:" in str(cell_value):
-#                     data["reprobados"] = int(str(cell_value).replace("Reprobados:", "").strip())
-#                 elif "Desertores:" in str(cell_value):
-#                     data["desertores"] = int(str(cell_value).replace("Desertores:", "").strip())
-#                 elif "Retirados:" in str(cell_value):
-#                     data["retirados"] = int(str(cell_value).replace("Retirados:", "").strip())
-
-#     workbook.close()
-#     return data
-
-# def Extraer_XLSX(file):
-#     data = {}
-#     workbook = openpyxl.load_workbook(file)
-#     sheet = workbook.active
-
-#     for row in sheet.iter_rows(values_only=True):
-#         for cell_value in row:
-#             if isinstance(cell_value, str):
-#                 if "Materia:" in cell_value:
-#                     data["materia"] = cell_value.replace("Materia:", "").strip()
-#                 elif "Docente encargado:" in cell_value:
-#                     data["docente_encargado"] = cell_value.replace(
-#                         "Docente encargado:", ""
-#                     ).strip()
-#             elif isinstance(cell_value, (int, float)):
-#                 if "Numero de estudiante:" in str(cell_value):
-#                     data["numero_estudiantes"] = int(
-#                         str(cell_value).replace("Numero de estudiante:", "").strip()
-#                     )
-#                 elif "Aprobados:" in str(cell_value):
-#                     data["aprobados"] = int(
-#                         str(cell_value).replace("Aprobados:", "").strip()
-#                     )
-#                 elif "Reprobados:" in str(cell_value):
-#                     data["reprobados"] = int(
-#                         str(cell_value).replace("Reprobados:", "").strip()
-#                     )
-#                 elif "Desertores:" in str(cell_value):
-#                     data["desertores"] = int(
-#                         str(cell_value).replace("Desertores:", "").strip()
-#                     )
-#                 elif "Retirados:" in str(cell_value):
-#                     data["retirados"] = int(
-#                         str(cell_value).replace("Retirados:", "").strip()
-#                     )
-
-#     return data
-
-
-# def CargarInforme(request):
-#     if request.method == "POST":
-#         file = request.FILES["document"]
-#         file_extension = file.name.split(".")[-1].lower()
-
-#         if file_extension == "docx":
-#             data = Extraer_DOCS(file)
-#         elif file_extension == "pdf":
-#             data = Extraer_PDF(file)
-#         elif file_extension == "xlsx":
-#             data = Extraer_XLSX(file)
-#         else:
-#             return HttpResponse("Formato de archivo no soportado.", status=400)
-
-#         form = InformeMateriaForm(initial=data)
-#         return render(request, "InformeMateria.html", {"form": form})
-
-#     return render(request, "CargarInforme.html")
-
-
-# def Extraer_PDF(file):
-#     data = []
-#     with pdfplumber.open(file) as pdf:
-#         for page in pdf.pages:
-#             text = page.extract_text()
-#             if text:
-#                 current_item = {}
-#                 for line in text.split("\n"):
-#                     if line.startswith("Universidad:"):
-#                         if current_item:
-#                             data.append(current_item)
-#                         current_item = {"tipo": "universidad", "datos": {}}
-#                         current_item["datos"]["nombre_universidad"] = line.replace(
-#                             "Universidad:", ""
-#                         ).strip()
-#                     elif line.startswith("Dirección:"):
-#                         current_item["datos"]["direccion_universidad"] = line.replace(
-#                             "Dirección:", ""
-#                         ).strip()
-#                     elif line.startswith("Teléfono:"):
-#                         current_item["datos"]["telefono_universidad"] = line.replace(
-#                             "Teléfono:", ""
-#                         ).strip()
-#                     elif line.startswith("Correo:"):
-#                         current_item["datos"]["correo_universidad"] = line.replace(
-#                             "Correo:", ""
-#                         ).strip()
-#                     elif line.startswith("Fecha de fundación:"):
-#                         current_item["datos"]["fecha_fundacion"] = line.replace(
-#                             "Fecha de fundación:", ""
-#                         ).strip()
-#                 if current_item:
-#                     data.append(current_item)
-#     return data
-
-
-# def Extraer_XLSX(file):
-#     data = []
-#     workbook = openpyxl.load_workbook(file)
-#     sheet = workbook.active
-#     headers = [cell.value for cell in sheet[1]]
-
-#     for row in sheet.iter_rows(min_row=2, values_only=True):
-#         item = {"tipo": row[0], "datos": {}}
-#         for header, value in zip(headers[1:], row[1:]):
-#             if value:
-#                 item["datos"][header.lower().replace(" ", "_")] = value
-#         data.append(item)
-
-#     return data
-
-
-# def Extraer_DOCS(file):
-#     document = Document(file)
-#     data = []
-#     current_item = None
-
-#     for para in document.paragraphs:
-#         text = para.text.strip()
-#         if text.startswith("Universidad:"):
-#             if current_item:
-#                 data.append(current_item)
-#             current_item = {"tipo": "universidad", "datos": {}}
-#             current_item["datos"]["nombre_universidad"] = text.replace(
-#                 "Universidad:", ""
-#             ).strip()
-#         elif text.startswith("Direccion:"):
-#             current_item["datos"]["direccion_universidad"] = text.replace(
-#                 "Direccion:", ""
-#             ).strip()
-#         elif text.startswith("Telefono:"):
-#             current_item["datos"]["telefono_universidad"] = text.replace(
-#                 "Telefono:", ""
-#             ).strip()
-#         elif text.startswith("Correo:"):
-#             current_item["datos"]["correo_universidad"] = text.replace(
-#                 "Correo:", ""
-#             ).strip()
-#         elif text.startswith("Fecha de fundación:"):
-#             current_item["datos"]["fecha_fundacion"] = text.replace(
-#                 "Fecha de fundación:", ""
-#             ).strip()
-
-#     if current_item:
-#         data.append(current_item)
-
-#     return data
-
-
-# def CargarInforme(request):
-#     if request.method == "POST" and request.FILES["document"]:
-#         file = request.FILES["document"]
-#         file_extension = file.name.split(".")[-1].lower()
-
-#         path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
-#         tmp_file = os.path.join(settings.MEDIA_ROOT, path)
-
-#         try:
-#             if file_extension == "docx":
-#                 data = Extraer_DOCS(tmp_file)
-#             elif file_extension == "pdf":
-#                 data = Extraer_PDF(tmp_file)
-#             elif file_extension in ["xlsx", "xls"]:
-#                 data = Extraer_XLSX(tmp_file)
-#             else:
-#                 return HttpResponse("Formato de archivo no soportado.", status=400)
-
-#             for item in data:
-#                 if item["tipo"] == "universidad":
-#                     Universidad.objects.create(**item["datos"])
-
-#             messages.success(request, "Universidades importadas exitosamente.")
-#             return JsonResponse({"success": True})
-
-#         except Exception as e:
-#             messages.error(request, f"Error al importar universidades: {str(e)}")
-#             return JsonResponse({"success": False, "error": str(e)})
-
-#         finally:
-#             default_storage.delete(tmp_file)
-
-#     return render(request, "CargarInforme.html")
-
-
-# def CargarInforme(request):
-#     if request.method == "POST" and request.FILES["document"]:
-#         file = request.FILES["document"]
-#         file_extension = file.name.split(".")[-1].lower()
-
-#         path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
-#         tmp_file = os.path.join(settings.MEDIA_ROOT, path)
-
-#         try:
-#             if file_extension == "docx":
-#                 data = Extraer_DOCS(tmp_file)
-#             elif file_extension == "pdf":
-#                 data = Extraer_PDF(tmp_file)
-#             elif file_extension in ["xlsx", "xls"]:
-#                 data = Extraer_XLSX(tmp_file)
-#             else:
-#                 return HttpResponse("Formato de archivo no soportado.", status=400)
-
-#             for item in data:
-#                 if "tipo" in item:
-#                     if item["tipo"] == "universidad":
-#                         Universidad.objects.create(**item["datos"])
-#                     elif item["tipo"] == "facultad":
-#                         Facultad.objects.create(**item["datos"])
-#                     elif item["tipo"] == "carrera":
-#                         Carrera.objects.create(**item["datos"])
-#                     elif item["tipo"] == "ciclo":
-#                         Ciclo.objects.create(**item["datos"])
-#                     elif item["tipo"] == "materia":
-#                         Materia.objects.create(**item["datos"])
-
-#             messages.success(request, "Datos importados exitosamente.")
-#             return redirect("Index")
-
-#         finally:
-#             default_storage.delete(tmp_file)
-
-#     return render(request, "CargarInforme.html")
-
-
-@csrf_exempt
-def upload_universities(request):
-    if request.method == "POST" and request.FILES.get("document"):
-        document = request.FILES["document"]
-        content = document.read().decode("utf-8")
-
-        universities = parse_university_data(content)
-        for university in universities:
-            Universidad.objects.create(**university)
-
-        return JsonResponse({"success": True})
-
-    return JsonResponse({"success": False})
 
 
 def parse_university_data(content):
@@ -1850,143 +1352,6 @@ def CargarInforme(request):
             default_storage.delete(tmp_file)
 
     return render(request, "CargarInforme.html")
-
-
-def upload_universities(request):
-    if request.method == "POST":
-        file = request.FILES["file"]
-
-        try:
-            content = file.read().decode("utf-8")
-
-            universities = content.strip().split("\n\n")
-
-            for uni_data in universities:
-                nombre = re.search(r"Universidad:\s*(.*)", uni_data).group(1)
-                direccion = re.search(r"Direccion:\s*(.*)", uni_data).group(1)
-                telefono = re.search(r"Telefono:\s*(.*)", uni_data).group(1)
-                correo = re.search(r"Correo:\s*(.*)", uni_data).group(1)
-                fecha_fundacion = re.search(
-                    r"Fecha de fundación:\s*(.*)", uni_data
-                ).group(1)
-
-                universidad, created = Universidad.objects.get_or_create(
-                    nombre_universidad=nombre,
-                    defaults={
-                        "direccion_universidad": direccion,
-                        "telefono_universidad": telefono,
-                        "correo_universidad": correo,
-                        "fecha_fundacion": fecha_fundacion,
-                    },
-                )
-                if not created:
-                    universidad.direccion_universidad = direccion
-                    universidad.telefono_universidad = telefono
-                    universidad.correo_universidad = correo
-                    universidad.fecha_fundacion = fecha_fundacion
-                    universidad.save()
-
-        except UnicodeDecodeError as e:
-            return render(
-                request,
-                "upload.html",
-                {"error": f"Error de codificación del archivo: {e}"},
-            )
-        except Exception as e:
-            return render(
-                request, "upload.html", {"error": f"Error procesando el archivo: {e}"}
-            )
-
-    return render(request, "upload.html")
-
-
-# @csrf_exempt
-# def upload_universities(request):
-#     if request.method == "POST" and request.FILES.get("document"):
-#         document = request.FILES["document"]
-#         content = document.read().decode("utf-8")
-
-#         universities = parse_university_data(content)
-#         for university in universities:
-#             Universidad.objects.create(**university)
-
-#         return JsonResponse({"success": True})
-
-#     return JsonResponse({"success": False})
-
-# def parse_university_data(content):
-#     pattern = re.compile(
-#         r"Universidad:\s*(.*?)\s*Direccion:\s*(.*?)\s*Telefono:\s*(.*?)\s*Correo:\s*(.*?)\s*Fecha de fundación:\s*(.*?)\s*(?=Universidad:|$)"
-#     )
-#     matches = pattern.findall(content)
-
-#     universities = []
-#     for match in matches:
-#         universities.append(
-#             {
-#                 "nombre_universidad": match[0],
-#                 "direccion_universidad": match[1],
-#                 "telefono_universidad": match[2],
-#                 "correo_universidad": match[3],
-#                 "fecha_fundacion": match[4],
-#             }
-#         )
-
-#     return universities
-
-
-# def parse_university_data(content):
-#     pattern = re.compile(
-#         r"Universidad:\s*(.*?)\s*Direccion:\s*(.*?)\s*Telefono:\s*(.*?)\s*Correo:\s*(.*?)\s*Fecha de fundación:\s*(.*?)\s*(?=Universidad:|$)"
-#     )
-#     matches = pattern.findall(content)
-
-#     universities = []
-#     for match in matches:
-#         universities.append(
-#             {
-#                 "nombre_universidad": match[0],
-#                 "direccion_universidad": match[1],
-#                 "telefono_universidad": match[2],
-#                 "correo_universidad": match[3],
-#                 "fecha_fundacion": match[4],
-#             }
-#         )
-
-#     return universities
-
-
-# @csrf_exempt
-# def upload_universities(request):
-#     if request.method == "POST" and request.FILES.get("document"):
-#         file = request.FILES["document"]
-#         file_extension = file.name.split(".")[-1].lower()
-
-#         path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
-#         tmp_file = os.path.join(settings.MEDIA_ROOT, path)
-
-#         try:
-#             if file_extension == "docx":
-#                 data = extract_docs(tmp_file)
-#             elif file_extension == "pdf":
-#                 data = extract_pdf(tmp_file)
-#             elif file_extension in ["xlsx", "xls"]:
-#                 data = extract_xlsx(tmp_file)
-#             else:
-#                 return JsonResponse(
-#                     {"success": False, "message": "Formato de archivo no soportado."}
-#                 )
-
-#             save_entities(data)
-#             return JsonResponse({"success": True})
-#         except Exception as e:
-#             return JsonResponse({"success": False, "message": str(e)})
-#         finally:
-#             default_storage.delete(tmp_file)
-
-#     return JsonResponse(
-#         {"success": False, "message": "No se ha subido ningún archivo."}
-#     )
 
 
 def PredecirDesercion(request):
@@ -2140,43 +1505,1145 @@ def PredecirDesercion(request):
 #         request, "PredecirDesercion.html", {"prediccion": prob_desercion_final}
 #     )
 
+
 def predecir_desercion(request):
     facultades = Facultad.objects.all()
-    return render(request, 'predecir.html', {'facultades': facultades})
+    return render(request, "predecir.html", {"facultades": facultades})
+
 
 def obtener_carreras(request):
-    facultad_id = request.GET.get('facultad_id')
-    carreras = Carrera.objects.filter(facultad_id=facultad_id).values('id', 'nombre_carrera')
-    return JsonResponse({'carreras': list(carreras)})
+    facultad_id = request.GET.get("facultad_id")
+    carreras = Carrera.objects.filter(facultad_id=facultad_id).values(
+        "id", "nombre_carrera"
+    )
+    return JsonResponse({"carreras": list(carreras)})
+
 
 def obtener_ciclos(request):
-    carrera_id = request.GET.get('carrera_id')
-    ciclos = Ciclo.objects.filter(carrera_id=carrera_id).values('id', 'nombre_ciclo')
-    return JsonResponse({'ciclos': list(ciclos)})
+    carrera_id = request.GET.get("carrera_id")
+    ciclos = Ciclo.objects.filter(carrera_id=carrera_id).values("id", "nombre_ciclo")
+    return JsonResponse({"ciclos": list(ciclos)})
+
 
 def obtener_materias(request):
-    ciclo_id = request.GET.get('ciclo_id')
-    materias = Materia.objects.filter(ciclo_id=ciclo_id).values('id', 'nombre_materia')
-    return JsonResponse({'materias': list(materias)})
+    ciclo_id = request.GET.get("ciclo_id")
+    materias = Materia.objects.filter(ciclo_id=ciclo_id).values("id", "nombre_materia")
+    return JsonResponse({"materias": list(materias)})
+
 
 def realizar_prediccion(request):
-    materia_id = request.GET.get('materia_id')
-    
+    materia_id = request.GET.get("materia_id")
+
     materia = Materia.objects.get(id=materia_id)
     estudiantes = Estudiante.objects.filter(materia=materia)
     total_estudiantes = estudiantes.count()
-    desertores = estudiantes.filter(estado='Desertor').count()
-    cursando = estudiantes.filter(estado='Cursando').count()
-    aprobado = estudiantes.filter(estado='Aprobado').count()
-    reprobado = estudiantes.filter(estado='Reprobado').count()
-    
+    desertores = estudiantes.filter(estado="Desertor").count()
+    cursando = estudiantes.filter(estado="Cursando").count()
+    aprobado = estudiantes.filter(estado="Aprobado").count()
+    reprobado = estudiantes.filter(estado="Reprobado").count()
+
     data = {
-        'nombre_materia': materia.nombre_materia,
-        'total_estudiantes': total_estudiantes,
-        'desertores': desertores,
-        'cursando': cursando,
-        'aprobado': aprobado,
-        'reprobado': reprobado,
+        "nombre_materia": materia.nombre_materia,
+        "total_estudiantes": total_estudiantes,
+        "desertores": desertores,
+        "cursando": cursando,
+        "aprobado": aprobado,
+        "reprobado": reprobado,
     }
-    
-    return JsonResponse({'prediccion': data})
+
+    return JsonResponse({"prediccion": data})
+
+
+# class PrediccionDesercionView(View):
+
+#     def runge_kutta_4(self, f, t0, y0, t_final, h, params):
+#         t = np.arange(t0, t_final + h, h)
+#         n = len(t)
+#         y = np.zeros((n, len(y0)))
+#         y[0] = y0
+
+#         for i in range(1, n):
+#             k1 = h * f(t[i - 1], y[i - 1], params)
+#             k2 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k1, params)
+#             k3 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k2, params)
+#             k4 = h * f(t[i - 1] + h, y[i - 1] + k3, params)
+
+#             y[i] = y[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+
+#         return t, y
+
+#     def sistema_ecuaciones(self, t, y, params):
+#         S, R, D, A = y
+#         dSdt = -0.1 * S
+#         dRdt = 0.1 * S - 0.05 * R
+#         dDdt = 0.05 * R
+#         dAdt = 0.1 * R
+#         return [dSdt, dRdt, dDdt, dAdt]
+
+#     def get(self, request):
+#         universidades = Universidad.objects.all()
+
+#         universidad_id = request.GET.get("universidad")
+#         facultad_id = request.GET.get("facultad")
+#         carrera_id = request.GET.get("carrera")
+#         ciclo_id = request.GET.get("ciclo")
+#         materia_id = request.GET.get("materia")
+
+#         universidad = (
+#             get_object_or_404(Universidad, id=universidad_id)
+#             if universidad_id
+#             else None
+#         )
+#         facultad = get_object_or_404(Facultad, id=facultad_id) if facultad_id else None
+#         carrera = get_object_or_404(Carrera, id=carrera_id) if carrera_id else None
+#         ciclo = get_object_or_404(Ciclo, id=ciclo_id) if ciclo_id else None
+#         materia = get_object_or_404(Materia, id=materia_id) if materia_id else None
+
+#         periodo_academico = PeriodoAcademico.objects.filter(
+#             estado_periodo_academico="activo"
+#         ).first()
+
+#         if (
+#             universidad
+#             and facultad
+#             and carrera
+#             and ciclo
+#             and materia
+#             and periodo_academico
+#         ):
+#             datos_historicos = Datos_Historicos.objects.filter(
+#                 estudiante__materia=materia,
+#                 estudiante__ciclo=ciclo,
+#                 estudiante__tipo_educacion=carrera.tipo_educacion,
+#                 estudiante__trabajo=carrera.trabajo,
+#                 estudiante__discapacidad=carrera.discapacidad,
+#                 estudiante__hijos=carrera.hijos,
+#                 estudiante__genero=carrera.genero,
+#                 periodo_academico=periodo_academico,
+#             ).first()
+
+#             if datos_historicos:
+#                 t0 = 0
+#                 y0 = [1000, 0, 0, 0]
+#                 t_final = 50
+#                 h = 0.1
+
+#                 params = {}
+
+#                 t, y = self.runge_kutta_4(
+#                     self.sistema_ecuaciones, t0, y0, t_final, h, params
+#                 )
+
+#                 data = {
+#                     "universidades": universidades,
+#                     "universidad_seleccionada": universidad,
+#                     "facultad_seleccionada": facultad,
+#                     "carrera_seleccionada": carrera,
+#                     "ciclo_seleccionado": ciclo,
+#                     "materia_seleccionada": materia,
+#                     "periodo_academico": periodo_academico,
+#                     "t": t.tolist(),
+#                     "S": y[:, 0].tolist(),
+#                     "R": y[:, 1].tolist(),
+#                     "D": y[:, 2].tolist(),
+#                     "A": y[:, 3].tolist(),
+#                 }
+
+#                 return render(request, "prediccion_desercion.html", data)
+
+#         return render(
+#             request,
+#             "error.html",
+#             {
+#                 "mensaje": "No se encontraron datos históricos válidos para la predicción"
+#             },
+#         )
+
+
+def prediccion_desercion(request):
+    universidades = Universidad.objects.all()
+    facultades = Facultad.objects.all()
+    carreras = Carrera.objects.all()
+    ciclos = Ciclo.objects.all()
+    materias = Materia.objects.all()
+
+    universidad_seleccionada = None
+    facultad_seleccionada = None
+    carrera_seleccionada = None
+    ciclo_seleccionado = None
+    materia_seleccionada = None
+
+    if request.method == "GET":
+        universidad_id = request.GET.get("universidad")
+        facultad_id = request.GET.get("facultad")
+        carrera_id = request.GET.get("carrera")
+        ciclo_id = request.GET.get("ciclo")
+        materia_id = request.GET.get("materia")
+
+        if universidad_id:
+            universidad_seleccionada = Universidad.objects.get(pk=universidad_id)
+            facultades = Facultad.objects.filter(universidad=universidad_seleccionada)
+
+        if facultad_id:
+            facultad_seleccionada = Facultad.objects.get(pk=facultad_id)
+            carreras = Carrera.objects.filter(facultad=facultad_seleccionada)
+
+        if carrera_id:
+            carrera_seleccionada = Carrera.objects.get(pk=carrera_id)
+            ciclos = Ciclo.objects.filter(carrera=carrera_seleccionada)
+
+        if ciclo_id:
+            ciclo_seleccionado = Ciclo.objects.get(pk=ciclo_id)
+            materias = Materia.objects.filter(ciclo=ciclo_seleccionado)
+
+        if materia_id:
+            materia_seleccionada = Materia.objects.get(pk=materia_id)
+
+    context = {
+        "universidades": universidades,
+        "facultades": facultades,
+        "carreras": carreras,
+        "ciclos": ciclos,
+        "materias": materias,
+        "universidad_seleccionada": universidad_seleccionada,
+        "facultad_seleccionada": facultad_seleccionada,
+        "carrera_seleccionada": carrera_seleccionada,
+        "ciclo_seleccionado": ciclo_seleccionado,
+        "materia_seleccionada": materia_seleccionada,
+    }
+
+    if materia_seleccionada and ciclo_seleccionado:
+        datos_historicos = DatosHistoricos.objects.filter(materia=materia_seleccionada)
+        t = [
+            datetime.date.today() + datetime.timedelta(days=i)
+            for i in range(len(datos_historicos))
+        ]
+        S = [dh.cantidad_estudiantes for dh in datos_historicos]
+        R = [dh.cantidad_aprobados for dh in datos_historicos]
+        D = [dh.cantidad_desertores for dh in datos_historicos]
+        A = [dh.cantidad_retirados for dh in datos_historicos]
+
+        def model(t, y):
+            S, R, D, A = y
+            dSdt = -0.1 * S
+            dRdt = 0.1 * S
+            dDdt = 0.05 * S
+            dAdt = 0.05 * S
+            return [dSdt, dRdt, dDdt, dAdt]
+
+        y0 = [S[0], R[0], D[0], A[0]]
+        sol = solve_ivp(model, [0, len(t)], y0, t_eval=t)
+
+        context.update(
+            {
+                "t": sol.t.tolist(),
+                "S": sol.y[0].tolist(),
+                "R": sol.y[1].tolist(),
+                "D": sol.y[2].tolist(),
+                "A": sol.y[3].tolist(),
+            }
+        )
+
+    return render(request, "prediccion_desercion.html", context)
+
+
+class SeleccionarDatosView(View):
+    def get(self, request):
+        universidades = Universidad.objects.all()
+        return render(
+            request, "seleccionar_datos.html", {"universidades": universidades}
+        )
+
+
+class PrediccionView(View):
+    def post(self, request):
+        universidad_id = request.POST.get("universidad")
+        facultades = Facultad.objects.filter(universidad_id=universidad_id)
+        return render(request, "seleccionar_datos.html", {"facultades": facultades})
+
+
+class CarreraView(View):
+    def post(self, request):
+        facultad_id = request.POST.get("facultad")
+        carreras = Carrera.objects.filter(facultad_id=facultad_id)
+        return render(request, "seleccionar_datos.html", {"carreras": carreras})
+
+
+class CicloView(View):
+    def post(self, request):
+        carrera_id = request.POST.get("carrera")
+        ciclos = Ciclo.objects.filter(carrera_id=carrera_id)
+        return render(request, "seleccionar_datos.html", {"ciclos": ciclos})
+
+
+class MateriaView(View):
+    def post(self, request):
+        ciclo_id = request.POST.get("ciclo")
+        materias = Materia.objects.filter(ciclo_id=ciclo_id)
+        return render(request, "seleccionar_datos.html", {"materias": materias})
+
+
+class PeriodoAcademicoView(View):
+    def post(self, request):
+        materia_id = request.POST.get("materia")
+        periodos = (
+            PeriodoAcademico.objects.all()
+        )  # Aquí puedes filtrar los periodos según tus criterios
+        return render(request, "seleccionar_datos.html", {"periodos": periodos})
+
+
+# importar datos desde csv
+
+
+def get_or_create_related(model, **kwargs):
+    try:
+        return model.objects.get(**kwargs)
+    except model.DoesNotExist:
+        return model.objects.create(**kwargs)
+
+
+def ImportarDatosCVS(model, csv_file):
+    decoded_file = csv_file.read().decode("utf-8").splitlines()
+    reader = csv.DictReader(decoded_file)
+
+    created_count = 0
+    errors = []
+
+    with transaction.atomic():
+        for row in reader:
+            try:
+                if model == UsuarioPersonalizado:
+                    genero = get_or_create_related(Genero, nombre_genero=row["genero"])
+                    tipo_dni = get_or_create_related(
+                        TipoDNI, nombre_tipo_dni=row["tipo_dni"]
+                    )
+                    instance = UsuarioPersonalizado(
+                        username=row["username"],
+                        first_name=row["first_name"],
+                        last_name=row["last_name"],
+                        email=row["email"],
+                        genero=genero,
+                        fecha_nacimiento=row["fecha_nacimiento"],
+                        dni=row["dni"],
+                        tipo_dni=tipo_dni,
+                        telefono=row["telefono"],
+                        rol=row["rol"],
+                    )
+                    instance.set_password(row["password"])
+
+                elif model == Estudiante:
+                    tipo_dni = get_or_create_related(
+                        TipoDNI, nombre_tipo_dni=row["tipo_dni"]
+                    )
+                    genero = get_or_create_related(Genero, nombre_genero=row["genero"])
+                    instance = Estudiante(
+                        tipo_dni=tipo_dni,
+                        dni_estudiante=row["dni_estudiante"],
+                        nombre_estudiante=row["nombre_estudiante"],
+                        apellido_estudiante=row["apellido_estudiante"],
+                        genero=genero,
+                        modalidad_estudio=int(row["modalidad_estudio"]),
+                        tipo_educacion=int(row["tipo_educacion"]),
+                        origen=int(row["origen"]),
+                        trabajo=int(row["trabajo"]),
+                        discapacidad=int(row["discapacidad"]),
+                        hijos=int(row["hijos"]),
+                        estado=row["estado"],
+                    )
+
+                elif model == Genero:
+                    instance = Genero(
+                        nombre_genero=row["nombre_genero"],
+                        descripcion_genero=row["descripcion_genero"],
+                    )
+
+                elif model == TipoDNI:
+                    instance = TipoDNI(
+                        nombre_tipo_dni=row["nombre_tipo_dni"],
+                        descripcion_tipo_dni=row["descripcion_tipo_dni"],
+                    )
+
+                elif model == Universidad:
+                    instance = Universidad(
+                        nombre_universidad=row["nombre_universidad"],
+                        direccion_universidad=row["direccion_universidad"],
+                        telefono_universidad=row["telefono_universidad"],
+                        correo_universidad=row["correo_universidad"],
+                        fecha_fundacion=row["fecha_fundacion"],
+                    )
+
+                elif model == Facultad:
+                    universidad = get_or_create_related(
+                        Universidad, nombre_universidad=row["universidad"]
+                    )
+                    instance = Facultad(
+                        nombre_facultad=row["nombre_facultad"],
+                        fecha_fundacion=row["fecha_fundacion"],
+                        universidad=universidad,
+                    )
+
+                elif model == Carrera:
+                    facultad = get_or_create_related(
+                        Facultad, nombre_facultad=row["facultad"]
+                    )
+                    instance = Carrera(
+                        nombre_carrera=row["nombre_carrera"],
+                        duracion=int(row["duracion"]),
+                        facultad=facultad,
+                    )
+
+                elif model == Ciclo:
+                    carrera = get_or_create_related(
+                        Carrera, nombre_carrera=row["carrera"]
+                    )
+                    instance = Ciclo(
+                        nombre_ciclo=row["nombre_ciclo"],
+                        fecha_inicio=row["fecha_inicio"],
+                        fecha_fin=row["fecha_fin"],
+                        carrera=carrera,
+                    )
+
+                elif model == Materia:
+                    periodo_academico = get_or_create_related(
+                        PeriodoAcademico,
+                        codigo_periodo_academico=row["periodo_academico"],
+                    )
+                    docente = get_or_create_related(
+                        UsuarioPersonalizado, username=row["docente_encargado"]
+                    )
+                    ciclo = get_or_create_related(Ciclo, nombre_ciclo=row["ciclo"])
+                    instance = Materia(
+                        nombre_materia=row["nombre_materia"],
+                        numero_horas=int(row["numero_horas"]),
+                        unidades=int(row["unidades"]) if row["unidades"] else None,
+                        periodo_academico=periodo_academico,
+                        docente_encargado=docente,
+                        ciclo=ciclo,
+                    )
+
+                elif model == PeriodoAcademico:
+                    instance = PeriodoAcademico(
+                        codigo_periodo_academico=row["codigo_periodo_academico"],
+                        fecha_inicio=row["fecha_inicio"],
+                        fecha_fin=row["fecha_fin"],
+                        estado_periodo_academico=row["estado_periodo_academico"],
+                    )
+
+                elif model == DatosHistoricos:
+                    materia = get_or_create_related(
+                        Materia, nombre_materia=row["materia"]
+                    )
+                    instance = DatosHistoricos(
+                        materia=materia,
+                        cantidad_matriculados=int(row["cantidad_matriculados"]),
+                        cantidad_aprobados=int(row["cantidad_aprobados"]),
+                        cantidad_reprobados=int(row["cantidad_reprobados"]),
+                        cantidad_desertores=int(row["cantidad_desertores"]),
+                    )
+
+                else:
+                    raise ValueError(f"Modelo no soportado: {model.__name__}")
+
+                instance.full_clean()
+                instance.save()
+
+                if model == Estudiante:
+                    for materia_nombre in row["materias"].split(","):
+                        materia = get_or_create_related(
+                            Materia, nombre_materia=materia_nombre.strip()
+                        )
+                        instance.materia.add(materia)
+
+                created_count += 1
+
+            except Exception as e:
+                errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+    return created_count, errors
+
+
+def import_data(request):
+    if request.method == "POST":
+        csv_file = request.FILES.get("csv_file")
+        model_name = request.POST.get("model_name")
+
+        if not csv_file:
+            messages.error(request, "Por favor, seleccione un archivo CSV.")
+            return redirect("import_data")
+
+        if not model_name:
+            messages.error(request, "Por favor, seleccione un modelo.")
+            return redirect("import_data")
+
+        model_map = {
+            "usuario": UsuarioPersonalizado,
+            "estudiante": Estudiante,
+            "genero": Genero,
+            "tipoDNI": TipoDNI,
+            "universidad": Universidad,
+            "facultad": Facultad,
+            "carrera": Carrera,
+            "ciclo": Ciclo,
+            "materia": Materia,
+            "periodoAcademico": PeriodoAcademico,
+        }
+
+        model = model_map.get(model_name.lower())
+        if not model:
+            messages.error(request, "Modelo no válido seleccionado.")
+            return redirect("import_data")
+
+        try:
+            created_count, errors = ImportarDatosCVS(model, csv_file)
+            if errors:
+                for error in errors:
+                    messages.warning(request, error)
+            messages.success(
+                request, f"Se importaron exitosamente {created_count} registros."
+            )
+        except Exception as e:
+            messages.error(request, f"Error durante la importación: {str(e)}")
+
+        return redirect("import_data")
+
+    return render(request, "import_data.html")
+
+
+# Importar informacion por entidad
+
+
+@csrf_exempt
+def ImportarUsuario(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    genero = get_or_create_related(Genero, nombre_genero=row["genero"])
+                    tipo_dni = get_or_create_related(
+                        TipoDNI, nombre_tipo_dni=row["tipo_dni"]
+                    )
+                    instance = UsuarioPersonalizado(
+                        username=row["username"],
+                        first_name=row["first_name"],
+                        last_name=row["last_name"],
+                        email=row["email"],
+                        genero=genero,
+                        fecha_nacimiento=row["fecha_nacimiento"],
+                        tipo_dni=tipo_dni,
+                        dni=row["dni"],
+                        telefono=row["telefono"],
+                        rol=row["rol"],
+                    )
+                    instance.set_password(row["password"])
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} usuarios, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} usuarios.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarEstudiante(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    tipo_dni = get_or_create_related(
+                        TipoDNI, nombre_tipo_dni=row["tipo_dni"]
+                    )
+                    genero = get_or_create_related(Genero, nombre_genero=row["genero"])
+                    instance = Estudiante(
+                        tipo_dni=tipo_dni,
+                        dni_estudiante=row["dni_estudiante"],
+                        nombre_estudiante=row["nombre_estudiante"],
+                        apellido_estudiante=row["apellido_estudiante"],
+                        genero=genero,
+                        modalidad_estudio=int(row["modalidad_estudio"]),
+                        tipo_educacion=int(row["tipo_educacion"]),
+                        origen=int(row["origen"]),
+                        trabajo=int(row["trabajo"]),
+                        discapacidad=int(row["discapacidad"]),
+                        hijos=int(row["hijos"]),
+                        estado=row["estado"],
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} estudiantes, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} estudiantes.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarGenero(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    instance = Genero(
+                        nombre_genero=row["nombre_genero"],
+                        descripcion_genero=row["descripcion_genero"],
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} generos, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} generos.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarTipoDNI(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    instance = TipoDNI(
+                        nombre_tipo_dni=row["nombre_tipo_dni"],
+                        descripcion_tipo_dni=row["descripcion_tipo_dni"],
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} tipos de DNI, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} tipos de DNI.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarUniversidades(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    instance = Universidad(
+                        nombre_universidad=row["nombre_universidad"],
+                        direccion_universidad=row["direccion_universidad"],
+                        telefono_universidad=row["telefono_universidad"],
+                        correo_universidad=row["correo_universidad"],
+                        fecha_fundacion=row["fecha_fundacion"],
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} universidades, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} universidades.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarFacultades(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    universidad = get_or_create_related(
+                        Universidad, nombre_universidad=row["universidad"]
+                    )
+                    instance = Facultad(
+                        nombre_facultad=row["nombre_facultad"],
+                        fecha_fundacion=row["fecha_fundacion"],
+                        universidad=universidad,
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} facultades, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} facultades.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarCarreras(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    facultad = get_or_create_related(
+                        Facultad, nombre_facultad=row["facultad"]
+                    )
+                    instance = Carrera(
+                        nombre_carrera=row["nombre_carrera"],
+                        duracion=int(row["duracion"]),
+                        facultad=facultad,
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} carreras, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} carreras.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarCiclos(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    carrera = get_or_create_related(
+                        Carrera, nombre_carrera=row["carrera"]
+                    )
+                    instance = Ciclo(
+                        nombre_ciclo=row["nombre_ciclo"],
+                        numero_ciclo=row["numero_ciclo"],
+                        fecha_inicio=row["fecha_inicio"],
+                        fecha_fin=row["fecha_fin"],
+                        carrera=carrera,
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} ciclos, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} ciclos.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarMaterias(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    periodo_academico = get_or_create_related(
+                        PeriodoAcademico,
+                        codigo_periodo_academico=row["periodo_academico"],
+                    )
+                    docente = get_or_create_related(
+                        UsuarioPersonalizado, username=row["docente_encargado"]
+                    )
+                    ciclo = get_or_create_related(Ciclo, nombre_ciclo=row["ciclo"])
+                    instance = Materia(
+                        nombre_materia=row["nombre_materia"],
+                        numero_horas=int(row["numero_horas"]),
+                        unidades=int(row["unidades"]) if row["unidades"] else None,
+                        periodo_academico=periodo_academico,
+                        docente_encargado=docente,
+                        ciclo=ciclo,
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} materias, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} materias.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarPeriodoAcademicos(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    instance = PeriodoAcademico(
+                        codigo_periodo_academico=row["codigo_periodo_academico"],
+                        fecha_inicio=row["fecha_inicio"],
+                        fecha_fin=row["fecha_fin"],
+                        estado_periodo_academico=row["estado_periodo_academico"],
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} periodos academicos, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} periodos academicos.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+@csrf_exempt
+def ImportarDatoHistoricos(request):
+    if request.method != "POST" or not request.FILES.get("document"):
+        return JsonResponse(
+            {
+                "success": False,
+                "errors": ["Método no permitido o archivo no proporcionado"],
+            }
+        )
+
+    csv_file = request.FILES["document"]
+
+    try:
+        decoded_file = csv_file.read().decode("utf-8").splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for row in reader:
+                try:
+                    # materia = get_or_create_related(
+                    #     Materia, nombre_materia=row["materia"]
+                    # )
+                    instance = DatosHistoricos(
+                        # para futuro
+                        # materia=materia,
+                        cantidad_matriculados=int(row["cantidad_matriculados"]),
+                        cantidad_aprobados=int(row["cantidad_aprobados"]),
+                        cantidad_reprobados=int(row["cantidad_reprobados"]),
+                        cantidad_desertores=int(row["cantidad_desertores"]),
+                    )
+
+                    instance.full_clean()
+                    instance.save()
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
+
+        if errors:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": errors,
+                    "message": f"Se importaron {created_count} datos historicos, pero hubo algunos errores.",
+                }
+            )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Se importaron exitosamente {created_count} datos historicos.",
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})

@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
 from django.urls import path
 from .vistas import (
     GestionPeriodoAcademico,
@@ -43,6 +42,7 @@ from .vistas import (
     RegistrarMateria,
     RegistrarPeriodoAcademico,
     RegistrarEstudiante,
+    RegistrarDatosHistorico,
     
     GestionUsuario,
     GestionGenero,
@@ -52,15 +52,27 @@ from .vistas import (
     GestionCiclo,
     GestionMateria,
     GestionEstudiante,
+    GestionDatosHistoricos,
     
-    upload_universities,
-    ImportarEstudiante,
     PredecirDesercion,
 
     obtener_carreras,
     obtener_ciclos,
     obtener_materias,
     realizar_prediccion,
+
+    import_data,
+    ImportarUsuario,
+    ImportarEstudiante,
+    ImportarUniversidades,
+    ImportarFacultades,
+    ImportarCarreras,
+    ImportarCiclos,
+    ImportarMaterias,
+    ImportarPeriodoAcademicos,
+    ImportarGenero,
+    ImportarTipoDNI,
+    ImportarDatoHistoricos,
 )
 
 urlpatterns = [
@@ -79,6 +91,7 @@ urlpatterns = [
     path("Registrar-Ciclo/", RegistrarCiclo, name="Registrar_Ciclo"),
     path("Registrar-PeriodoAcademico/", RegistrarPeriodoAcademico, name="Registrar_PeriodoAcademico"),
     path("Registrar-Materia/", RegistrarMateria, name="Registrar_Materia"),
+    path("Registrar-DatosHistorico/", RegistrarDatosHistorico, name="Registrar_DatosHistorico"),
     path("Registrar-Estudiante/", RegistrarEstudiante, name="Registrar_Estudiante"),
     
     path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
@@ -103,32 +116,37 @@ urlpatterns = [
     path("Reporte-Generado/", Reporte, name="Reporte_Generado"),
     path("Cargar-Informe/", CargarInforme, name="Cargar_Informe"),
     
-    path("Gestion-Universidad/", GestionUniversidad, name="Gestion_Universidad"),
+    path("Gestion-Estudiante/", GestionEstudiante, name="Gestion_Estudiante"),
+    path("Gestion-Usuarios/", GestionUsuario, name="Gestion_Usuario"),
     path("Gestion-TipoDNI/", GestionTipoDNI, name="Gestion_TipoDNI"),
     path("Gestion-Genero/", GestionGenero, name="Gestion_Genero"),
-    path("Gestion-Usuarios/", GestionUsuario, name="Gestion_Usuario"),
+    path("Gestion-Universidad/", GestionUniversidad, name="Gestion_Universidad"),
     path("Gestion-Facultad/", GestionFacultad, name="Gestion_Facultad"),
     path("Gestion-Carrera/", GestionCarrera, name="Gestion_Carrera"),
     path("Gestion-PeriodoAcademico/", GestionPeriodoAcademico, name="Gestion_PeriodoAcademico"),
     path("Gestion-Ciclo/", GestionCiclo, name="Gestion_Ciclo"),
     path("Gestion-Materia/", GestionMateria, name="Gestion_Materia"),
-    path("Gestion-Estudiante/", GestionEstudiante, name="Gestion_Estudiante"),
+    path("Gestion-DatosHistorico/", GestionDatosHistoricos, name="Gestion_DatosHistorico"),
 
-    path('upload-universities/', upload_universities, name='upload_universities'),
-    path("Importar-Estudiante/", ImportarEstudiante, name="Importar_Estudiante"),
+    path('Importar-Usuario/',ImportarUsuario, name='Importar_Usuario'),
+    path('Importar-Estudiante/',ImportarEstudiante, name='Importar_Estudiante'),
+    path('Importar-Genero/',ImportarGenero, name='Importar_Genero'),
+    path('Importar-TipoDNI/',ImportarTipoDNI, name='Importar_TipoDNI'),
+    path('Importar-Universidades/',ImportarUniversidades, name='Importar_Universidades'),
+    path('Importar-Facultades/',ImportarFacultades, name='Importar_Facultades'),
+    path('Importar-Carreras/',ImportarCarreras, name='Importar_Carreras'),
+    path("Importar-Ciclos/",ImportarCiclos, name="Importar_Ciclos"),
+    path("Importar-Materias/",ImportarMaterias, name="Importar_Materias"),
+    path("Importar-PeriodoAcademicos/",ImportarPeriodoAcademicos, name="Importar_PeriodoAcademicos"),
+    path("Importar-DatosHistoricos/",ImportarDatoHistoricos, name="Importar_DatosHistoricos"),
 
     path("Predecir/", PredecirDesercion, name="Predecir_Desercion"),
-
-    path('Recuperar-Contrasenia/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('Recuperar-Contrasenia/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     path('obtener_carreras/', obtener_carreras, name='obtener_carreras'),
     path('obtener_ciclos/', obtener_ciclos, name='obtener_ciclos'),
     path('obtener_materias/', obtener_materias, name='obtener_materias'),
     path('realizar_prediccion/', realizar_prediccion, name='realizar_prediccion'),
 
-    # path('Recuperar-Contrasenia/', auth_views.PasswordResetView.as_view(), name='Recuperar_Contrasenia'),
-    # path('Recuperar-Contrasenia/confirmar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    # path('Recuperar-Contrasenia/completado/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    # path('Recuperar-Contrasenia/enviado/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('import-data/', import_data, name='import_data'),
+
 ]

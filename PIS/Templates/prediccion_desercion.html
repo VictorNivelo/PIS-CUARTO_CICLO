@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Predicción de Deserción Estudiantil</title>
+    <!-- Importando Chart.js desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Estilos CSS para el gráfico (opcional, puedes personalizar según tu diseño) */
+        #prediccionGrafico {
+            max-width: 800px;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Predicción de Deserción Estudiantil</h1>
+
+    <!-- Formulario para seleccionar filtros -->
+    <form method="get" action="{% url 'prediccion_desercion' %}">
+        <label for="universidad">Universidad:</label>
+        <select name="universidad" id="universidad">
+            <option value="">Selecciona una universidad</option>
+            {% for universidad in universidades %}
+            <option value="{{ universidad.id }}"
+                {% if universidad_seleccionada and universidad_seleccionada.id == universidad.id %} selected
+                {% endif %}>{{ universidad.nombre_universidad }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="facultad">Facultad:</label>
+        <select name="facultad" id="facultad">
+            <option value="">Selecciona una facultad</option>
+            {% for facultad in facultades %}
+            <option value="{{ facultad.id }}" {% if facultad_seleccionada and facultad_seleccionada.id == facultad.id %}
+                selected {% endif %}>{{ facultad.nombre_facultad }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="carrera">Carrera:</label>
+        <select name="carrera" id="carrera">
+            <option value="">Selecciona una carrera</option>
+            {% for carrera in carreras %}
+            <option value="{{ carrera.id }}" {% if carrera_seleccionada and carrera_seleccionada.id == carrera.id %}
+                selected {% endif %}>{{ carrera.nombre_carrera }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="ciclo">Ciclo:</label>
+        <select name="ciclo" id="ciclo">
+            <option value="">Selecciona un ciclo</option>
+            {% for ciclo in ciclos %}
+            <option value="{{ ciclo.id }}" {% if ciclo_seleccionado and ciclo_seleccionado.id == ciclo.id %} selected
+                {% endif %}>{{ ciclo.numero_ciclo }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="materia">Materia:</label>
+        <select name="materia" id="materia">
+            <option value="">Selecciona una materia</option>
+            {% for materia in materias %}
+            <option value="{{ materia.id }}" {% if materia_seleccionada and materia_seleccionada.id == materia.id %}
+                selected {% endif %}>{{ materia.nombre_materia }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Realizar Predicción</button>
+    </form>
+
+    <!-- Sección para mostrar detalles seleccionados -->
+    {% if universidad_seleccionada %}
+    <h2>Universidad seleccionada: {{ universidad_seleccionada.nombre_universidad }}</h2>
+    {% endif %}
+
+    {% if facultad_seleccionada %}
+    <h3>Facultad seleccionada: {{ facultad_seleccionada.nombre_facultad }}</h3>
+    {% endif %}
+
+    {% if carrera_seleccionada %}
+    <h4>Carrera seleccionada: {{ carrera_seleccionada.nombre_carrera }}</h4>
+    {% endif %}
+
+    {% if ciclo_seleccionado %}
+    <p>Ciclo seleccionado: {{ ciclo_seleccionado.numero_ciclo }}</p>
+    {% endif %}
+
+    {% if materia_seleccionada %}
+    <p>Materia seleccionada: {{ materia_seleccionada.nombre_materia }}</p>
+    {% endif %}
+
+    <!-- Canvas para el gráfico de predicción -->
+    {% if t and S and R and D and A %}
+    <canvas id="prediccionGrafico" width="800" height="400"></canvas>
+
+    <!-- Script para manejar los datos y graficar con Chart.js -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var ctx = document.getElementById('prediccionGrafico').getContext('2d');
+            var t = t | safe;
+            var S = S | safe;
+            var R = R | safe;
+            var D = D | safe;
+            var A = A | safe;
+
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: t,
+                    datasets: [{
+                        label: 'Susceptibles (S)',
+                        borderColor: 'blue',
+                        data: S
+                    }, {
+                        label: 'Recuperados (R)',
+                        borderColor: 'green',
+                        data: R
+                    }, {
+                        label: 'Desertores (D)',
+                        borderColor: 'red',
+                        data: D
+                    }, {
+                        label: 'Afectados (A)',
+                        borderColor: 'orange',
+                        data: A
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tiempo'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Cantidad'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    {% endif %}
+</body>
+
+</html>

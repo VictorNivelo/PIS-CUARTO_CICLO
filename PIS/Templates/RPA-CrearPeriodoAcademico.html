@@ -159,7 +159,7 @@
 <body>
     <div class="caja">
         <div class="form-wrapper">
-            <form method="POST">
+            <form method="POST" id="periodoForm">
                 <h1 class="t">Crear período académico</h1>
                 {% csrf_token %}
 
@@ -176,11 +176,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="id_estado">Estado:</label>
-                    <select id="id_estado" name="estado" required>
+                    <label for="id_estado_periodo_academico">Estado:</label>
+                    <select id="id_estado_periodo_academico" name="estado_periodo_academico" required>
                         <option value="" disabled selected>Seleccione un estado</option>
-                        <option value="activo">Activo</option>
-                        <option value="inactivo">Inactivo</option>
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
                     </select>
                 </div>
 
@@ -192,10 +192,14 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var dateInputs = document.querySelectorAll('input[type="date"]');
+            var selectInputs = document.querySelectorAll('select');
+            var btnRegresar = document.querySelector('.btn-regresar');
+            var form = document.getElementById('periodoForm');
 
             dateInputs.forEach(function (input) {
                 input.addEventListener('input', function () {
@@ -211,8 +215,6 @@
                 }
             });
 
-            var selectInputs = document.querySelectorAll('select');
-
             selectInputs.forEach(function (select) {
                 select.addEventListener('change', function () {
                     if (this.value.trim() !== '') {
@@ -227,7 +229,6 @@
                 }
             });
 
-            var btnRegresar = document.querySelector('.btn-regresar');
             if (btnRegresar) {
                 btnRegresar.addEventListener('click', function () {
                     var paginaAnterior = localStorage.getItem('paginaAnterior');
@@ -244,6 +245,56 @@
             }
 
             recordarPaginaAnterior();
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                if (validateForm()) {
+                    this.submit();
+                }
+            });
+
+            function validateForm() {
+                var fechaInicio = document.getElementById('id_fecha_inicio').value;
+                var fechaFin = document.getElementById('id_fecha_fin').value;
+                var estado = document.getElementById('id_estado_periodo_academico').value;
+                var errors = [];
+
+                if (!fechaInicio) {
+                    errors.push('La fecha de inicio es requerida');
+                }
+
+                if (!fechaFin) {
+                    errors.push('La fecha de fin es requerida');
+                }
+
+                if (fechaInicio && fechaFin) {
+                    var inicio = new Date(fechaInicio);
+                    var fin = new Date(fechaFin);
+                    if (inicio > fin) {
+                        errors.push('La fecha de fin debe ser posterior a la fecha de inicio');
+                    }
+                }
+
+                if (!estado) {
+                    errors.push('Debe seleccionar un estado');
+                }
+
+                if (errors.length > 0) {
+                    showErrors(errors);
+                    return false;
+                }
+
+                return true;
+            }
+
+            function showErrors(errors) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de validación',
+                    html: errors.join(''),
+                    confirmButtonText: 'Entendido'
+                });
+            }
         });
     </script>
 </body>

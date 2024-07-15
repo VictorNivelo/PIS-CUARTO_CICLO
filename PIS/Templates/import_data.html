@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar Datos</title>
+</head>
+
+<body>
+    <h2>Importar Datos desde CSV</h2>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+            {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div>
+            <label for="model_name">Seleccione el modelo:</label>
+            <select name="model_name" id="model_name" required>
+                <option value="">-- Seleccione un modelo --</option>
+                <option value="usuario">Usuario</option>
+                <option value="estudiante">Estudiante</option>
+                <option value="genero">Genero</option>
+                <option value="tipoDNI">Tipo DNI</option>
+                <option value="universidad">Universidad</option>
+                <option value="facultad">Facultad</option>
+                <option value="carrera">Carrera</option>
+                <option value="ciclo">Ciclo</option>
+                <option value="materia">Materia</option>
+            </select>
+        </div>
+        <div>
+            <label for="csv_file">Seleccione el archivo CSV:</label>
+            <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
+        </div>
+        <button type="submit">Importar</button>
+    </form>
+</body>
+
+</html>

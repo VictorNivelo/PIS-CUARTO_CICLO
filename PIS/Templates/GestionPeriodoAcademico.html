@@ -166,7 +166,7 @@
         th,
         td {
             border: 1px solid #ccc;
-            padding: 10px;
+            padding: 6px;
             text-align: center;
         }
 
@@ -189,7 +189,7 @@
         }
 
         td.actions-column10 {
-            width: 135px;
+            width: 10px;
         }
 
         td.actions-column10 form {
@@ -198,7 +198,7 @@
         }
 
         td.actions-columnD {
-            width: 120px;
+            width: 125px;
         }
 
         td.actions-columnD form {
@@ -235,7 +235,7 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 16px;
+            padding: 8px;
             font-size: 14px;
             cursor: pointer;
             width: 100%;
@@ -244,6 +244,10 @@
 
         .form-group button[type="submit"]:hover {
             background-color: #0056b3;
+        }
+
+        .form-group input[type="date"] {
+            width: 107px;
         }
     </style>
 </head>
@@ -259,6 +263,8 @@
                 <button type="submit" class="btn-buscar">Buscar</button>
             </form>
             <a href="{% url 'Registrar_PeriodoAcademico' %}" class="btn-crear">Crear Período</a>
+            <a href="#" class="btn-importar" id="importButton">Importar periodos</a>
+            <input type="file" id="fileInput" name="document" style="display: none;" accept=".csv">
         </div>
 
         <div class="form-group">
@@ -280,9 +286,9 @@
                             <input type="hidden" name="PeriodoAcademico_id" value="{{ PeriodoAcademico.id }}">
                             <td><input type="text" name="codigo_periodo_academico"
                                     value="{{ PeriodoAcademico.codigo_periodo_academico }}"></td>
-                            <td class="actions-columnD"><input type="date" name="fecha_inicio"
+                            <td class="actions-column10"><input type="date" name="fecha_inicio"
                                     value="{{ PeriodoAcademico.fecha_inicio|date:'Y-m-d' }}"></td>
-                            <td class="actions-columnD"><input type="date" name="fecha_fin"
+                            <td class="actions-column10"><input type="date" name="fecha_fin"
                                     value="{{ PeriodoAcademico.fecha_fin|date:'Y-m-d' }}"></td>
                             <td class="actions-columnD">
                                 <select name="estado">
@@ -327,7 +333,7 @@
                     const formData = new FormData();
                     formData.append('document', file);
 
-                    fetch('{% url "upload_universities" %}', {
+                    fetch('{% url "Importar_PeriodoAcademicos" %}', {
                         method: 'POST',
                         body: formData,
                         headers: {
@@ -339,15 +345,19 @@
                             if (data.success) {
                                 Swal.fire({
                                     title: 'Éxito',
-                                    text: 'Períodos importados correctamente',
+                                    text: data.message,
                                     icon: 'success'
                                 }).then(() => {
                                     location.reload();
                                 });
                             } else {
+                                let errorMessage = data.message;
+                                if (data.errors && data.errors.length > 0) {
+                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
+                                }
                                 Swal.fire({
                                     title: 'Error',
-                                    text: 'Hubo un problema al importar los períodos',
+                                    text: errorMessage,
                                     icon: 'error'
                                 });
                             }
@@ -356,7 +366,7 @@
                             console.error('Error:', error);
                             Swal.fire({
                                 title: 'Error',
-                                text: 'Hubo un problema al importar los períodos',
+                                text: 'Hubo un problema al importar los periodos academicos',
                                 icon: 'error'
                             });
                         });

@@ -1,0 +1,4 @@
+"tipo_dni","dni_estudiante","nombre_estudiante","apellido_estudiante","genero","modalidad_estudio","tipo_educacion","origen","trabajo","discapacidad","hijos","estado"
+"Cedula","1122334455","a","b","Masculino","0","1","1","0","1","1","Cursando"
+"Cedula","1122334455","c","d","Masculino","1","0","1","0","0","0","Cursando"
+"Cedula","1122334455","e","f","Masculino","0","1","1","0","1","1","Cursando"

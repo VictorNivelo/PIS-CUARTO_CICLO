@@ -162,7 +162,7 @@
         th,
         td {
             border: 1px solid #ccc;
-            padding: 8px;
+            padding: 6px;
             text-align: center;
         }
 
@@ -193,6 +193,15 @@
             justify-content: center;
         }
 
+        td.actions-columnD {
+            width: 100px;
+        }
+
+        td.actions-columnD form {
+            display: flex;
+            justify-content: center;
+        }
+
         .form-group {
             margin-bottom: 10px;
         }
@@ -205,9 +214,10 @@
         }
 
         .form-group input[type="text"],
+        .form-group input[type="date"],
         .form-group select {
             width: 100%;
-            padding: 8px;
+            padding: 6px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 14px;
@@ -219,7 +229,7 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 16px;
+            padding: 8px;
             font-size: 14px;
             cursor: pointer;
             width: 100%;
@@ -228,6 +238,10 @@
 
         .form-group button[type="submit"]:hover {
             background-color: #0056b3;
+        }
+
+        .form-group input[type="date"] {
+            width: 107px;
         }
     </style>
 
@@ -268,30 +282,26 @@
                     </option>
                     {% endfor %}
                 </select>
-                <!-- <select name="tipo_dni">
-                    <option value="">Todos los tipos de DNI</option>
-                    <option value="Cedula" {% if filter_tipo_dni == 'Cedula' %}selected{% endif %}>Cedula</option>
-                    <option value="Pasaporte" {% if filter_tipo_dni == 'Pasaporte' %}selected{% endif %}>Pasaporte
-                    </option>
-                </select> -->
                 <button type="submit" class="btn-buscar">Buscar</button>
             </form>
             <a href="{% url 'Registrar_Usuario' %}" class="btn-crear">Crear Usuario</a>
+            <a href="#" class="btn-importar" id="importButton">Importar usuarios</a>
+            <input type="file" id="fileInput" name="document" style="display: none;" accept=".csv">
         </div>
 
         <div class="form-group">
             <table>
                 <thead>
                     <tr>
+                        <th>Tipo de DNI</th>
+                        <th>Número de DNI</th>
                         <th>Correo Electrónico</th>
                         <th>Nombre</th>
                         <th>Apellido</th>
-                        <th>Rol</th>
                         <th>Género</th>
-                        <th>Fecha de Nacimiento</th>
-                        <th>Tipo de DNI</th>
-                        <th>Número de DNI</th>
                         <th>Teléfono</th>
+                        <th>Fecha de Nacimiento</th>
+                        <th>Rol</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -300,11 +310,38 @@
                         <form method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                            <td>
+                                <select name="tipo_dni">
+                                    {% for tipo_dni in tipos_dni %}
+                                    <option value="{{ tipo_dni.id }}"
+                                        {% if usuario.tipo_dni_id == tipo_dni.id %}selected{% endif %}>
+                                        {{ tipo_dni.nombre_tipo_dni }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="actions-column10"><input type="text" name="dni" value="{{ usuario.dni }}"
+                                    class="validate-dni" maxlength="10" data-original="{{ usuario.dni }}"></td>
                             <td><input type="text" name="username" value="{{ usuario.username }}"></td>
                             <td class="actions-columnI"><input type="text" name="first_name"
-                                    value="{{ usuario.first_name }}"></td>
+                                    value="{{ usuario.first_name }}" class="validate-letters"></td>
                             <td class="actions-columnI"><input type="text" name="last_name"
-                                    value="{{ usuario.last_name }}"></td>
+                                    value="{{ usuario.last_name }}" class="validate-letters"></td>
+                            <td>
+                                <select name="genero">
+                                    {% for genero in generos %}
+                                    <option value="{{ genero.id }}"
+                                        {% if usuario.genero_id == genero.id %}selected{% endif %}>
+                                        {{ genero.nombre_genero }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="actions-column10"><input type="text" name="telefono"
+                                    value="{{ usuario.telefono }}" class="validate-phone" maxlength="10"></td>
+                            <td class="actions-columnD"><input type="date" name="fecha_nacimiento"
+                                    value="{{ usuario.fecha_nacimiento|date:'Y-m-d' }}"></td>
+
                             <td>
                                 <select name="rol">
                                     <option value="Personal Administrativo"
@@ -316,31 +353,6 @@
                                     </option>
                                 </select>
                             </td>
-                            <td>
-                                <select name="genero">
-                                    {% for genero in generos %}
-                                    <option value="{{ genero.id }}"
-                                        {% if usuario.genero_id == genero.id %}selected{% endif %}>
-                                        {{ genero.nombre_genero }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td class="actions-column10"><input type="text" name="fecha_nacimiento"
-                                    value="{{ usuario.fecha_nacimiento|date:'d/m/Y' }}"></td>
-                            <td>
-                                <select name="tipo_dni">
-                                    {% for tipo_dni in tipos_dni %}
-                                    <option value="{{ tipo_dni.id }}"
-                                        {% if usuario.tipo_dni_id == tipo_dni.id %}selected{% endif %}>
-                                        {{ tipo_dni.nombre_tipo_dni }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td class="actions-column10"><input type="text" name="dni" value="{{ usuario.dni }}"></td>
-                            <td class="actions-column10"><input type="text" name="telefono"
-                                    value="{{ usuario.telefono }}"></td>
                             <td class="actions-column">
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
                                 <form method="POST" style="display: inline-block; margin-left: 5px;">
@@ -349,6 +361,7 @@
                                     <button type="submit" name="delete" class="btn-eliminar">Eliminar</button>
                                 </form>
                             </td>
+
                         </form>
                     </tr>
                     {% endfor %}
@@ -357,11 +370,146 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelector('.btn-regresar').addEventListener('click', function (event) {
                 event.preventDefault();
                 history.back();
+            });
+
+            document.querySelectorAll('.validate-letters').forEach(input => {
+                input.addEventListener('input', function (e) {
+                    if (/[^a-zA-Z\s]/.test(this.value)) {
+                        e.preventDefault();
+                        this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Este campo solo acepta letras y espacios.',
+                        });
+                    }
+                });
+            });
+
+            document.querySelectorAll('.validate-dni, .validate-phone').forEach(input => {
+                input.addEventListener('input', function (e) {
+                    if (/[^0-9]/.test(this.value)) {
+                        e.preventDefault();
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Este campo solo acepta números.',
+                        });
+                    }
+                    if (this.value.length > 10) {
+                        this.value = this.value.slice(0, 10);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.validate-email').forEach(input => {
+                input.addEventListener('blur', function (e) {
+                    if (!/^\S+@\S+\.\S+$/.test(this.value)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Por favor, ingrese un correo electrónico válido.',
+                        });
+                    }
+                });
+            });
+
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function (e) {
+                    let isValid = true;
+                    let dni = this.querySelector('input[name="dni"]').value;
+                    let telefono = this.querySelector('input[name="telefono"]').value;
+
+                    if (dni.length !== 10) {
+                        isValid = false;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'El DNI debe tener 10 dígitos.',
+                        });
+                    }
+
+                    if (telefono.length !== 10) {
+                        isValid = false;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'El teléfono debe tener 10 dígitos.',
+                        });
+                    }
+
+                    if (!isValid) {
+                        e.preventDefault();
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Guardado',
+                            text: 'Usuario modificado con éxito.',
+                        });
+                    }
+                });
+            });
+
+            const importButton = document.getElementById('importButton');
+            const fileInput = document.getElementById('fileInput');
+
+            importButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('document', file);
+
+                    fetch('{% url "Importar_Usuario" %}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Éxito',
+                                    text: data.message,
+                                    icon: 'success'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                let errorMessage = data.message;
+                                if (data.errors && data.errors.length > 0) {
+                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
+                                }
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: errorMessage,
+                                    icon: 'error'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Hubo un problema al importar las materias',
+                                icon: 'error'
+                            });
+                        });
+                }
             });
         });
     </script>

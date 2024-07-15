@@ -66,5 +66,9 @@ pip install matplotlib
 ```
 Scipy:
 ```bash
-pip install scipy
+pip install chardet
+```
+Scipy:
+```bash
+pip install chardet
 ```
