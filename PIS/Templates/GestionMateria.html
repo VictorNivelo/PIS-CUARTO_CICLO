@@ -166,7 +166,7 @@
         th,
         td {
             border: 1px solid #ccc;
-            padding: 10px;
+            padding: 6px;
             text-align: center;
         }
 
@@ -189,7 +189,7 @@
         }
 
         td.actions-column10 {
-            width: 135px;
+            width: 100px;
         }
 
         td.actions-column10 form {
@@ -235,7 +235,7 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 16px;
+            padding: 8px;
             font-size: 14px;
             cursor: pointer;
             width: 100%;
@@ -259,6 +259,8 @@
                 <button type="submit" class="btn-buscar">Buscar</button>
             </form>
             <a href="{% url 'Registrar_Materia' %}" class="btn-crear">Crear materia</a>
+            <a href="#" class="btn-importar" id="importButton">Importar materias</a>
+            <input type="file" id="fileInput" name="document" style="display: none;" accept=".csv">
         </div>
 
         <div class="form-group">
@@ -318,9 +320,13 @@
                                 </select>
                             </td>
 
-                            <td class="actions-column10">
+                            <td class="actions-column">
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
-                                <button type="submit" name="delete" class="btn-eliminar">Eliminar</button>
+                                <form method="POST" style="display: inline-block; margin-left: 5px;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="materia_id" value="{{ materia.id }}">
+                                    <button type="submit" name="delete" class="btn-eliminar">Eliminar</button>
+                                </form>
                             </td>
                         </form>
                     </tr>
@@ -330,11 +336,67 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelector('.btn-regresar').addEventListener('click', function (event) {
                 event.preventDefault();
                 history.back();
+            });
+
+            const importButton = document.getElementById('importButton');
+            const fileInput = document.getElementById('fileInput');
+
+            importButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('document', file);
+
+                    fetch('{% url "Importar_Materias" %}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Éxito',
+                                    text: data.message,
+                                    icon: 'success'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                let errorMessage = data.message;
+                                if (data.errors && data.errors.length > 0) {
+                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
+                                }
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: errorMessage,
+                                    icon: 'error'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Hubo un problema al importar las materias',
+                                icon: 'error'
+                            });
+                        });
+                }
             });
         });
     </script>

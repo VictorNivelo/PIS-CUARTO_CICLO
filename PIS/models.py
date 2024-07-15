@@ -25,9 +25,7 @@ class UsuarioPersonalizado(AbstractUser):
         "Genero", on_delete=models.CASCADE, verbose_name="Género"
     )
 
-    fecha_nacimiento = models.DateField(
-        null=True, blank=True, verbose_name="Fecha de Nacimiento"
-    )
+    fecha_nacimiento = models.DateField(verbose_name="Fecha de Nacimiento")
 
     dni = models.CharField(max_length=10, verbose_name="DNI")
 
@@ -217,9 +215,6 @@ class Ciclo(models.Model):
     numero_ciclo = models.PositiveIntegerField(verbose_name="Número", unique=True)
     fecha_inicio = models.DateField(verbose_name="Fecha de Inicio")
     fecha_fin = models.DateField(verbose_name="Fecha de Fin")
-    # periodo_academico = models.ForeignKey(
-    #     "PeriodoAcademico", on_delete=models.CASCADE, verbose_name="Período Académico"
-    # )
     carrera = models.ForeignKey(
         Carrera, on_delete=models.CASCADE, verbose_name="Carrera"
     )
@@ -264,7 +259,7 @@ class PeriodoAcademico(models.Model):
     fecha_fin = models.DateField(verbose_name="Fecha de Fin")
     estado_periodo_academico = models.CharField(
         max_length=10,
-        choices=[("activo", "Activo"), ("inactivo", "Inactivo")],
+        choices=[("Activo", "Activo"), ("Inactivo", "Inactivo")],
         verbose_name="Estado",
     )
 
@@ -293,17 +288,67 @@ class PeriodoAcademico(models.Model):
         return self.codigo_periodo_academico
 
 
-class Datos_Historicos(models.Model):
-    codigo_historico = models.CharField(max_length=100, verbose_name="Código")
-    cantidad_estudiantes = models.IntegerField(verbose_name="Cantidad de Estudiantes")
+class DatosHistoricos(models.Model):
+    # materia = models.ForeignKey(
+    #     Materia, on_delete=models.CASCADE, verbose_name=_("Materia")
+    # )
+    cantidad_matriculados = models.IntegerField(
+        verbose_name=_("Cantidad de Matriculados")
+    )
     cantidad_aprobados = models.IntegerField(verbose_name="Cantidad de Aprobados")
     cantidad_reprobados = models.IntegerField(verbose_name="Cantidad de Reprobados")
     cantidad_desertores = models.IntegerField(verbose_name="Cantidad de Desertores")
-    cantidad_retirados = models.IntegerField(verbose_name="Cantidad de Retirados")
-    estudiante = models.ManyToManyField(Estudiante, verbose_name="Estudiantes")
 
+    # para hacer pruebas lo comento
+    # promedio_estudiante = models.FloatField(verbose_name="Promedio Estudiante")
+
+    # para futuro si hay tiempo
+    # estudiante = models.ManyToManyField(Estudiante, verbose_name="Estudiantes")
+
+    # def __str__(self):
+    #     return f"{self.materia.nombre_materia} - {self.periodo_academico}"
     def __str__(self):
-        return self.materia.nombre_materia
+        return f"{self.cantidad_matriculados} - {self.cantidad_aprobados} - {self.cantidad_reprobados} - {self.cantidad_desertores}"
+
+
+# Aqui se obtiene el promedio de cada factor para un estudiante
+class PromedioInformacionEstudiante(models.Model):
+    promedio_modalidad = models.FloatField(verbose_name="Promedio Modalidad")
+    promedio_tipo_educacion = models.FloatField(
+        verbose_name="Promedio Tipo de Educación"
+    )
+    promedio_origen = models.FloatField(verbose_name="Promedio Origen")
+    promedio_trabajo = models.FloatField(verbose_name="Promedio Trabajo")
+    promedio_discapacidad = models.FloatField(verbose_name="Promedio Discapacidad")
+    promedio_hijos = models.FloatField(verbose_name="Promedio Hijos")
+
+
+# class Datos_Historicos(models.Model):
+#     codigo_historico = models.CharField(
+#         max_length=100, verbose_name=_("Código"), unique=True
+#     )
+#     cantidad_estudiantes = models.IntegerField(verbose_name="Cantidad de Estudiantes")
+#     cantidad_aprobados = models.IntegerField(verbose_name="Cantidad de Aprobados")
+#     cantidad_reprobados = models.IntegerField(verbose_name="Cantidad de Reprobados")
+#     cantidad_desertores = models.IntegerField(verbose_name="Cantidad de Desertores")
+#     cantidad_retirados = models.IntegerField(verbose_name="Cantidad de Retirados")
+#     estudiante = models.ManyToManyField(Estudiante, verbose_name="Estudiantes")
+#     materia = models.ForeignKey(
+#         Materia, on_delete=models.CASCADE, verbose_name="Materia"
+#     )
+
+#     def save(self, *args, **kwargs):
+#         if not self.codigo_historico:
+#             self.codigo_historico = (
+#                 f"{self.materia.nombre_materia} - {self.periodo_academico}"
+#             )
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return self.codigo_historico
+
+#     class Meta:
+#         verbose_name_plural = _("Datos Históricos")
 
 
 # Poco usadas
@@ -348,13 +393,11 @@ class InformeCiclo(models.Model):
 
 
 class InformeMateria(models.Model):
-    materia = models.CharField(max_length=100)
-    docente_encargado = models.CharField(max_length=100)
-    numero_estudiantes = models.IntegerField()
-    aprobados = models.IntegerField()
-    reprobados = models.IntegerField()
-    desertores = models.IntegerField()
-    retirados = models.IntegerField()
+    matriculados = models.IntegerField(verbose_name="Matriculados")
+    aprobados = models.IntegerField(verbose_name="Aprobados")
+    reprobados = models.IntegerField(verbose_name="Reprobados")
+    desertores = models.IntegerField(verbose_name="Desertores")
+    retirados = models.IntegerField(verbose_name="Retirados")
 
     def __str__(self):
         return self.materia
@@ -401,36 +444,3 @@ class Cuenta(models.Model):
 
     def __str__(self):
         return self.correo_cuenta
-
-
-class PersonalAdministrativo(models.Model):
-    codigo_personal_administrativo = models.CharField(
-        max_length=100, verbose_name="Código"
-    )
-    usuario = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
-    )
-
-    def __str__(self):
-        return self.codigo_personal_administrativo
-
-
-class Secretaria(models.Model):
-    codigo_secretaria = models.CharField(max_length=100, verbose_name="Código")
-    usuario = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
-    )
-
-    def __str__(self):
-        return self.codigo_secretaria
-
-
-class Docente(models.Model):
-    codigo_docente = models.CharField(max_length=100, verbose_name="Código")
-    usuario = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, verbose_name="Usuario"
-    )
-    materias = models.ManyToManyField(Materia, verbose_name="Materias Asignadas")
-
-    def __str__(self):
-        return self.codigo_docente

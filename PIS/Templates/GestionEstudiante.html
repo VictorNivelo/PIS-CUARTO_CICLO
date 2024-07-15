@@ -15,7 +15,7 @@
             font-family: Arial, sans-serif;
             background: url('../Static/Imagen/b.png') no-repeat center center fixed;
             background-size: cover;
-            padding: 20px;
+            padding: 10px;
             margin: 0;
             font-size: 14px;
         }
@@ -26,12 +26,12 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             max-width: 1600px;
             margin: auto;
-            padding: 20px;
+            padding: 10px;
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-family: 'Lobster', cursive;
             color: #333;
         }
@@ -40,20 +40,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .actions form {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
         .actions input[type="text"],
-        .actions select,
-        .form-group input[type="text"],
-        .form-group select {
+        .actions select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -69,7 +67,7 @@
         .btn-buscar,
         .btn-eliminar,
         .btn-guardar {
-            padding: 8px 16px;
+            padding: 8px 12px;
             font-size: 14px;
             background-color: #f0ad4e;
             color: white;
@@ -78,10 +76,10 @@
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            width: auto;
+            width: 120px;
             display: inline-block;
             text-align: center;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
         .actions button[type="submit"],
@@ -157,14 +155,14 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         table,
         th,
         td {
             border: 1px solid #ccc;
-            padding: 8px;
+            padding: 6px;
             text-align: center;
         }
 
@@ -178,7 +176,7 @@
         }
 
         td.actions-column {
-            width: 100px;
+            width: 90px;
         }
 
         td.actions-column form {
@@ -196,14 +194,24 @@
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .form-group label {
             color: #555;
             font-weight: bold;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
         }
 
         .form-group button[type="submit"] {
@@ -211,11 +219,11 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 8px;
+            font-size: 14px;
             cursor: pointer;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .form-group button[type="submit"]:hover {
@@ -255,7 +263,8 @@
                 <button type="submit" class="btn-buscar">Buscar</button>
             </form>
             <a href="{% url 'Registrar_Estudiante' %}" class="btn-crear">Registrar Estudiante</a>
-            <a href="{% url 'Importar_Estudiante' %}" class="btn-crear">Subir Estudiantes</a>
+            <a href="#" class="btn-importar" id="importButton">Importar estudiantes</a>
+            <input type="file" id="fileInput" name="document" style="display: none;" accept=".csv">
         </div>
 
         <div class="form-group">
@@ -380,7 +389,7 @@
                                     {% endfor %}
                                 </select>
                             </td>
-                            <td class="actions-column10">
+                            <td class="actions-column">
                                 <button type="submit" class="btn-guardar" name="modify">Guardar</button>
                                 <button type="submit" class="btn-eliminar" name="delete">Eliminar</button>
                             </td>
@@ -393,23 +402,67 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script>
-        document.querySelector('.btn-regresar').addEventListener('click', function (e) {
-            e.preventDefault();
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "¡Se perderán los datos no guardados!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, regresar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.history.back();
-                }
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelector('.btn-regresar').addEventListener('click', function (event) {
+                event.preventDefault();
+                history.back();
             });
+        });
+
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
+
+        importButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('document', file);
+
+                fetch('{% url "Importar_Estudiante" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            let errorMessage = data.message;
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
+                            }
+                            Swal.fire({
+                                title: 'Error',
+                                text: errorMessage,
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al importar las materias',
+                            icon: 'error'
+                        });
+                    });
+            }
         });
     </script>
 </body>

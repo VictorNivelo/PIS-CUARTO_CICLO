@@ -55,7 +55,6 @@ DATABASES = {
     }
 }
 
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -98,7 +97,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = "smtp.gmail.com"
 
 EMAIL_PORT = 587
-# 587
 
 EMAIL_HOST_USER = "pis.cuarto.ciclo@gmail.com"
 
