@@ -12,10 +12,6 @@ from .vistas import (
     CambiarContrasenia,
     CorreoEnviado,
     
-    InformeMateria,
-    InformeCiclo,
-    InformeCarrera,
-    
     Informacion1,
     Informacion2,
     Informacion3,
@@ -61,7 +57,7 @@ from .vistas import (
     obtener_materias,
     realizar_prediccion,
 
-    import_data,
+    ImportarDatosModelo,
     ImportarUsuario,
     ImportarEstudiante,
     ImportarUniversidades,
@@ -73,6 +69,9 @@ from .vistas import (
     ImportarGenero,
     ImportarTipoDNI,
     ImportarDatoHistoricos,
+
+    seleccion_facultad,
+    predecir_desercion,
 )
 
 urlpatterns = [
@@ -100,9 +99,9 @@ urlpatterns = [
     path("Cambiar-Contrasenia/<uidb64>/<token>/", CambiarContrasenia, name="Cambiar_Contrasenia"),
     path("Correo-Enviado/<str:uidb64>/<str:token>/", CorreoEnviado, name="Correo_Enviado"),
     
-    path("Informe-Materia/", InformeMateria, name="Informe_Materia"),
-    path("Informe-Ciclo/", InformeCiclo, name="Informe_Ciclo"),
-    path("Informe-Carrera/", InformeCarrera, name="Informe_Carrera"),
+    # path("Informe-Materia/", InformeMateria, name="Informe_Materia"),
+    # path("Informe-Ciclo/", InformeCiclo, name="Informe_Ciclo"),
+    # path("Informe-Carrera/", InformeCarrera, name="Informe_Carrera"),
     
     path("Informacion-1/", Informacion1, name="Informacion_1"),
     path("Informacion-2/", Informacion2, name="Informacion_2"),
@@ -147,6 +146,13 @@ urlpatterns = [
     path('obtener_materias/', obtener_materias, name='obtener_materias'),
     path('realizar_prediccion/', realizar_prediccion, name='realizar_prediccion'),
 
-    path('import-data/', import_data, name='import_data'),
+    path('Importar-Datos/', ImportarDatosModelo, name='Importar_Datos'),
 
+    # path('seleccionar/', seleccionar_facultad_carrera_ciclo, name='seleccionar_facultad_carrera_ciclo'),
+    path('Prediccion-Materia', seleccion_facultad, name='Prediccion_Materia'),
+    path('obtener_carreras/', obtener_carreras, name='obtener_carreras'),
+    path('obtener_ciclos/', obtener_ciclos, name='obtener_ciclos'),
+    path('obtener_materias/', obtener_materias, name='obtener_materias'),
+
+    path('Predecir-Desercion/', predecir_desercion, name='Predecir_Desercion'),
 ]

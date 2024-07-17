@@ -1,77 +1,67 @@
-import csv
-import json
-import token
-from django.views import View
-from django.views.decorators.http import require_http_methods
-from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
-from django.template.loader import render_to_string
-from django.urls import reverse
-from django.contrib.auth.forms import SetPasswordForm
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
-from django.core.mail import send_mail
-from django.utils.encoding import force_str
-import re
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib import messages
+from django.contrib.auth.tokens import default_token_generator
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from docx import Document
+from django.contrib.auth.forms import AuthenticationForm
+from .Modelo.ModeloMatematico import model, params_list
+from django.core.files.storage import default_storage
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.http import urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_encode
+from django.core.files.base import ContentFile
+from django.contrib.auth import get_user_model
+from django.utils.encoding import force_bytes
+from django.utils.encoding import force_str
+from django.core.mail import send_mail
+from scipy.integrate import solve_ivp
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.contrib import messages
 from django.db import transaction
-import PyPDF2
+from django.conf import settings
+import matplotlib.pyplot as plt
+from django.urls import reverse
+from django.db.models import Q
+from django.views import View
+from datetime import datetime
+from docx import Document
+import numpy as np
 import pdfplumber
 import openpyxl
-from datetime import datetime
-from django.db.models import Q
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
+import PyPDF2
+import json
+import csv
+import re
 import os
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.integrate import solve_ivp
-from django.shortcuts import render
-from .Modelo.ModeloMatematico import model, params_list
-from django.contrib.auth.hashers import make_password
-from django.utils.http import urlsafe_base64_decode
-from django.contrib.auth import get_user_model
 from PIS.models import (
-    Genero,
-    PeriodoAcademico,
-    TipoDNI,
-    Universidad,
     UsuarioPersonalizado,
+    PeriodoAcademico,
+    DatosHistoricos,
+    Universidad,
+    Estudiante,
     Facultad,
     Carrera,
-    Ciclo,
     Materia,
+    TipoDNI,
     Genero,
-    Estudiante,
-    DatosHistoricos,
+    Ciclo,
 )
 from .forms import (
-    DatosHistoricosForm,
-    GeneroForm,
-    InformeCarreraForm,
-    InformeCicloForm,
-    InformeMateriaForm,
-    PeriodoAcademicoForm,
     RecuperarContraseniaForm,
     RegistrarEstudianteForm,
+    CambiarContraseniaForm,
     RegistrarUsuarioForm,
+    PeriodoAcademicoForm,
+    DatosHistoricosForm,
+    InicioSesionForm,
     UniversidadForm,
     FacultadForm,
     CarreraForm,
-    CicloForm,
     MateriaForm,
     TipoDNIForm,
-    CambiarContraseniaForm,
-    InicioSesionForm,
+    GeneroForm,
+    CicloForm,
 )
 
 
@@ -128,48 +118,48 @@ def Informacion4(request):
 # Informes
 
 
-def InformeCiclo(request):
-    if request.method == "POST":
-        form = InformeCicloForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Informe de ciclo guardado exitosamente.")
-            return redirect("Index")
-        else:
-            messages.error(request, "Por favor, corrija los errores del formulario.")
-    else:
-        form = InformeCicloForm()
-    return render(request, "InformeCiclo.html", {"form": form})
+# def InformeCiclo(request):
+#     if request.method == "POST":
+#         form = InformeCicloForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, "Informe de ciclo guardado exitosamente.")
+#             return redirect("Index")
+#         else:
+#             messages.error(request, "Por favor, corrija los errores del formulario.")
+#     else:
+#         form = InformeCicloForm()
+#     return render(request, "InformeCiclo.html", {"form": form})
 
 
-def InformeCarrera(request):
-    if request.method == "POST":
-        form = InformeCarreraForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Informe de carrera guardado exitosamente.")
-            return redirect("Index")
-        else:
-            messages.error(request, "Por favor, corrija los errores del formulario.")
-    else:
-        form = InformeCarreraForm()
-    return render(request, "InformeCarrera.html", {"form": form})
+# def InformeCarrera(request):
+#     if request.method == "POST":
+#         form = InformeCarreraForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, "Informe de carrera guardado exitosamente.")
+#             return redirect("Index")
+#         else:
+#             messages.error(request, "Por favor, corrija los errores del formulario.")
+#     else:
+#         form = InformeCarreraForm()
+#     return render(request, "InformeCarrera.html", {"form": form})
 
 
-def InformeMateria(request):
-    if request.method == "POST":
-        form = InformeMateriaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(
-                request, "Informe de deserción estudiantil guardado exitosamente."
-            )
-            return redirect("Index")
-        else:
-            messages.error(request, "Por favor, corrija los errores del formulario.")
-    else:
-        form = InformeMateriaForm()
-    return render(request, "InformeMateria.html", {"form": form})
+# def InformeMateria(request):
+#     if request.method == "POST":
+#         form = InformeMateriaForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(
+#                 request, "Informe de deserción estudiantil guardado exitosamente."
+#             )
+#             return redirect("Index")
+#         else:
+#             messages.error(request, "Por favor, corrija los errores del formulario.")
+#     else:
+#         form = InformeMateriaForm()
+#     return render(request, "InformeMateria.html", {"form": form})
 
 
 # Funciones del sistema
@@ -1511,24 +1501,24 @@ def predecir_desercion(request):
     return render(request, "predecir.html", {"facultades": facultades})
 
 
-def obtener_carreras(request):
-    facultad_id = request.GET.get("facultad_id")
-    carreras = Carrera.objects.filter(facultad_id=facultad_id).values(
-        "id", "nombre_carrera"
-    )
-    return JsonResponse({"carreras": list(carreras)})
+# def obtener_carreras(request):
+#     facultad_id = request.GET.get("facultad_id")
+#     carreras = Carrera.objects.filter(facultad_id=facultad_id).values(
+#         "id", "nombre_carrera"
+#     )
+#     return JsonResponse({"carreras": list(carreras)})
 
 
-def obtener_ciclos(request):
-    carrera_id = request.GET.get("carrera_id")
-    ciclos = Ciclo.objects.filter(carrera_id=carrera_id).values("id", "nombre_ciclo")
-    return JsonResponse({"ciclos": list(ciclos)})
+# def obtener_ciclos(request):
+#     carrera_id = request.GET.get("carrera_id")
+#     ciclos = Ciclo.objects.filter(carrera_id=carrera_id).values("id", "nombre_ciclo")
+#     return JsonResponse({"ciclos": list(ciclos)})
 
 
-def obtener_materias(request):
-    ciclo_id = request.GET.get("ciclo_id")
-    materias = Materia.objects.filter(ciclo_id=ciclo_id).values("id", "nombre_materia")
-    return JsonResponse({"materias": list(materias)})
+# def obtener_materias(request):
+#     ciclo_id = request.GET.get("ciclo_id")
+#     materias = Materia.objects.filter(ciclo_id=ciclo_id).values("id", "nombre_materia")
+#     return JsonResponse({"materias": list(materias)})
 
 
 def realizar_prediccion(request):
@@ -1962,18 +1952,18 @@ def ImportarDatosCVS(model, csv_file):
     return created_count, errors
 
 
-def import_data(request):
+def ImportarDatosModelo(request):
     if request.method == "POST":
         csv_file = request.FILES.get("csv_file")
         model_name = request.POST.get("model_name")
 
         if not csv_file:
             messages.error(request, "Por favor, seleccione un archivo CSV.")
-            return redirect("import_data")
+            return redirect("Importar_Datos")
 
         if not model_name:
             messages.error(request, "Por favor, seleccione un modelo.")
-            return redirect("import_data")
+            return redirect("Importar_Datos")
 
         model_map = {
             "usuario": UsuarioPersonalizado,
@@ -1991,7 +1981,7 @@ def import_data(request):
         model = model_map.get(model_name.lower())
         if not model:
             messages.error(request, "Modelo no válido seleccionado.")
-            return redirect("import_data")
+            return redirect("Importar_Datos")
 
         try:
             created_count, errors = ImportarDatosCVS(model, csv_file)
@@ -2004,9 +1994,9 @@ def import_data(request):
         except Exception as e:
             messages.error(request, f"Error durante la importación: {str(e)}")
 
-        return redirect("import_data")
+        return redirect("Importar_Datos")
 
-    return render(request, "import_data.html")
+    return render(request, "ImportarDatos.html")
 
 
 # Importar informacion por entidad
@@ -2647,3 +2637,64 @@ def ImportarDatoHistoricos(request):
         )
     except Exception as e:
         return JsonResponse({"success": False, "errors": [str(e)]})
+
+
+#Obtencion de los datos para la prediccion
+
+
+def obtener_carreras(request):
+    facultad_id = request.GET.get("facultad_id")
+    carreras = Carrera.objects.filter(facultad_id=facultad_id).values(
+        "id", "nombre_carrera"
+    )
+    return JsonResponse(list(carreras), safe=False)
+
+
+def obtener_ciclos(request):
+    carrera_id = request.GET.get("carrera_id")
+    ciclos = Ciclo.objects.filter(carrera_id=carrera_id).values("id", "nombre_ciclo")
+    return JsonResponse(list(ciclos), safe=False)
+
+
+def obtener_materias(request):
+    ciclo_id = request.GET.get("ciclo_id")
+    materias = Materia.objects.filter(ciclo_id=ciclo_id).values("id", "nombre_materia")
+    return JsonResponse(list(materias), safe=False)
+
+
+def seleccion_facultad(request):
+    facultades = Facultad.objects.all()
+    return render(request, "PrediccionMateria.html", {"facultades": facultades})
+
+def prediccion_desercion_runge_kutta(matriculados, parametros):
+    n = matriculados
+    h = 0.1  
+    k1 = k2 = k3 = k4 = 0
+    tiempo = np.arange(0, 1 + h, h)
+    desertores = np.zeros_like(tiempo)
+
+    for i in range(1, len(tiempo)):
+        k1 = h * parametros['tasa_desercion'] * (n - desertores[i-1])
+        k2 = h * parametros['tasa_desercion'] * (n - desertores[i-1] - 0.5 * k1)
+        k3 = h * parametros['tasa_desercion'] * (n - desertores[i-1] - 0.5 * k2)
+        k4 = h * parametros['tasa_desercion'] * (n - desertores[i-1] - k3)
+        desertores[i] = desertores[i-1] + (k1 + 2*k2 + 2*k3 + k4) / 6
+
+    desertores_totales = desertores[-1]
+    aprobados = int(0.6 * (n - desertores_totales))
+    reprobados = int(0.4 * (n - desertores_totales))
+    return [n, aprobados, reprobados, desertores_totales]
+
+def predecir_desercion(request):
+    if request.method == 'POST':
+        facultad_id = request.POST.get('facultad_id')
+        carrera_id = request.POST.get('carrera_id')
+        ciclo_id = request.POST.get('ciclo_id')
+        materia_id = request.POST.get('materia_id')
+
+        matriculados = 100  
+        parametros = {'tasa_desercion': 0.1}
+
+        prediccion = prediccion_desercion_runge_kutta(matriculados, parametros)
+
+        return JsonResponse(prediccion, safe=False)

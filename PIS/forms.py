@@ -3,8 +3,6 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
     DatosHistoricos,
     Genero,
-    InformeCarrera,
-    InformeMateria,
     TipoDNI,
     UsuarioPersonalizado,
     Universidad,
@@ -696,6 +694,42 @@ class DatosHistoricosForm(forms.ModelForm):
         label="Cantidad de Desertores",
     )
 
+    promedio_modalidad = forms.FloatField(
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese el porcentaje de presencialidad"}
+        )
+    )
+
+    promedio_tipo_educacion = forms.FloatField(
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese el porcentaje de tipo educacion"}
+        )
+    )
+
+    promedio_origen = forms.FloatField(
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese el porcentaje de origen"}
+        )
+    )
+
+    promedio_trabajo = forms.FloatField(
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese el porcentaje de trabajo"}
+        )
+    )
+
+    promedio_discapacidad = forms.FloatField(
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese el porcentaje de discapacidad"}
+        )
+    )
+
+    promedio_hijos = forms.FloatField(
+        widget=forms.NumberInput(
+            attrs={"placeholder": "Ingrese el porcentaje de hijos"}
+        )
+    )
+
     class Meta:
         model = DatosHistoricos
         fields = [
@@ -703,273 +737,279 @@ class DatosHistoricosForm(forms.ModelForm):
             "cantidad_aprobados",
             "cantidad_reprobados",
             "cantidad_desertores",
+            "promedio_modalidad",
+            "promedio_tipo_educacion",
+            "promedio_origen",
+            "promedio_trabajo",
+            "promedio_discapacidad",
+            "promedio_hijos",
         ]
 
 
 # Formularios de informes
 
 
-class InformeCarreraForm(forms.ModelForm):
-    Carrera = forms.CharField(
-        max_length=100,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "required": True,
-                "placeholder": "Ingrese el nombre de la carrera",
-            }
-        ),
-        required=True,
-        label="Carrera",
-    )
+# class InformeCarreraForm(forms.ModelForm):
+#     Carrera = forms.CharField(
+#         max_length=100,
+#         widget=forms.TextInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "required": True,
+#                 "placeholder": "Ingrese el nombre de la carrera",
+#             }
+#         ),
+#         required=True,
+#         label="Carrera",
+#     )
 
-    Numero_estudiantes = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese el número de estudiantes",
-            }
-        ),
-        required=True,
-        label="Número de Estudiantes",
-    )
+#     Numero_estudiantes = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese el número de estudiantes",
+#             }
+#         ),
+#         required=True,
+#         label="Número de Estudiantes",
+#     )
 
-    Aprobados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese la cantidad de aprobados",
-            }
-        ),
-        required=True,
-        label="Aprobados",
-    )
+#     Aprobados = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese la cantidad de aprobados",
+#             }
+#         ),
+#         required=True,
+#         label="Aprobados",
+#     )
 
-    Reprobados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese la cantidad de reprobados",
-            }
-        ),
-        required=True,
-        label="Reprobados",
-    )
+#     Reprobados = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese la cantidad de reprobados",
+#             }
+#         ),
+#         required=True,
+#         label="Reprobados",
+#     )
 
-    Desertores = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese la cantidad de desertores",
-            }
-        ),
-        required=True,
-        label="Desertores",
-    )
+#     Desertores = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese la cantidad de desertores",
+#             }
+#         ),
+#         required=True,
+#         label="Desertores",
+#     )
 
-    Retirados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese la cantidad de retirados",
-            }
-        ),
-        required=True,
-        label="Retirados",
-    )
+#     Retirados = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese la cantidad de retirados",
+#             }
+#         ),
+#         required=True,
+#         label="Retirados",
+#     )
 
-    class Meta:
-        model = InformeCarrera
-        fields = [
-            "Carrera",
-            "Numero_estudiantes",
-            "Aprobados",
-            "Reprobados",
-            "Desertores",
-            "Retirados",
-        ]
-
-
-class InformeCicloForm(forms.Form):
-    ciclo = forms.CharField(
-        max_length=100,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese el ciclo",
-            }
-        ),
-        required=True,
-        label="Ciclo",
-    )
-
-    fecha_inicio = forms.DateField(
-        widget=forms.DateInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Seleccione la fecha de inicio",
-            }
-        ),
-        required=True,
-        label="Fecha de Inicio",
-    )
-
-    fecha_fin = forms.DateField(
-        widget=forms.DateInput(
-            attrs={
-                "class": "form-control",
-                "required": True,
-                "placeholder": "Seleccione la fecha de fin",
-            }
-        ),
-        required=True,
-        label="Fecha de Fin",
-    )
-
-    numero_estudiantes = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese el número de estudiantes",
-            }
-        ),
-        required=True,
-        label="Número de Estudiantes",
-    )
-
-    aprobados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese el número de aprobados",
-            }
-        ),
-        required=True,
-        label="Aprobados",
-    )
-
-    reprobados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese el número de reprobados",
-            }
-        ),
-        required=True,
-        label="Reprobados",
-    )
-
-    desertores = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese el número de desertores",
-            }
-        ),
-        required=True,
-        label="Desertores",
-    )
-
-    retirados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Ingrese el número de retirados",
-            }
-        ),
-        required=True,
-        label="Retirados",
-    )
+#     class Meta:
+#         model = InformeCarrera
+#         fields = [
+#             "Carrera",
+#             "Numero_estudiantes",
+#             "Aprobados",
+#             "Reprobados",
+#             "Desertores",
+#             "Retirados",
+#         ]
 
 
-class InformeMateriaForm(forms.ModelForm):
-    materia = forms.CharField(
-        max_length=100,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Nombre de la materia",
-            }
-        ),
-        required=True,
-        label="Materia",
-    )
+# class InformeCicloForm(forms.Form):
+#     ciclo = forms.CharField(
+#         max_length=100,
+#         widget=forms.TextInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese el ciclo",
+#             }
+#         ),
+#         required=True,
+#         label="Ciclo",
+#     )
 
-    docente_encargado = forms.CharField(
-        max_length=100,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Nombre del docente encargado",
-            }
-        ),
-        required=True,
-        label="Docente Encargado",
-    )
+#     fecha_inicio = forms.DateField(
+#         widget=forms.DateInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Seleccione la fecha de inicio",
+#             }
+#         ),
+#         required=True,
+#         label="Fecha de Inicio",
+#     )
 
-    numero_estudiantes = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Cantidad de estudiantes",
-            }
-        ),
-        required=True,
-        label="Número de Estudiantes",
-    )
+#     fecha_fin = forms.DateField(
+#         widget=forms.DateInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "required": True,
+#                 "placeholder": "Seleccione la fecha de fin",
+#             }
+#         ),
+#         required=True,
+#         label="Fecha de Fin",
+#     )
 
-    aprobados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Cantidad de estudiantes aprobados",
-            }
-        ),
-        required=True,
-        label="Aprobados",
-    )
+#     numero_estudiantes = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese el número de estudiantes",
+#             }
+#         ),
+#         required=True,
+#         label="Número de Estudiantes",
+#     )
 
-    reprobados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Cantidad de estudiantes reprobados",
-            }
-        ),
-        required=True,
-        label="Reprobados",
-    )
+#     aprobados = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese el número de aprobados",
+#             }
+#         ),
+#         required=True,
+#         label="Aprobados",
+#     )
 
-    desertores = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Cantidad de estudiantes desertores",
-            }
-        ),
-        required=True,
-        label="Desertores",
-    )
+#     reprobados = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese el número de reprobados",
+#             }
+#         ),
+#         required=True,
+#         label="Reprobados",
+#     )
 
-    retirados = forms.IntegerField(
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Cantidad de estudiantes retirados",
-            }
-        ),
-        required=True,
-        label="Retirados",
-    )
+#     desertores = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese el número de desertores",
+#             }
+#         ),
+#         required=True,
+#         label="Desertores",
+#     )
 
-    class Meta:
-        model = InformeMateria
-        fields = [
-            "materia",
-            "docente_encargado",
-            "numero_estudiantes",
-            "aprobados",
-            "reprobados",
-            "desertores",
-            "retirados",
-        ]
+#     retirados = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Ingrese el número de retirados",
+#             }
+#         ),
+#         required=True,
+#         label="Retirados",
+#     )
+
+
+# class InformeMateriaForm(forms.ModelForm):
+#     materia = forms.CharField(
+#         max_length=100,
+#         widget=forms.TextInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Nombre de la materia",
+#             }
+#         ),
+#         required=True,
+#         label="Materia",
+#     )
+
+#     docente_encargado = forms.CharField(
+#         max_length=100,
+#         widget=forms.TextInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Nombre del docente encargado",
+#             }
+#         ),
+#         required=True,
+#         label="Docente Encargado",
+#     )
+
+#     numero_estudiantes = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Cantidad de estudiantes",
+#             }
+#         ),
+#         required=True,
+#         label="Número de Estudiantes",
+#     )
+
+#     aprobados = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Cantidad de estudiantes aprobados",
+#             }
+#         ),
+#         required=True,
+#         label="Aprobados",
+#     )
+
+#     reprobados = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Cantidad de estudiantes reprobados",
+#             }
+#         ),
+#         required=True,
+#         label="Reprobados",
+#     )
+
+#     desertores = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Cantidad de estudiantes desertores",
+#             }
+#         ),
+#         required=True,
+#         label="Desertores",
+#     )
+
+#     retirados = forms.IntegerField(
+#         widget=forms.NumberInput(
+#             attrs={
+#                 "class": "form-control",
+#                 "placeholder": "Cantidad de estudiantes retirados",
+#             }
+#         ),
+#         required=True,
+#         label="Retirados",
+#     )
+
+#     class Meta:
+#         model = InformeMateria
+#         fields = [
+#             "materia",
+#             "docente_encargado",
+#             "numero_estudiantes",
+#             "aprobados",
+#             "reprobados",
+#             "desertores",
+#             "retirados",
+#         ]

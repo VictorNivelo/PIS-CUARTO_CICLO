@@ -4,9 +4,6 @@ from .models import (
     Estudiante,
     PeriodoAcademico,
     UsuarioPersonalizado,
-    InformeCarrera,
-    InformeMateria,
-    InformeCiclo,
     Universidad,
     Facultad,
     Carrera,
@@ -28,6 +25,6 @@ admin.site.register(Materia)
 admin.site.register(PeriodoAcademico)
 admin.site.register(DatosHistoricos)
 
-admin.site.register(InformeCarrera)
-admin.site.register(InformeMateria)
-admin.site.register(InformeCiclo)
+# admin.site.register(InformeCarrera)
+# admin.site.register(InformeMateria)
+# admin.site.register(InformeCiclo)

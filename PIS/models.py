@@ -299,6 +299,15 @@ class DatosHistoricos(models.Model):
     cantidad_reprobados = models.IntegerField(verbose_name="Cantidad de Reprobados")
     cantidad_desertores = models.IntegerField(verbose_name="Cantidad de Desertores")
 
+    promedio_modalidad = models.FloatField(verbose_name="Promedio Modalidad")
+    promedio_tipo_educacion = models.FloatField(
+        verbose_name="Promedio Tipo de Educación"
+    )
+    promedio_origen = models.FloatField(verbose_name="Promedio Origen")
+    promedio_trabajo = models.FloatField(verbose_name="Promedio Trabajo")
+    promedio_discapacidad = models.FloatField(verbose_name="Promedio Discapacidad")
+    promedio_hijos = models.FloatField(verbose_name="Promedio Hijos")
+
     # para hacer pruebas lo comento
     # promedio_estudiante = models.FloatField(verbose_name="Promedio Estudiante")
 
@@ -312,15 +321,15 @@ class DatosHistoricos(models.Model):
 
 
 # Aqui se obtiene el promedio de cada factor para un estudiante
-class PromedioInformacionEstudiante(models.Model):
-    promedio_modalidad = models.FloatField(verbose_name="Promedio Modalidad")
-    promedio_tipo_educacion = models.FloatField(
-        verbose_name="Promedio Tipo de Educación"
-    )
-    promedio_origen = models.FloatField(verbose_name="Promedio Origen")
-    promedio_trabajo = models.FloatField(verbose_name="Promedio Trabajo")
-    promedio_discapacidad = models.FloatField(verbose_name="Promedio Discapacidad")
-    promedio_hijos = models.FloatField(verbose_name="Promedio Hijos")
+# class PromedioInformacionEstudiante(models.Model):
+#     promedio_modalidad = models.FloatField(verbose_name="Promedio Modalidad")
+#     promedio_tipo_educacion = models.FloatField(
+#         verbose_name="Promedio Tipo de Educación"
+#     )
+#     promedio_origen = models.FloatField(verbose_name="Promedio Origen")
+#     promedio_trabajo = models.FloatField(verbose_name="Promedio Trabajo")
+#     promedio_discapacidad = models.FloatField(verbose_name="Promedio Discapacidad")
+#     promedio_hijos = models.FloatField(verbose_name="Promedio Hijos")
 
 
 # class Datos_Historicos(models.Model):
@@ -354,61 +363,61 @@ class PromedioInformacionEstudiante(models.Model):
 # Poco usadas
 
 
-class Informe(models.Model):
+# class Informe(models.Model):
 
-    fecha_creacion = models.DateField(verbose_name="Fecha de Creación")
+#     fecha_creacion = models.DateField(verbose_name="Fecha de Creación")
 
-    def __str__(self):
-        return self.usuario.username
-
-
-class InformeCarrera(models.Model):
-    carrera = models.CharField(max_length=100, verbose_name="Carrera")
-    numero_estudiantes = models.IntegerField(verbose_name="Número de Estudiantes")
-    aprobados = models.IntegerField(verbose_name="Aprobados")
-    reprobados = models.IntegerField(verbose_name="Reprobados")
-    desertores = models.IntegerField(verbose_name="Desertores")
-    retirados = models.IntegerField(verbose_name="Retirados")
-
-    class Meta:
-        verbose_name = "Informe de Carrera"
-        verbose_name_plural = "Informes de Carreras"
-
-    def __str__(self):
-        return self.carrera
+#     def __str__(self):
+#         return self.usuario.username
 
 
-class InformeCiclo(models.Model):
-    ciclo = models.CharField(max_length=100)
-    fecha_inicio = models.DateField()
-    fecha_fin = models.DateField()
-    numero_estudiantes = models.IntegerField()
-    aprobados = models.IntegerField()
-    reprobados = models.IntegerField()
-    desertores = models.IntegerField()
-    retirados = models.IntegerField()
+# class InformeCarrera(models.Model):
+#     carrera = models.CharField(max_length=100, verbose_name="Carrera")
+#     numero_estudiantes = models.IntegerField(verbose_name="Número de Estudiantes")
+#     aprobados = models.IntegerField(verbose_name="Aprobados")
+#     reprobados = models.IntegerField(verbose_name="Reprobados")
+#     desertores = models.IntegerField(verbose_name="Desertores")
+#     retirados = models.IntegerField(verbose_name="Retirados")
 
-    def __str__(self):
-        return self.ciclo
+#     class Meta:
+#         verbose_name = "Informe de Carrera"
+#         verbose_name_plural = "Informes de Carreras"
 
-
-class InformeMateria(models.Model):
-    matriculados = models.IntegerField(verbose_name="Matriculados")
-    aprobados = models.IntegerField(verbose_name="Aprobados")
-    reprobados = models.IntegerField(verbose_name="Reprobados")
-    desertores = models.IntegerField(verbose_name="Desertores")
-    retirados = models.IntegerField(verbose_name="Retirados")
-
-    def __str__(self):
-        return self.materia
+#     def __str__(self):
+#         return self.carrera
 
 
-class Factor(models.Model):
-    nombre_factor = models.CharField(max_length=100, verbose_name="Nombre")
-    descripcion = models.CharField(max_length=100, verbose_name="Descripción")
+# class InformeCiclo(models.Model):
+#     ciclo = models.CharField(max_length=100)
+#     fecha_inicio = models.DateField()
+#     fecha_fin = models.DateField()
+#     numero_estudiantes = models.IntegerField()
+#     aprobados = models.IntegerField()
+#     reprobados = models.IntegerField()
+#     desertores = models.IntegerField()
+#     retirados = models.IntegerField()
 
-    def __str__(self):
-        return self.nombre_factor
+#     def __str__(self):
+#         return self.ciclo
+
+
+# class InformeMateria(models.Model):
+#     matriculados = models.IntegerField(verbose_name="Matriculados")
+#     aprobados = models.IntegerField(verbose_name="Aprobados")
+#     reprobados = models.IntegerField(verbose_name="Reprobados")
+#     desertores = models.IntegerField(verbose_name="Desertores")
+#     retirados = models.IntegerField(verbose_name="Retirados")
+
+#     def __str__(self):
+#         return self.materia
+
+
+# class Factor(models.Model):
+#     nombre_factor = models.CharField(max_length=100, verbose_name="Nombre")
+#     descripcion = models.CharField(max_length=100, verbose_name="Descripción")
+
+#     def __str__(self):
+#         return self.nombre_factor
 
 
 class Usuario(models.Model):

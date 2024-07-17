@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <title>Importar Datos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .caja {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            margin: auto;
+        }
+
+        .form-wrapper {
+            padding: 20px;
+        }
+
+        .t {
+            font-family: 'Lobster', cursive;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+            color: #333;
+            box-sizing: border-box;
+        }
+
+        button[type="submit"],
+        .btn-regresar {
+            width: calc(50% - 5px);
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .btn-regresar {
+            background-color: #f0ad4e;
+            color: white;
+        }
+
+        .btn-regresar:hover {
+            background-color: #eea236;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .button-group button {
+            margin-top: 0;
+        }
+
+        .messages {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .messages li {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+
+<body onload="recordarPaginaAnterior()">
+    <div class="caja">
+        <div class="form-wrapper">
+            <h1 class="t">Importar Datos desde CSV</h1>
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                    {% endfor %}
+            </ul>
+            {% endif %}
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="model_name">Seleccione el modelo:</label>
+                    <select name="model_name" id="model_name" required>
+                        <option value="">-- Seleccione un modelo --</option>
+                        <option value="usuario">Usuario</option>
+                        <option value="estudiante">Estudiante</option>
+                        <option value="genero">Genero</option>
+                        <option value="tipoDNI">Tipo DNI</option>
+                        <option value="universidad">Universidad</option>
+                        <option value="facultad">Facultad</option>
+                        <option value="carrera">Carrera</option>
+                        <option value="ciclo">Ciclo</option>
+                        <option value="materia">Materia</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="csv_file">Seleccione el archivo CSV:</label>
+                    <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
+                    <button type="submit">Importar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.getElementById('btnRegresar').addEventListener('click', function () {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¡Se perderán los datos no guardados!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, regresar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var paginaAnterior = localStorage.getItem('paginaAnterior');
+                    if (paginaAnterior) {
+                        window.location.href = paginaAnterior;
+                    } else {
+                        window.location.href = '/';
+                    }
+                }
+            });
+        });
+
+        function recordarPaginaAnterior() {
+            localStorage.setItem('paginaAnterior', document.referrer);
+        }
+
+        window.onload = recordarPaginaAnterior;
+    </script>
+</body>
+
+</html>
