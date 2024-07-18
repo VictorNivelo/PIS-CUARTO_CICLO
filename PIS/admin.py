@@ -1,16 +1,16 @@
 from django.contrib import admin
 from .models import (
-    DatosHistoricos,
-    Estudiante,
-    PeriodoAcademico,
     UsuarioPersonalizado,
+    PeriodoAcademico,
+    DatosHistoricos,
     Universidad,
+    Estudiante,
     Facultad,
+    TipoDNI,
     Carrera,
-    Ciclo,
     Materia,
     Genero,
-    TipoDNI,
+    Ciclo,
 )
 
 admin.site.register(UsuarioPersonalizado)

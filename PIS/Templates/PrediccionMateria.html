@@ -32,7 +32,7 @@
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 1500px;
+            max-width: 1550px;
             padding: 30px;
             margin: auto;
         }
@@ -80,35 +80,6 @@
             max-width: 300px;
         }
 
-        button[type="button"] {
-            width: calc(50% - 5px);
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-
-        button[type="button"] {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        button[type="button"]:hover {
-            background-color: #45a049;
-        }
-
-        .btn-regresar {
-            background-color: #f0ad4e;
-            color: white;
-        }
-
-        .btn-regresar:hover {
-            background-color: #eea236;
-        }
-
         .button-group {
             display: flex;
             justify-content: space-between;
@@ -116,7 +87,31 @@
         }
 
         .button-group button {
-            margin-top: 0;
+            width: 48%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #btnRegresar {
+            background-color: #f0ad4e;
+            color: white;
+        }
+
+        #btnRegresar:hover {
+            background-color: #eea236;
+        }
+
+        #submitBtn {
+            background-color: #5bc0de;
+            color: white;
+        }
+
+        #submitBtn:hover {
+            background-color: #46b8da;
         }
 
         .form-row {
@@ -131,7 +126,7 @@
 <body>
     <div class="caja">
         <div class="form-wrapper">
-            <h1 class="t">Predicción de Deserción por materia</h1>
+            <h1 class="t">Predicción de Deserción por Materia</h1>
             <form id="prediccion-form">
                 <div class="form-row">
                     <div class="form-group">
@@ -139,7 +134,7 @@
                         <select id="facultad" name="facultad">
                             <option value="">Seleccione una facultad</option>
                             {% for facultad in facultades %}
-                                <option value="{{ facultad.id }}">{{ facultad.nombre_facultad }}</option>
+                            <option value="{{ facultad.id }}">{{ facultad.nombre_facultad }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -163,14 +158,32 @@
                     </div>
                 </div>
                 <div class="button-group">
-                    <button type="button" class="btn-regresar" id="btnRegresar">Regresar</button>
-                    <button type="button" id="submitBtn">Predecir</button>
+                    <button type="button" class="btn btn-warning" id="btnRegresar">Regresar</button>
+                    <button type="button" class="btn btn-primary" id="submitBtn">Predecir</button>
                 </div>
             </form>
+
+            <div id="grafica" style="margin-top: 30px;">
+                <canvas id="myChart"></canvas>
+            </div>
+            <div id="porcentajes" class="mt-4 p-3 border rounded bg-light" style="display: none;">
+                <h4>Resumen de Predicción</h4>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Aprobados:</strong> <span id="porcentaje-aprobados"></span>%</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Reprobados:</strong> <span id="porcentaje-reprobados"></span>%</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Desertores:</strong> <span id="porcentaje-desertores"></span>%</p>
+                    </div>
+                </div>
+                <h5 class="mt-3">Posibles factores de deserción:</h5>
+                <ul id="factores-desercion"></ul>
+            </div>
         </div>
-        <div id="grafica" style="margin-top: 30px;">
-            <canvas id="myChart"></canvas>
-        </div>
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -178,16 +191,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        $(document).ready(function() {
-            $('#facultad').change(function() {
+        $(document).ready(function () {
+            $('#facultad').change(function () {
                 var facultadId = $(this).val();
                 if (facultadId) {
                     $.ajax({
-                        url: '{% url "obtener_carreras" %}',
-                        data: {'facultad_id': facultadId},
-                        success: function(data) {
+                        url: '{% url "Obtener_Carreras" %}',
+                        data: { 'facultad_id': facultadId },
+                        success: function (data) {
                             $('#carrera').prop('disabled', false).html('<option value="">Seleccione una carrera</option>');
-                            $.each(data, function(index, value) {
+                            $.each(data, function (index, value) {
                                 $('#carrera').append('<option value="' + value.id + '">' + value.nombre_carrera + '</option>');
                             });
                         }
@@ -199,15 +212,15 @@
                 }
             });
 
-            $('#carrera').change(function() {
+            $('#carrera').change(function () {
                 var carreraId = $(this).val();
                 if (carreraId) {
                     $.ajax({
-                        url: '{% url "obtener_ciclos" %}',
-                        data: {'carrera_id': carreraId},
-                        success: function(data) {
+                        url: '{% url "Obtener_Ciclos" %}',
+                        data: { 'carrera_id': carreraId },
+                        success: function (data) {
                             $('#ciclo').prop('disabled', false).html('<option value="">Seleccione un ciclo</option>');
-                            $.each(data, function(index, value) {
+                            $.each(data, function (index, value) {
                                 $('#ciclo').append('<option value="' + value.id + '">' + value.nombre_ciclo + '</option>');
                             });
                         }
@@ -218,15 +231,15 @@
                 }
             });
 
-            $('#ciclo').change(function() {
+            $('#ciclo').change(function () {
                 var cicloId = $(this).val();
                 if (cicloId) {
                     $.ajax({
-                        url: '{% url "obtener_materias" %}',
-                        data: {'ciclo_id': cicloId},
-                        success: function(data) {
+                        url: '{% url "Obtener_Materias" %}',
+                        data: { 'ciclo_id': cicloId },
+                        success: function (data) {
                             $('#materias').prop('disabled', false).html('<option value="">Seleccione una materia</option>');
-                            $.each(data, function(index, value) {
+                            $.each(data, function (index, value) {
                                 $('#materias').append('<option value="' + value.id + '">' + value.nombre_materia + '</option>');
                             });
                         }
@@ -236,7 +249,7 @@
                 }
             });
 
-            $('#submitBtn').click(function() {
+            $('#submitBtn').click(function () {
                 var facultadId = $('#facultad').val();
                 var carreraId = $('#carrera').val();
                 var cicloId = $('#ciclo').val();
@@ -246,7 +259,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Por favor, complete todos los campos',
+                        text: 'Por favor, seleccione todas las opciones',
                     });
                     return;
                 }
@@ -261,16 +274,16 @@
                         'materia_id': materiaId,
                         'csrfmiddlewaretoken': '{{ csrf_token }}'
                     },
-                    success: function(data) {
+                    success: function (data) {
                         var ctx = document.getElementById('myChart').getContext('2d');
                         var myChart = new Chart(ctx, {
                             type: 'line',
                             data: {
-                                labels: data.labels, // Aquí debes proporcionar las etiquetas adecuadas para el eje X
+                                labels: data.labels,
                                 datasets: [{
                                     label: 'Matriculados',
                                     data: data.matriculados,
-                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderColor: 'rgba(60, 179, 113, 1)',
                                     borderWidth: 2,
                                     fill: false
                                 }, {
@@ -288,40 +301,73 @@
                                 }, {
                                     label: 'Desertores',
                                     data: data.desertores,
-                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
                                     borderWidth: 2,
                                     fill: false
                                 }]
                             },
                             options: {
+                                responsive: true,
+                                title: {
+                                    display: true,
+                                    text: data.titulo
+                                },
                                 scales: {
                                     x: {
+                                        display: true,
                                         title: {
                                             display: true,
                                             text: 'Unidades de la Materia y Periodo Académico'
                                         }
                                     },
                                     y: {
+                                        display: true,
                                         title: {
                                             display: true,
-                                            text: 'Cantidad'
-                                        }
+                                            text: 'Número de Estudiantes'
+                                        },
+                                        suggestedMin: 0
                                     }
                                 }
                             }
                         });
+
+                        var total = data.matriculados[data.matriculados.length - 1];
+                        var aprobados = data.aprobados[data.aprobados.length - 1];
+                        var reprobados = data.reprobados[data.reprobados.length - 1];
+                        var desertores = data.desertores[data.desertores.length - 1];
+
+                        $('#porcentaje-aprobados').text(((aprobados / total) * 100).toFixed(2));
+                        $('#porcentaje-reprobados').text(((reprobados / total) * 100).toFixed(2));
+                        $('#porcentaje-desertores').text(((desertores / total) * 100).toFixed(2));
+
+                        var factores = [
+                            'Modalidad de estudio: ' + data.promedio_modalidad.toFixed(2),
+                            'Tipo de educación: ' + data.promedio_tipo_educacion.toFixed(2),
+                            'Origen: ' + data.promedio_origen.toFixed(2),
+                            'Trabajo: ' + data.promedio_trabajo.toFixed(2),
+                            'Discapacidad: ' + data.promedio_discapacidad.toFixed(2),
+                            'Hijos: ' + data.promedio_hijos.toFixed(2)
+                        ];
+
+                        $('#factores-desercion').empty();
+                        factores.forEach(function (factor) {
+                            $('#factores-desercion').append('<li>' + factor + '</li>');
+                        });
+
+                        $('#porcentajes').show();
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Error al obtener los datos. Por favor, inténtelo nuevamente.',
+                            text: 'Error al obtener los datos historicos para la predicción. Por favor, inténtelo nuevamente.',
                         });
                     }
                 });
             });
 
-            $('#btnRegresar').click(function() {
+            $('#btnRegresar').click(function () {
                 window.history.back();
             });
         });

@@ -13,6 +13,7 @@ from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
+from datetime import datetime, timedelta
 from django.core.mail import send_mail
 from scipy.integrate import solve_ivp
 from django.http import JsonResponse
@@ -20,11 +21,11 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.db import transaction
 from django.conf import settings
+from django.db.models import Avg
 import matplotlib.pyplot as plt
 from django.urls import reverse
 from django.db.models import Q
 from django.views import View
-from datetime import datetime
 from docx import Document
 import numpy as np
 import pdfplumber
@@ -113,53 +114,6 @@ def Informacion3(request):
 
 def Informacion4(request):
     return render(request, "Informacion4.html")
-
-
-# Informes
-
-
-# def InformeCiclo(request):
-#     if request.method == "POST":
-#         form = InformeCicloForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, "Informe de ciclo guardado exitosamente.")
-#             return redirect("Index")
-#         else:
-#             messages.error(request, "Por favor, corrija los errores del formulario.")
-#     else:
-#         form = InformeCicloForm()
-#     return render(request, "InformeCiclo.html", {"form": form})
-
-
-# def InformeCarrera(request):
-#     if request.method == "POST":
-#         form = InformeCarreraForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, "Informe de carrera guardado exitosamente.")
-#             return redirect("Index")
-#         else:
-#             messages.error(request, "Por favor, corrija los errores del formulario.")
-#     else:
-#         form = InformeCarreraForm()
-#     return render(request, "InformeCarrera.html", {"form": form})
-
-
-# def InformeMateria(request):
-#     if request.method == "POST":
-#         form = InformeMateriaForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(
-#                 request, "Informe de deserción estudiantil guardado exitosamente."
-#             )
-#             return redirect("Index")
-#         else:
-#             messages.error(request, "Por favor, corrija los errores del formulario.")
-#     else:
-#         form = InformeMateriaForm()
-#     return render(request, "InformeMateria.html", {"form": form})
 
 
 # Funciones del sistema
@@ -1169,6 +1123,7 @@ def RegistrarDatosHistorico(request):
 def GestionDatosHistoricos(request):
     query = request.GET.get("search_query", "")
     datos_Historicos = DatosHistoricos.objects.all()
+    materias = Materia.objects.all()
 
     if query:
         datos_Historicos = datos_Historicos.filter(
@@ -1206,6 +1161,7 @@ def GestionDatosHistoricos(request):
         "GestionDatosHistoricos.html",
         {
             "datos_Historicos": datos_Historicos,
+            "materias": materias,
             "query": query,
         },
     )
@@ -1427,98 +1383,9 @@ def PredecirDesercion(request):
     )
 
 
-# def PredecirDesercion(request):
-#     params = params_list[0]
-
-#     y0 = [500, 0, 0, 0]
-
-#     t_span = [0, 180]
-#     t_eval = np.linspace(t_span[0], t_span[1], 1000)
-
-#     sol = solve_ivp(
-#         model,
-#         t_span,
-#         y0,
-#         t_eval=t_eval,
-#         args=(
-#             params["ciclo"],
-#             params["for"],
-#             params["trab"],
-#             params["disc"],
-#             params["edu"],
-#             params["hijos"],
-#             params["gen"],
-#         ),
-#     )
-
-#     S_sol = sol.y[0]
-#     R_sol = sol.y[1]
-#     D_sol = sol.y[2]
-#     A_sol = sol.y[3]
-
-#     prob_desercion = np.clip((D_sol / 500) * 100, 1, 100)
-
-#     prob_desercion_final = prob_desercion[-1]
-
-#     plt.figure(figsize=(10, 6))
-#     plt.plot(sol.t, S_sol, label="Estudiantes Matriculados (S(t))")
-#     plt.plot(sol.t, R_sol, label="Estudiantes Reprobados (R(t))")
-#     plt.plot(sol.t, D_sol, label="Estudiantes Desertores (D(t))")
-#     plt.plot(sol.t, A_sol, label="Estudiantes Aprobados (A(t))")
-#     plt.xlabel("Tiempo (días)")
-#     plt.ylabel("Número de estudiantes")
-#     plt.title(
-#         f'Parámetros para Género {params["gen"]}: Ciclo {params["ciclo"]}, Foráneo {params["for"]}, Trabaja {params["trab"]}, Discapacidad {params["disc"]}, Educación {params["edu"]}, Hijos {params["hijos"]}'
-#     )
-#     plt.legend()
-#     plt.grid()
-
-#     plt.figure(figsize=(10, 6))
-#     plt.plot(sol.t, prob_desercion, label="Probabilidad de Deserción (%)")
-#     plt.xlabel("Tiempo (días)")
-#     plt.ylabel("Probabilidad de Deserción (%)")
-#     plt.title(f'Probabilidad de Deserción para Género {params["gen"]}')
-#     plt.legend()
-#     plt.grid()
-#     plt.ylim(1, 100)
-
-#     plt.tight_layout()
-#     filename = os.path.join(
-#         "C:\\Users\\Victor\\Documents\\Proyectos 4 ciclo\\PIS-CUARTO_CICLO\\PIS\\Static\\Predicciones",
-#         "prediccion.png",
-#     )
-#     plt.savefig(filename)
-#     plt.close()
-#     # plt.savefig("../Static/Predicciones/prediccion.png")
-
-#     return render(
-#         request, "PredecirDesercion.html", {"prediccion": prob_desercion_final}
-#     )
-
-
 def predecir_desercion(request):
     facultades = Facultad.objects.all()
     return render(request, "predecir.html", {"facultades": facultades})
-
-
-# def obtener_carreras(request):
-#     facultad_id = request.GET.get("facultad_id")
-#     carreras = Carrera.objects.filter(facultad_id=facultad_id).values(
-#         "id", "nombre_carrera"
-#     )
-#     return JsonResponse({"carreras": list(carreras)})
-
-
-# def obtener_ciclos(request):
-#     carrera_id = request.GET.get("carrera_id")
-#     ciclos = Ciclo.objects.filter(carrera_id=carrera_id).values("id", "nombre_ciclo")
-#     return JsonResponse({"ciclos": list(ciclos)})
-
-
-# def obtener_materias(request):
-#     ciclo_id = request.GET.get("ciclo_id")
-#     materias = Materia.objects.filter(ciclo_id=ciclo_id).values("id", "nombre_materia")
-#     return JsonResponse({"materias": list(materias)})
 
 
 def realizar_prediccion(request):
@@ -2639,7 +2506,7 @@ def ImportarDatoHistoricos(request):
         return JsonResponse({"success": False, "errors": [str(e)]})
 
 
-#Obtencion de los datos para la prediccion
+# Obtencion de los datos para la prediccion
 
 
 def obtener_carreras(request):
@@ -2666,35 +2533,116 @@ def seleccion_facultad(request):
     facultades = Facultad.objects.all()
     return render(request, "PrediccionMateria.html", {"facultades": facultades})
 
-def prediccion_desercion_runge_kutta(matriculados, parametros):
+
+def RungeKutta(matriculados, parametros):
     n = matriculados
-    h = 0.1  
+    h = 0.1
     k1 = k2 = k3 = k4 = 0
     tiempo = np.arange(0, 1 + h, h)
     desertores = np.zeros_like(tiempo)
 
     for i in range(1, len(tiempo)):
-        k1 = h * parametros['tasa_desercion'] * (n - desertores[i-1])
-        k2 = h * parametros['tasa_desercion'] * (n - desertores[i-1] - 0.5 * k1)
-        k3 = h * parametros['tasa_desercion'] * (n - desertores[i-1] - 0.5 * k2)
-        k4 = h * parametros['tasa_desercion'] * (n - desertores[i-1] - k3)
-        desertores[i] = desertores[i-1] + (k1 + 2*k2 + 2*k3 + k4) / 6
+        k1 = h * parametros["tasa_desercion"] * (n - desertores[i - 1])
+        k2 = h * parametros["tasa_desercion"] * (n - desertores[i - 1] - 0.5 * k1)
+        k3 = h * parametros["tasa_desercion"] * (n - desertores[i - 1] - 0.5 * k2)
+        k4 = h * parametros["tasa_desercion"] * (n - desertores[i - 1] - k3)
+        desertores[i] = desertores[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
 
     desertores_totales = desertores[-1]
     aprobados = int(0.6 * (n - desertores_totales))
     reprobados = int(0.4 * (n - desertores_totales))
     return [n, aprobados, reprobados, desertores_totales]
 
-def predecir_desercion(request):
-    if request.method == 'POST':
-        facultad_id = request.POST.get('facultad_id')
-        carrera_id = request.POST.get('carrera_id')
-        ciclo_id = request.POST.get('ciclo_id')
-        materia_id = request.POST.get('materia_id')
 
-        matriculados = 100  
-        parametros = {'tasa_desercion': 0.1}
+def PredecirDesercion(request):
+    if request.method == "POST":
+        materia_id = request.POST.get("materia_id")
 
-        prediccion = prediccion_desercion_runge_kutta(matriculados, parametros)
+        materia = Materia.objects.get(id=materia_id)
+        periodo_academico = materia.periodo_academico
 
-        return JsonResponse(prediccion, safe=False)
+        datos_historicos = DatosHistoricos.objects.filter(materia=materia)
+
+        if not datos_historicos.exists():
+            return JsonResponse(
+                {"error": "No hay datos históricos disponibles para esta materia."},
+                status=400,
+            )
+
+        promedio_matriculados = datos_historicos.aggregate(
+            Avg("cantidad_matriculados")
+        )["cantidad_matriculados__avg"]
+        promedio_aprobados = datos_historicos.aggregate(Avg("cantidad_aprobados"))[
+            "cantidad_aprobados__avg"
+        ]
+        promedio_reprobados = datos_historicos.aggregate(Avg("cantidad_reprobados"))[
+            "cantidad_reprobados__avg"
+        ]
+        promedio_desertores = datos_historicos.aggregate(Avg("cantidad_desertores"))[
+            "cantidad_desertores__avg"
+        ]
+
+        tasa_aprobacion = promedio_aprobados / promedio_matriculados
+        tasa_reprobacion = promedio_reprobados / promedio_matriculados
+        tasa_desercion = promedio_desertores / promedio_matriculados
+
+        matriculados_iniciales = int(promedio_matriculados)
+        unidades = materia.unidades
+        dias_periodo = (
+            periodo_academico.fecha_fin - periodo_academico.fecha_inicio
+        ).days
+
+        tiempo = np.linspace(0, dias_periodo, unidades + 2)
+        matriculados = np.zeros(len(tiempo))
+        aprobados = np.zeros(len(tiempo))
+        reprobados = np.zeros(len(tiempo))
+        desertores = np.zeros(len(tiempo))
+
+        matriculados[0] = matriculados_iniciales
+
+        for i in range(1, len(tiempo)):
+            delta_tiempo = tiempo[i] - tiempo[i - 1]
+            delta_desertores = (
+                tasa_desercion * matriculados[i - 1] * delta_tiempo / dias_periodo
+            )
+            delta_aprobados = (
+                tasa_aprobacion * matriculados[i - 1] * delta_tiempo / dias_periodo
+            )
+            delta_reprobados = (
+                tasa_reprobacion * matriculados[i - 1] * delta_tiempo / dias_periodo
+            )
+
+            desertores[i] = desertores[i - 1] + delta_desertores
+            aprobados[i] = aprobados[i - 1] + delta_aprobados
+            reprobados[i] = reprobados[i - 1] + delta_reprobados
+            matriculados[i] = (
+                matriculados[i - 1]
+                - delta_desertores
+                - delta_aprobados
+                - delta_reprobados
+            )
+
+        labels = [
+            f"Unidad {i}" if i > 0 and i <= unidades else fecha.strftime("%d/%m/%Y")
+            for i, fecha in enumerate(
+                [periodo_academico.fecha_inicio]
+                + [
+                    periodo_academico.fecha_inicio + timedelta(days=int(d))
+                    for d in tiempo[1:-1]
+                ]
+                + [periodo_academico.fecha_fin]
+            )
+        ]
+
+        data = {
+            "labels": labels,
+            "matriculados": matriculados.tolist(),
+            "aprobados": aprobados.tolist(),
+            "reprobados": reprobados.tolist(),
+            "desertores": desertores.tolist(),
+            "titulo": f"Predicción {periodo_academico.codigo_periodo_academico} - {materia.nombre_materia} (Ciclo {materia.ciclo.numero_ciclo})",
+        }
+
+        return JsonResponse(data)
+
+    return JsonResponse({"error": "Método no permitido"}, status=405)

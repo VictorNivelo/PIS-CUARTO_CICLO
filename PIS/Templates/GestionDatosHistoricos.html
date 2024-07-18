@@ -189,7 +189,7 @@
         }
 
         td.actions-column10 {
-            width: 135px;
+            width: 100px;
         }
 
         td.actions-column10 form {
@@ -220,8 +220,9 @@
         .form-group input[type="text"],
         .form-group input[type="date"],
         .form-group input[type="email"],
-        .form-group select,
-        .form-group input[type="number"] {
+        .form-group input[type="number"],
+        .form-group input[type="float"],
+        .form-group select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -267,10 +268,17 @@
             <table>
                 <thead>
                     <tr>
+                        <th>Materia</th>
                         <th>Matriculados</th>
                         <th>Aprobados</th>
                         <th>Reprovados</th>
                         <th>Desertores</th>
+                        <th>Modalidad</th>
+                        <th>Tipo de educacion</th>
+                        <th>Origen</th>
+                        <th>Trabajo</th>
+                        <th>Discapacidad</th>
+                        <th>Hijos</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -279,14 +287,46 @@
                         <form method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="datos_historicos_id" value="{{ datos_historicos.id }}">
-                            <td><input type="text" name="cantidad_matriculados"
+                            <!-- <td>
+                                <select name="materia">
+                                    {% for materia in materias %}
+                                    <option value="{{ materia.id }}"
+                                        {% if docente.id == datos_historicos.materia.id %}selected{% endif %}>
+                                        {{ datos_historicos.materia }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td> -->
+                            <td>
+                                <select name="materia">
+                                    {% for materia in materias %}
+                                    <option value="{{ materia.id }}"
+                                        {% if materia.id == datos_historicos.materia.id %}selected{% endif %}>
+                                        {{ materia.nombre_materia }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="actions-column10"><input type="number" name="cantidad_matriculados"
                                     value="{{ datos_historicos.cantidad_matriculados }}"></td>
-                            <td><input type="text" name="cantidad_aprobados"
+                            <td class="actions-column10"><input type="number" name="cantidad_aprobados"
                                     value="{{ datos_historicos.cantidad_aprobados }}"></td>
-                            <td><input type="text" name="cantidad_reprobados"
+                            <td class="actions-column10"><input type="number" name="cantidad_reprobados"
                                     value="{{ datos_historicos.cantidad_reprobados }}"></td>
-                            <td><input type="text" name="cantidad_desertores"
+                            <td class="actions-column10"><input type="number" name="cantidad_desertores"
                                     value="{{ datos_historicos.cantidad_desertores }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_modalidad"
+                                    value="{{ datos_historicos.promedio_modalidad }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_tipo_educacion"
+                                    value="{{ datos_historicos.promedio_tipo_educacion }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_origen"
+                                    value="{{ datos_historicos.promedio_origen }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_trabajo"
+                                    value="{{ datos_historicos.promedio_trabajo }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_discapacidad"
+                                    value="{{ datos_historicos.promedio_discapacidad }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_hijos"
+                                    value="{{ datos_historicos.promedio_hijos }}"></td>
                             <td class="actions-column">
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
                                 <form method="POST" style="display: inline-block; margin-left: 5px;">

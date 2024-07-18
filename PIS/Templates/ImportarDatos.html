@@ -137,13 +137,13 @@
     <div class="caja">
         <div class="form-wrapper">
             <h1 class="t">Importar Datos desde CSV</h1>
-            {% if messages %}
+            <!-- {% if messages %}
             <ul class="messages">
                 {% for message in messages %}
                 <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
                     {% endfor %}
             </ul>
-            {% endif %}
+            {% endif %} -->
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="form-group">

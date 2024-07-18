@@ -71,7 +71,7 @@ from .vistas import (
     ImportarDatoHistoricos,
 
     seleccion_facultad,
-    predecir_desercion,
+    PredecirDesercion,
 )
 
 urlpatterns = [
@@ -82,6 +82,7 @@ urlpatterns = [
     path("Pagina-Docente/", PaginaDocente, name="Pagina_Docente"),
     
     path("Registrar-Usuario/", RegistrarUsuario, name="Registrar_Usuario"),
+    path("Registrar-Estudiante/", RegistrarEstudiante, name="Registrar_Estudiante"),
     path("Registrar-TipoDNI/", RegistrarTipoDNI, name="Registrar_TipoDNI"),
     path("Registrar-Genero/", RegistrarGenero, name="Registrar_Genero"),
     path("Registrar-Universidad/", RegistrarUniversidad, name="Registrar_Universidad"),
@@ -91,30 +92,7 @@ urlpatterns = [
     path("Registrar-PeriodoAcademico/", RegistrarPeriodoAcademico, name="Registrar_PeriodoAcademico"),
     path("Registrar-Materia/", RegistrarMateria, name="Registrar_Materia"),
     path("Registrar-DatosHistorico/", RegistrarDatosHistorico, name="Registrar_DatosHistorico"),
-    path("Registrar-Estudiante/", RegistrarEstudiante, name="Registrar_Estudiante"),
-    
-    path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
-    path("Cerrar-Sesion/", CerrarSesion, name="Cerrar_Sesion"),
-    path("Recuperar-Contrasenia/", RecuperarContrasenia, name="Recuperar_Contrasenia"),
-    path("Cambiar-Contrasenia/<uidb64>/<token>/", CambiarContrasenia, name="Cambiar_Contrasenia"),
-    path("Correo-Enviado/<str:uidb64>/<str:token>/", CorreoEnviado, name="Correo_Enviado"),
-    
-    # path("Informe-Materia/", InformeMateria, name="Informe_Materia"),
-    # path("Informe-Ciclo/", InformeCiclo, name="Informe_Ciclo"),
-    # path("Informe-Carrera/", InformeCarrera, name="Informe_Carrera"),
-    
-    path("Informacion-1/", Informacion1, name="Informacion_1"),
-    path("Informacion-2/", Informacion2, name="Informacion_2"),
-    path("Informacion-3/", Informacion3, name="Informacion_3"),
-    path("Informacion-4/", Informacion4, name="Informacion_4"),
 
-    path("Grafico/", Grafico, name="Grafico"),
-    path("Galeria/", Galeria, name="Galeria"),
-    path("Prediccion/", Prediccion, name="Prediccion"),
-    path("PrediccionP/", PrediccionPresente, name="Prediccion_Presente"),
-    path("Reporte-Generado/", Reporte, name="Reporte_Generado"),
-    path("Cargar-Informe/", CargarInforme, name="Cargar_Informe"),
-    
     path("Gestion-Estudiante/", GestionEstudiante, name="Gestion_Estudiante"),
     path("Gestion-Usuarios/", GestionUsuario, name="Gestion_Usuario"),
     path("Gestion-TipoDNI/", GestionTipoDNI, name="Gestion_TipoDNI"),
@@ -127,6 +105,8 @@ urlpatterns = [
     path("Gestion-Materia/", GestionMateria, name="Gestion_Materia"),
     path("Gestion-DatosHistorico/", GestionDatosHistoricos, name="Gestion_DatosHistorico"),
 
+    path('Importar-Datos/', ImportarDatosModelo, name='Importar_Datos'),
+
     path('Importar-Usuario/',ImportarUsuario, name='Importar_Usuario'),
     path('Importar-Estudiante/',ImportarEstudiante, name='Importar_Estudiante'),
     path('Importar-Genero/',ImportarGenero, name='Importar_Genero'),
@@ -138,21 +118,33 @@ urlpatterns = [
     path("Importar-Materias/",ImportarMaterias, name="Importar_Materias"),
     path("Importar-PeriodoAcademicos/",ImportarPeriodoAcademicos, name="Importar_PeriodoAcademicos"),
     path("Importar-DatosHistoricos/",ImportarDatoHistoricos, name="Importar_DatosHistoricos"),
+    
+    path("Iniciar-Sesion/", IniciarSesion, name="Iniciar_Sesion"),
+    path("Cerrar-Sesion/", CerrarSesion, name="Cerrar_Sesion"),
+    path("Recuperar-Contrasenia/", RecuperarContrasenia, name="Recuperar_Contrasenia"),
+    path("Cambiar-Contrasenia/<uidb64>/<token>/", CambiarContrasenia, name="Cambiar_Contrasenia"),
+    path("Correo-Enviado/<str:uidb64>/<str:token>/", CorreoEnviado, name="Correo_Enviado"),
 
-    path("Predecir/", PredecirDesercion, name="Predecir_Desercion"),
+    # path("Predecir/", PredecirDesercion, name="Predecir_Desercion"),
 
-    path('obtener_carreras/', obtener_carreras, name='obtener_carreras'),
-    path('obtener_ciclos/', obtener_ciclos, name='obtener_ciclos'),
-    path('obtener_materias/', obtener_materias, name='obtener_materias'),
-    path('realizar_prediccion/', realizar_prediccion, name='realizar_prediccion'),
+    path('Predecir-Desercion/', PredecirDesercion, name='Predecir_Desercion'),
 
-    path('Importar-Datos/', ImportarDatosModelo, name='Importar_Datos'),
-
-    # path('seleccionar/', seleccionar_facultad_carrera_ciclo, name='seleccionar_facultad_carrera_ciclo'),
     path('Prediccion-Materia', seleccion_facultad, name='Prediccion_Materia'),
-    path('obtener_carreras/', obtener_carreras, name='obtener_carreras'),
-    path('obtener_ciclos/', obtener_ciclos, name='obtener_ciclos'),
-    path('obtener_materias/', obtener_materias, name='obtener_materias'),
+    path('Obtener-Carrera/', obtener_carreras, name='Obtener_Carreras'),
+    path('Obtener-Ciclo/', obtener_ciclos, name='Obtener_Ciclos'),
+    path('Obtener-materia/', obtener_materias, name='Obtener_Materias'),
 
-    path('Predecir-Desercion/', predecir_desercion, name='Predecir_Desercion'),
+    path('Realizar-Prediccion/', realizar_prediccion, name='realizar_prediccion'),
+
+    path("Grafico/", Grafico, name="Grafico"),
+    path("Prediccion/", Prediccion, name="Prediccion"),
+    path("PrediccionP/", PrediccionPresente, name="Prediccion_Presente"),
+    path("Reporte-Generado/", Reporte, name="Reporte_Generado"),
+    path("Cargar-Informe/", CargarInforme, name="Cargar_Informe"),
+
+    path("Informacion-1/", Informacion1, name="Informacion_1"),
+    path("Informacion-2/", Informacion2, name="Informacion_2"),
+    path("Informacion-3/", Informacion3, name="Informacion_3"),
+    path("Informacion-4/", Informacion4, name="Informacion_4"),
+    path("Galeria/", Galeria, name="Galeria"),
 ]
