@@ -44,6 +44,22 @@ Django:
 ```bash
 pip install Django
 ```
+Numpy:
+```bash
+pip install numpy
+```
+Scipy:
+```bash
+pip install scipy
+```
+Matplotlib:
+```bash
+pip install matplotlib
+```
+Chardet:
+```bash
+pip install chardet
+```
 Docx:
 ```bash
 pip install python-docx
@@ -59,12 +75,4 @@ pip install pdfplumber
 Openpyxl:
 ```bash
 pip install openpyxl
-```
-Matplotlib:
-```bash
-pip install matplotlib
-```
-Chardet:
-```bash
-pip install chardet
 ```

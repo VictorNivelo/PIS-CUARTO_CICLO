@@ -2534,33 +2534,48 @@ def seleccion_facultad(request):
     return render(request, "PrediccionMateria.html", {"facultades": facultades})
 
 
-def RungeKutta(matriculados, parametros):
-    n = matriculados
-    h = 0.1
-    k1 = k2 = k3 = k4 = 0
-    tiempo = np.arange(0, 1 + h, h)
-    desertores = np.zeros_like(tiempo)
+def RungeKutta(
+    matriculados,
+    tasa_desercion,
+    tasa_aprobacion,
+    tasa_reprobacion,
+    tiempo_total,
+    num_pasos,
+):
+    h = tiempo_total / (num_pasos - 1)
+    tiempo = np.linspace(0, tiempo_total, num_pasos)
+    resultados = np.zeros((4, num_pasos))
+    resultados[0, 0] = matriculados
 
-    for i in range(1, len(tiempo)):
-        k1 = h * parametros["tasa_desercion"] * (n - desertores[i - 1])
-        k2 = h * parametros["tasa_desercion"] * (n - desertores[i - 1] - 0.5 * k1)
-        k3 = h * parametros["tasa_desercion"] * (n - desertores[i - 1] - 0.5 * k2)
-        k4 = h * parametros["tasa_desercion"] * (n - desertores[i - 1] - k3)
-        desertores[i] = desertores[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    for i in range(1, num_pasos):
+        k1 = h * (-tasa_desercion * resultados[0, i - 1])
+        k2 = h * (-tasa_desercion * (resultados[0, i - 1] + 0.5 * k1))
+        k3 = h * (-tasa_desercion * (resultados[0, i - 1] + 0.5 * k2))
+        k4 = h * (-tasa_desercion * (resultados[0, i - 1] + k3))
 
-    desertores_totales = desertores[-1]
-    aprobados = int(0.6 * (n - desertores_totales))
-    reprobados = int(0.4 * (n - desertores_totales))
-    return [n, aprobados, reprobados, desertores_totales]
+        delta_matriculados = (k1 + 2 * k2 + 2 * k3 + k4) / 6
+        delta_desertores = -delta_matriculados
+        delta_aprobados = tasa_aprobacion * resultados[0, i - 1] * h
+        delta_reprobados = tasa_reprobacion * resultados[0, i - 1] * h
+
+        resultados[0, i] = (
+            resultados[0, i - 1]
+            + delta_matriculados
+            - delta_aprobados
+            - delta_reprobados
+        )
+        resultados[1, i] = resultados[1, i - 1] + delta_aprobados
+        resultados[2, i] = resultados[2, i - 1] + delta_reprobados
+        resultados[3, i] = resultados[3, i - 1] + delta_desertores
+
+    return resultados, tiempo
 
 
 def PredecirDesercion(request):
     if request.method == "POST":
         materia_id = request.POST.get("materia_id")
-
         materia = Materia.objects.get(id=materia_id)
         periodo_academico = materia.periodo_academico
-
         datos_historicos = DatosHistoricos.objects.filter(materia=materia)
 
         if not datos_historicos.exists():
@@ -2640,7 +2655,37 @@ def PredecirDesercion(request):
             "aprobados": aprobados.tolist(),
             "reprobados": reprobados.tolist(),
             "desertores": desertores.tolist(),
-            "titulo": f"Predicción {periodo_academico.codigo_periodo_academico} - {materia.nombre_materia} (Ciclo {materia.ciclo.numero_ciclo})",
+            "titulo": f"Predicción {periodo_academico.codigo_periodo_academico} - {materia.nombre_materia} (Ciclo {materia.ciclo.nombre_ciclo})",
+            "facultad": materia.ciclo.carrera.facultad.nombre_facultad,
+            "carrera": materia.ciclo.carrera.nombre_carrera,
+            "ciclo_nombre": materia.ciclo.nombre_ciclo,
+            "materia_nombre": materia.nombre_materia,
+            "periodo_inicio": periodo_academico.fecha_inicio.strftime("%d/%m/%Y"),
+            "periodo_fin": periodo_academico.fecha_fin.strftime("%d/%m/%Y"),
+            "promedio_modalidad": datos_historicos.aggregate(Avg("promedio_modalidad"))[
+                "promedio_modalidad__avg"
+            ]
+            or 0,
+            "promedio_tipo_educacion": datos_historicos.aggregate(
+                Avg("promedio_tipo_educacion")
+            )["promedio_tipo_educacion__avg"]
+            or 0,
+            "promedio_origen": datos_historicos.aggregate(Avg("promedio_origen"))[
+                "promedio_origen__avg"
+            ]
+            or 0,
+            "promedio_trabajo": datos_historicos.aggregate(Avg("promedio_trabajo"))[
+                "promedio_trabajo__avg"
+            ]
+            or 0,
+            "promedio_discapacidad": datos_historicos.aggregate(
+                Avg("promedio_discapacidad")
+            )["promedio_discapacidad__avg"]
+            or 0,
+            "promedio_hijos": datos_historicos.aggregate(Avg("promedio_hijos"))[
+                "promedio_hijos__avg"
+            ]
+            or 0,
         }
 
         return JsonResponse(data)
