@@ -2630,12 +2630,24 @@ def PredecirDesercion(request):
             desertores[i] = desertores[i - 1] + delta_desertores
             aprobados[i] = aprobados[i - 1] + delta_aprobados
             reprobados[i] = reprobados[i - 1] + delta_reprobados
-            matriculados[i] = (
-                matriculados[i - 1]
-                - delta_desertores
-                - delta_aprobados
-                - delta_reprobados
-            )
+            matriculados[i] = matriculados[i - 1] - delta_desertores
+
+        total_final = aprobados[-1] + reprobados[-1] + desertores[-1]
+        factor_ajuste = matriculados_iniciales / total_final
+
+        aprobados *= factor_ajuste
+        reprobados *= factor_ajuste
+        desertores *= factor_ajuste
+
+        matriculados_finales = int(matriculados[-1])
+        aprobados_finales = int(aprobados[-1])
+        reprobados_finales = int(reprobados[-1])
+        desertores_finales = int(desertores[-1])
+
+        diferencia = matriculados_iniciales - (
+            aprobados_finales + reprobados_finales + desertores_finales
+        )
+        aprobados_finales += diferencia
 
         labels = [
             f"Unidad {i}" if i > 0 and i <= unidades else fecha.strftime("%d/%m/%Y")
@@ -2686,6 +2698,11 @@ def PredecirDesercion(request):
                 "promedio_hijos__avg"
             ]
             or 0,
+            "matriculados_iniciales": matriculados_iniciales,
+            "matriculados_finales": matriculados_finales,
+            "aprobados_finales": aprobados_finales,
+            "reprobados_finales": reprobados_finales,
+            "desertores_finales": desertores_finales,
         }
 
         return JsonResponse(data)
