@@ -1,6 +1,6 @@
 class Usuario:
     def __init__(
-        self, tipo_dni, numero_dni, nombre, apellido, telefono, fecha_nacimiento, genero
+        self, tipo_dni, numero_dni, nombre, apellido, telefono, fecha_nacimiento, genero, cuenta
     ):
         self.tipo_dni = tipo_dni
         self.numero_dni = numero_dni
@@ -9,6 +9,7 @@ class Usuario:
         self.telefono = telefono
         self.fecha_nacimiento = fecha_nacimiento
         self.genero = genero
+        self.cuenta = cuenta
 
     def subir_informe(self, informe):
         return f"Informe '{informe}' subido con éxito por el usuario {self.nombre} {self.apellido}."

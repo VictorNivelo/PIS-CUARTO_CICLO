@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django import forms
 from .models import (
-    UsuarioPersonalizado,
+    Usuario,
     PeriodoAcademico,
     DatosHistoricos,
     Universidad,
@@ -102,14 +102,14 @@ class RegistrarUsuarioForm(UserCreationForm):
     )
 
     rol = forms.ChoiceField(
-        choices=UsuarioPersonalizado.ROLES,
+        choices=Usuario.ROLES,
         initial="Docente",
         required=False,
         label="Rol",
     )
 
     class Meta:
-        model = UsuarioPersonalizado
+        model = Usuario
         fields = [
             "username",
             "first_name",
@@ -287,7 +287,7 @@ class InicioSesionForm(AuthenticationForm):
     )
 
     class Meta:
-        model = UsuarioPersonalizado
+        model = Usuario
         fields = ["username", "password"]
 
 
@@ -299,7 +299,7 @@ class RecuperarContraseniaForm(forms.Form):
     )
 
     class Meta:
-        model = UsuarioPersonalizado
+        model = Usuario
         fields = ["username"]
 
 
@@ -321,7 +321,7 @@ class CambiarContraseniaForm(forms.ModelForm):
     )
 
     class Meta:
-        model = UsuarioPersonalizado
+        model = Usuario
         fields = ["Contrasenia", "Confirmar_contrasenia"]
 
     def clean(self):
@@ -347,7 +347,7 @@ class ModificarCorreoForm(forms.ModelForm):
     )
 
     class Meta:
-        model = UsuarioPersonalizado
+        model = Usuario
         fields = ["Correo"]
 
 
@@ -363,9 +363,9 @@ class ModificarRolUsuarioForm(forms.ModelForm):
     )
 
     class Meta:
-        model = UsuarioPersonalizado
+        model = Usuario
         fields = ["rol"]
-        widgets = {"rol": forms.Select(choices=UsuarioPersonalizado.ROLES)}
+        widgets = {"rol": forms.Select(choices=Usuario.ROLES)}
 
 
 class UniversidadForm(forms.ModelForm):
@@ -501,22 +501,6 @@ class CicloForm(forms.ModelForm):
         label="Nombre del Ciclo",
     )
 
-    fecha_inicio = forms.DateField(
-        widget=forms.DateInput(
-            attrs={"type": "date", "placeholder": "Ingrese la fecha de inicio"}
-        ),
-        required=True,
-        label="Fecha de Inicio",
-    )
-
-    fecha_fin = forms.DateField(
-        widget=forms.DateInput(
-            attrs={"type": "date", "placeholder": "Ingrese la fecha de fin"}
-        ),
-        required=True,
-        label="Fecha de Fin",
-    )
-
     carrera = forms.ModelChoiceField(
         queryset=Carrera.objects.all(),
         to_field_name="nombre_carrera",
@@ -525,12 +509,21 @@ class CicloForm(forms.ModelForm):
         label="Carrera",
     )
 
+    periodo_academico = forms.ModelChoiceField(
+        queryset=PeriodoAcademico.objects.all(),
+        to_field_name="codigo_periodo_academico",
+        empty_label="Seleccione un periodo académico",
+        required=True,
+        label="Periodo Académico",
+    )
+
     class Meta:
         model = Ciclo
         fields = [
             "nombre_ciclo",
-            "fecha_inicio",
-            "fecha_fin",
+            # "fecha_inicio",
+            # "fecha_fin",
+            "periodo_academico",
             "carrera",
         ]
 
@@ -561,7 +554,7 @@ class MateriaForm(forms.ModelForm):
     )
 
     docente_encargado = forms.ModelChoiceField(
-        queryset=UsuarioPersonalizado.objects.filter(rol="Docente"),
+        queryset=Usuario.objects.filter(rol="Docente"),
         to_field_name="username",
         empty_label="Seleccione un docente",
         required=True,
@@ -576,21 +569,6 @@ class MateriaForm(forms.ModelForm):
         label="Ciclo",
     )
 
-    periodo_academico = forms.ModelChoiceField(
-        queryset=PeriodoAcademico.objects.all(),
-        to_field_name="codigo_periodo_academico",
-        empty_label="Seleccione un periodo académico",
-        required=True,
-        label="Periodo Académico",
-    )
-
-    # datos_historicos = forms.ModelChoiceField(
-    #     queryset=Datos_Historicos.objects.all(),
-    #     to_field_name="codigo_datos_historicos",
-    #     empty_label="Seleccione datos historicos",
-    #     label="Datos Historicos",
-    # )
-
     class Meta:
         model = Materia
         fields = [
@@ -599,7 +577,6 @@ class MateriaForm(forms.ModelForm):
             "unidades",
             "docente_encargado",
             "ciclo",
-            "periodo_academico",
         ]
 
 

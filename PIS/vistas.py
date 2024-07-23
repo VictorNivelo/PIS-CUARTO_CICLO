@@ -36,7 +36,7 @@ import csv
 import re
 import os
 from PIS.models import (
-    UsuarioPersonalizado,
+    Usuario,
     PeriodoAcademico,
     DatosHistoricos,
     Universidad,
@@ -184,7 +184,7 @@ def RegistrarUsuario(request):
             try:
                 user = form.save(commit=False)
 
-                if UsuarioPersonalizado.objects.filter(username=user.username).exists():
+                if Usuario.objects.filter(username=user.username).exists():
                     return JsonResponse(
                         {
                             "status": "error",
@@ -192,7 +192,7 @@ def RegistrarUsuario(request):
                         }
                     )
 
-                if UsuarioPersonalizado.objects.filter(dni=user.dni).exists():
+                if Usuario.objects.filter(dni=user.dni).exists():
                     return JsonResponse(
                         {
                             "status": "error",
@@ -200,7 +200,7 @@ def RegistrarUsuario(request):
                         }
                     )
 
-                num_usuarios = UsuarioPersonalizado.objects.count()
+                num_usuarios = Usuario.objects.count()
                 if num_usuarios == 0:
                     user.is_superuser = True
                     user.is_staff = True
@@ -246,7 +246,7 @@ def GestionUsuario(request):
     filter_genero = request.GET.get("genero", "")
     filter_tipo_dni = request.GET.get("tipo_dni", "")
 
-    usuarios = UsuarioPersonalizado.objects.all()
+    usuarios = Usuario.objects.all()
     generos = Genero.objects.all()
     tipos_dni = TipoDNI.objects.all()
 
@@ -264,7 +264,7 @@ def GestionUsuario(request):
     if request.method == "POST":
         if "modify" in request.POST:
             user_id = request.POST.get("user_id")
-            usuario = UsuarioPersonalizado.objects.get(id=user_id)
+            usuario = Usuario.objects.get(id=user_id)
             usuario.username = request.POST.get("username")
             usuario.first_name = request.POST.get("first_name")
             usuario.last_name = request.POST.get("last_name")
@@ -291,7 +291,7 @@ def GestionUsuario(request):
             )
         elif "delete" in request.POST:
             user_id = request.POST.get("user_id")
-            usuario = UsuarioPersonalizado.objects.get(id=user_id)
+            usuario = Usuario.objects.get(id=user_id)
             usuario.delete()
             messages.success(request, "Usuario eliminado correctamente.")
         return redirect("Gestion_Usuario")
@@ -511,10 +511,10 @@ def RecuperarContrasenia(request):
         if form.is_valid():
             username_or_email = form.cleaned_data["username"]
             try:
-                user = UsuarioPersonalizado.objects.get(username=username_or_email)
+                user = Usuario.objects.get(username=username_or_email)
             except User.DoesNotExist:
                 try:
-                    user = UsuarioPersonalizado.objects.get(email=username_or_email)
+                    user = Usuario.objects.get(email=username_or_email)
                 except User.DoesNotExist:
                     messages.error(
                         request, "El usuario o correo electrónico no existe."
@@ -882,6 +882,7 @@ def GestionCiclo(request):
     query = request.GET.get("search_query", "")
     ciclos = Ciclo.objects.all()
     carreras = Carrera.objects.all()
+    periodosAcademicos = PeriodoAcademico.objects.all()
 
     if query:
         ciclos = ciclos.filter(Q(nombre_ciclo__icontains=query))
@@ -946,6 +947,7 @@ def GestionCiclo(request):
         {
             "ciclos": ciclos,
             "carreras": carreras,
+            "periodosAcademicos": periodosAcademicos,
             "query": query,
         },
     )
@@ -1045,7 +1047,7 @@ def GestionMateria(request):
     materias = Materia.objects.all()
     ciclos = Ciclo.objects.all()
     periodosAcademicos = PeriodoAcademico.objects.all()
-    docentes = UsuarioPersonalizado.objects.filter(rol="Docente")
+    docentes = Usuario.objects.filter(rol="Docente")
 
     if query:
         materias = materias.filter(Q(nombre_materia__icontains=query))
@@ -1064,7 +1066,7 @@ def GestionMateria(request):
 
             try:
                 periodo = PeriodoAcademico.objects.get(id=periodo_academico_id)
-                docente = UsuarioPersonalizado.objects.get(id=docente_encargado_id)
+                docente = Usuario.objects.get(id=docente_encargado_id)
                 ciclo = Ciclo.objects.get(id=ciclo_id)
 
                 materia.periodo_academico = periodo
@@ -1076,7 +1078,7 @@ def GestionMateria(request):
 
             except (
                 PeriodoAcademico.DoesNotExist,
-                UsuarioPersonalizado.DoesNotExist,
+                Usuario.DoesNotExist,
                 Ciclo.DoesNotExist,
             ):
                 messages.error(
@@ -1197,7 +1199,7 @@ ENTITY_MAPPING = {
     "carrera": Carrera,
     "ciclo": Ciclo,
     "materia": Materia,
-    "usuario": UsuarioPersonalizado,
+    "usuario": Usuario,
 }
 
 
@@ -1669,12 +1671,12 @@ def ImportarDatosCVS(model, csv_file):
     with transaction.atomic():
         for row in reader:
             try:
-                if model == UsuarioPersonalizado:
+                if model == Usuario:
                     genero = get_or_create_related(Genero, nombre_genero=row["genero"])
                     tipo_dni = get_or_create_related(
                         TipoDNI, nombre_tipo_dni=row["tipo_dni"]
                     )
-                    instance = UsuarioPersonalizado(
+                    instance = Usuario(
                         username=row["username"],
                         first_name=row["first_name"],
                         last_name=row["last_name"],
@@ -1766,7 +1768,7 @@ def ImportarDatosCVS(model, csv_file):
                         codigo_periodo_academico=row["periodo_academico"],
                     )
                     docente = get_or_create_related(
-                        UsuarioPersonalizado, username=row["docente_encargado"]
+                        Usuario, username=row["docente_encargado"]
                     )
                     ciclo = get_or_create_related(Ciclo, nombre_ciclo=row["ciclo"])
                     instance = Materia(
@@ -1833,7 +1835,7 @@ def ImportarDatosModelo(request):
             return redirect("Importar_Datos")
 
         model_map = {
-            "usuario": UsuarioPersonalizado,
+            "usuario": Usuario,
             "estudiante": Estudiante,
             "genero": Genero,
             "tipoDNI": TipoDNI,
@@ -1895,7 +1897,7 @@ def ImportarUsuario(request):
                     tipo_dni = get_or_create_related(
                         TipoDNI, nombre_tipo_dni=row["tipo_dni"]
                     )
-                    instance = UsuarioPersonalizado(
+                    instance = Usuario(
                         username=row["username"],
                         first_name=row["first_name"],
                         last_name=row["last_name"],
@@ -2356,7 +2358,7 @@ def ImportarMaterias(request):
                         codigo_periodo_academico=row["periodo_academico"],
                     )
                     docente = get_or_create_related(
-                        UsuarioPersonalizado, username=row["docente_encargado"]
+                        Usuario, username=row["docente_encargado"]
                     )
                     ciclo = get_or_create_related(Ciclo, nombre_ciclo=row["ciclo"])
                     instance = Materia(
@@ -2575,7 +2577,7 @@ def PredecirDesercion(request):
     if request.method == "POST":
         materia_id = request.POST.get("materia_id")
         materia = Materia.objects.get(id=materia_id)
-        periodo_academico = materia.periodo_academico
+        periodo_academico = materia.ciclo.periodo_academico
         datos_historicos = DatosHistoricos.objects.filter(materia=materia)
 
         if not datos_historicos.exists():

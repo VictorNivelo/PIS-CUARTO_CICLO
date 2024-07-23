@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class UsuarioPersonalizado(AbstractUser):
+class Usuario(AbstractUser):
 
     ROLES = [
         ("Personal Administrativo", "Personal Administrativo"),
@@ -213,10 +213,13 @@ class Carrera(models.Model):
 class Ciclo(models.Model):
     nombre_ciclo = models.CharField(max_length=100, verbose_name="Nombre")
     numero_ciclo = models.PositiveIntegerField(verbose_name="Número", unique=True)
-    fecha_inicio = models.DateField(verbose_name="Fecha de Inicio")
-    fecha_fin = models.DateField(verbose_name="Fecha de Fin")
+    # fecha_inicio = models.DateField(verbose_name="Fecha de Inicio")
+    # fecha_fin = models.DateField(verbose_name="Fecha de Fin")
     carrera = models.ForeignKey(
         Carrera, on_delete=models.CASCADE, verbose_name="Carrera"
+    )
+    periodo_academico = models.ForeignKey(
+        "PeriodoAcademico", on_delete=models.CASCADE, verbose_name="Período Académico"
     )
 
     def save(self, *args, **kwargs):
@@ -232,11 +235,11 @@ class Materia(models.Model):
     nombre_materia = models.CharField(max_length=100, verbose_name="Nombre")
     numero_horas = models.IntegerField(verbose_name="Número de Horas")
     unidades = models.IntegerField(null=True, blank=True, verbose_name="Unidades")
-    periodo_academico = models.ForeignKey(
-        "PeriodoAcademico", on_delete=models.CASCADE, verbose_name="Período Académico"
-    )
+    # periodo_academico = models.ForeignKey(
+    #     "PeriodoAcademico", on_delete=models.CASCADE, verbose_name="Período Académico"
+    # )
     docente_encargado = models.ForeignKey(
-        UsuarioPersonalizado,
+        Usuario,
         on_delete=models.CASCADE,
         verbose_name="Docente Encargado",
         limit_choices_to={"rol": "Docente"},
@@ -308,20 +311,6 @@ class DatosHistoricos(models.Model):
 
     def __str__(self):
         return f"{self.cantidad_matriculados} - {self.cantidad_aprobados} - {self.cantidad_reprobados} - {self.cantidad_desertores}"
-
-
-class Usuario(models.Model):
-    tipo_dni = models.CharField(max_length=20, verbose_name="Tipo de DNI")
-    numero_dni = models.CharField(max_length=10, verbose_name="Número de DNI")
-    nombre_usuario = models.CharField(max_length=100, verbose_name="Nombre de Usuario")
-    nombre = models.CharField(max_length=100, verbose_name="Nombre")
-    apellido = models.CharField(max_length=100, verbose_name="Apellido")
-    telefono = models.CharField(max_length=10, verbose_name="Teléfono")
-    fecha_nacimiento = models.DateField(verbose_name="Fecha de Nacimiento")
-    genero = models.CharField(max_length=1, verbose_name="Género")
-
-    def __str__(self):
-        return self.nombre_usuario
 
 
 class Rol(models.Model):

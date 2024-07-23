@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    UsuarioPersonalizado,
+    Usuario,
     PeriodoAcademico,
     DatosHistoricos,
     Universidad,
@@ -13,7 +13,7 @@ from .models import (
     Ciclo,
 )
 
-admin.site.register(UsuarioPersonalizado)
+admin.site.register(Usuario)
 admin.site.register(Estudiante)
 admin.site.register(Genero)
 admin.site.register(TipoDNI)
