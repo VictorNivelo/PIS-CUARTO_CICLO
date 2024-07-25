@@ -189,7 +189,7 @@
         }
 
         td.actions-column10 {
-            width: 135px;
+            width: 100px;
         }
 
         td.actions-column10 form {
@@ -220,8 +220,9 @@
         .form-group input[type="text"],
         .form-group input[type="date"],
         .form-group input[type="email"],
-        .form-group select,
-        .form-group input[type="number"] {
+        .form-group input[type="number"],
+        .form-group input[type="float"],
+        .form-group select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -267,31 +268,81 @@
             <table>
                 <thead>
                     <tr>
+                        <th>Materia</th>
+                        <th>Periodo academico</th>
                         <th>Matriculados</th>
                         <th>Aprobados</th>
                         <th>Reprovados</th>
                         <th>Desertores</th>
+                        <th>Modalidad</th>
+                        <th>Tipo de educacion</th>
+                        <th>Origen</th>
+                        <th>Trabajo</th>
+                        <th>Discapacidad</th>
+                        <th>Hijos</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for datos_historicos in datos_Historicos %}
+                    {% for datosHistoricos in DatosHistorico %}
                     <tr>
                         <form method="POST">
                             {% csrf_token %}
-                            <input type="hidden" name="datos_historicos_id" value="{{ datos_historicos.id }}">
-                            <td><input type="text" name="cantidad_matriculados"
-                                    value="{{ datos_historicos.cantidad_matriculados }}"></td>
-                            <td><input type="text" name="cantidad_aprobados"
-                                    value="{{ datos_historicos.cantidad_aprobados }}"></td>
-                            <td><input type="text" name="cantidad_reprobados"
-                                    value="{{ datos_historicos.cantidad_reprobados }}"></td>
-                            <td><input type="text" name="cantidad_desertores"
-                                    value="{{ datos_historicos.cantidad_desertores }}"></td>
+                            <input type="hidden" name="datosHistoricos_id" value="{{ datosHistoricos.id }}">
+                            <!-- <td>
+                                <select name="materia">
+                                    {% for materia in materias %}
+                                    <option value="{{ materia.id }}"
+                                        {% if docente.id == datosHistoricos.materia.id %}selected{% endif %}>
+                                        {{ datosHistoricos.materia }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td> -->
+                            <td>
+                                <select name="materia">
+                                    {% for materia in materias %}
+                                    <option value="{{ materia.id }}"
+                                        {% if materia.id == datosHistoricos.materia.id %}selected{% endif %}>
+                                        {{ materia.nombre_materia }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <select name="periodo_academico">
+                                    {% for periodoAcademico in periodosAcademico %}
+                                    <option value="{{ periodoAcademico.id }}"
+                                        {% if periodoAcademico.id == datosHistoricos.periodo_academico.id %}selected{% endif %}>
+                                        {{ periodoAcademico.codigo_periodo_academico }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="actions-column10"><input type="number" name="cantidad_matriculados"
+                                    value="{{ datosHistoricos.cantidad_matriculados }}"></td>
+                            <td class="actions-column10"><input type="number" name="cantidad_aprobados"
+                                    value="{{ datosHistoricos.cantidad_aprobados }}"></td>
+                            <td class="actions-column10"><input type="number" name="cantidad_reprobados"
+                                    value="{{ datosHistoricos.cantidad_reprobados }}"></td>
+                            <td class="actions-column10"><input type="number" name="cantidad_desertores"
+                                    value="{{ datosHistoricos.cantidad_desertores }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_modalidad"
+                                    value="{{ datosHistoricos.promedio_modalidad }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_tipo_educacion"
+                                    value="{{ datosHistoricos.promedio_tipo_educacion }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_origen"
+                                    value="{{ datosHistoricos.promedio_origen }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_trabajo"
+                                    value="{{ datosHistoricos.promedio_trabajo }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_discapacidad"
+                                    value="{{ datosHistoricos.promedio_discapacidad }}"></td>
+                            <td class="actions-column10"><input type="float" name="promedio_hijos"
+                                    value="{{ datosHistoricos.promedio_hijos }}"></td>
                             <td class="actions-column">
                                 <button type="submit" name="modify" class="btn-guardar">Guardar</button>
                                 <form method="POST" style="display: inline-block; margin-left: 5px;">
                                     {% csrf_token %}
-                                    <input type="hidden" name="datos_historicos_id" value="{{ datos_historicos.id }}">
+                                    <input type="hidden" name="datosHistoricos_id" value="{{ datosHistoricos.id }}">
                                     <button type="submit" name="delete" class="btn-eliminar">Eliminar</button>
                                 </form>
                             </td>

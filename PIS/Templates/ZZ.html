@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="../Static/styles/EstiloPaginasUsuarios.css"">
+    <link rel="stylesheet" href="../Static/styles/area.css"">
+
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+
+
+    <link rel="shortcut icon" href="../Static/Imagen/Iconos/LogoUnl.png" />
+
+    <title>SOL</title>
+
+    <style>
+        .menu-links .nav-link {
+            position: relative;
+        }
+
+        .submenu {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 0;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .nav-link:hover>.submenu {
+            display: block;
+        }
+
+        .submenu>li {
+            position: relative;
+        }
+
+        .submenu>li:hover>.submenu {
+            display: block;
+        }
+
+        .submenu a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .submenu a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .file-uploaded {
+            background-color: #ffd700 !important;
+            color: black !important;
+        }
+
+        .units-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .unit-section {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+        }
+
+        .results-table thead {
+            background-color: #f2f2f2;
+        }
+
+        .results-table tbody tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+
+        .results-table tbody tr:hover {
+            background-color: #e6e6e6;
+        }
+
+        .form-group button,
+        #buttons-container button {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .form-group button:hover,
+        #buttons-container button:hover {
+            background-color: #45a049;
+        }
+
+        #buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            padding: 10px;
+            margin: 2px;
+            background-color: #008cba;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .action-button:hover {
+            background-color: #007b9a;
+        }
+
+        .category-a {
+            background-color: #00bfff;
+        }
+
+        .category-b {
+            background-color: #00ff00;
+        }
+
+        .category-c {
+            background-color: #ffff00;
+        }
+
+        .category-d {
+            background-color: #ff0000;
+        }
+
+        .matricula-1 {
+            background-color: #00ff00;
+        }
+
+        .matricula-2 {
+            background-color: #ffff00;
+        }
+
+        .matricula-3 {
+            background-color: #ff0000;
+        }
+
+        .results-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+        }
+
+        .results-table .action-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .results-table .action-buttons button {
+            padding: 10px;
+            background-color: #008cba;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+
+        .results-table .action-buttons button:hover {
+            background-color: #007b9a;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        #filter-form {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #filter-form label {
+            font-weight: bold;
+        }
+
+        #filter-form select,
+        #filter-form button {
+            padding: 10px;
+            font-size: 0.9em;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        #filtered-results-container {
+            margin-top: 20px;
+        }
+
+        #filtered-results-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #filtered-results-container th,
+        #filtered-results-container td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+        }
+
+        #filtered-results-container thead {
+            background-color: #f2f2f2;
+        }
+
+        #filtered-results-container tbody tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+
+        #filtered-results-container tbody tr:hover {
+            background-color: #e6e6e6;
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <nav class="sidebar close">
+        <header>
+            <div class="image-text">
+                <span class="image">
+                    <img href="../Static/Imagen/Iconos/LogoUnl.png" alt="">
+                </span>
+
+                <div class="text logo-text">
+                    <span class="name">PaginaDocente</span>
+                    <span class="profession">Docente</span>
+                </div>
+            </div>
+
+            <i class='bx bx-chevron-right toggle'></i>
+        </header>
+
+        <div class="menu-bar">
+            <div class="menu">
+                <ul class="menu-links">
+                    <li class="search-box">
+                        <i class='bx bx-search icon'></i>
+                        <input type="text" placeholder="Buscar...">
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Importar_Datos' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Importar de datos</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Gestion_Usuario' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Gestión de usuario</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Gestion_Universidad' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Gestión de universidad</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Gestion_Facultad' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Gestión de facultad</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Gestion_Carrera' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Gestión de carrera</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Gestion_Ciclo' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Gestión de ciclo</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Gestion_Materia' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Gestión de materia</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Gestion_PeriodoAcademico' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Gestión de periodo</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Gestion_Genero' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Gestión de genero</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="{% url 'Gestion_TipoDNI' %}">
+                            <i class='bx bxs-graduation icon'></i>
+                            <span class="text nav-text">Gestión de tipos de DNI</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bottom-content">
+                <ul>
+                    <li>
+                        <a href="/logout">
+                            <i class='bx bx-log-out icon'></i>
+                            <span class="text nav-text">Logout</span>
+                        </a>
+                    </li>
+
+                    <li class="mode">
+                        <div class="sun-moon">
+                            <i class='bx bx-moon icon moon'></i>
+                            <i class='bx bx-sun icon sun'></i>
+                        </div>
+                        <span class="mode-text text">Dark mode</span>
+                        <div class="toggle-switch">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="home">
+        
+
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../Static/scripts/ScriptInterfaces.js"></script>
+    <script src="../Static/scripts/area.js"></script>
+
+
+    <script>
+        let unidadData = {};
+
+        function downloadExcel() {
+            const workbook = XLSX.utils.book_new();
+
+            // Agregar hojas para cada unidad
+            for (let unidad = 1; unidad <= 3; unidad++) {
+                if (unidadData[`unidad${unidad}`]) {
+                    const worksheet = XLSX.utils.json_to_sheet(unidadData[`unidad${unidad}`]);
+                    XLSX.utils.book_append_sheet(workbook, worksheet, `Unidad ${unidad}`);
+                }
+            }
+
+            // Crear la hoja de resumen final
+            const finalData = [];
+            const students = {};
+
+            for (let unidad = 1; unidad <= 3; unidad++) {
+                if (unidadData[`unidad${unidad}`]) {
+                    unidadData[`unidad${unidad}`].forEach(row => {
+                        const key = `${row.Nombre} ${row.Apellido}`;
+                        if (!students[key]) {
+                            students[key] = {
+                                Id: row.Id,
+                                Nombre: row.Nombre,
+                                Apellido: row.Apellido,
+                                Matricula: row.Matricula,
+                                totales: [null, null, null]
+                            };
+                        }
+                        students[key].totales[unidad - 1] = parseFloat(row['Total Unidad']);
+                    });
+                }
+            }
+
+            Object.values(students).forEach(info => {
+                const validTotales = info.totales.filter(t => t !== null);
+                const promedioFinal = validTotales.length > 0 ? validTotales.reduce((a, b) => a + b, 0) / validTotales.length : 0;
+                const categoriaFinal = obtenerCategoria(promedioFinal);
+                const necesitaSupletorio = info.totales.some(total => total < 7) ? 'Sí' : 'No';
+
+                finalData.push({
+                    'Id': info.Id,
+                    'Nombre': info.Nombre,
+                    'Apellido': info.Apellido,
+                    'Matricula': info.Matricula,
+                    'Total Unidad 1': info.totales[0] !== null ? info.totales[0].toFixed(2) : 'N/A',
+                    'Total Unidad 2': info.totales[1] !== null ? info.totales[1].toFixed(2) : 'N/A',
+                    'Total Unidad 3': info.totales[2] !== null ? info.totales[2].toFixed(2) : 'N/A',
+                    'Promedio Final': promedioFinal.toFixed(2),
+                    'Categoría Final': categoriaFinal.text,
+                    'Supletorio': necesitaSupletorio,
+                });
+            });
+
+            const finalWorksheet = XLSX.utils.json_to_sheet(finalData);
+            XLSX.utils.book_append_sheet(workbook, finalWorksheet, 'Resumen Final');
+
+            XLSX.writeFile(workbook, 'Reporte_Estudiantes.xlsx');
+        }
+
+        function obtenerCategoria(promedio) {
+            promedio = parseFloat(promedio);
+            if (isNaN(promedio) || promedio < 5) return { text: 'D', color: 'category-d' };
+            if (promedio >= 8.5) return { text: 'A', color: 'category-a' };
+            if (promedio >= 7.5) return { text: 'B', color: 'category-b' };
+            if (promedio >= 5) return { text: 'C', color: 'category-c' };
+            return { text: 'D', color: 'category-d' };
+        }
+
+        function uploadExcel(unidad) {
+            document.getElementById(`file-upload-${unidad}`).click();
+        }
+
+        function handleFileSelect(unidad) {
+            const fileInput = document.getElementById(`file-upload-${unidad}`);
+            if (fileInput.files.length > 0) {
+                updateExcelButton(unidad, true);
+                handleFileUpload(unidad, fileInput.files[0]);
+            }
+        }
+
+        function updateExcelButton(unidad, fileUploaded) {
+            const button = document.getElementById(`upload-button-${unidad}`);
+            if (fileUploaded) {
+                button.textContent = `Actualizar Excel para Unidad ${unidad}`;
+                button.classList.add('file-uploaded');
+            } else {
+                button.textContent = `Elegir Excel para Unidad ${unidad}`;
+                button.classList.remove('file-uploaded');
+            }
+        }
+
+        function handleFileUpload(unidad, file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet, { range: 8 });
+
+                json.forEach(row => {
+                    row['Apellido'] = row['Apellido(s)'] || row['Apellido'];
+                    row['Matricula'] = row['Matricula'];
+                    row['Total ACD'] = row['Total ACD'] || row['Total ACD1'] || row['Total ACD2'] || row['Total ACD3'];
+                    row['Total AA'] = row['Total AA'] || row['Total AA1'] || row['Total AA2'] || row['Total AA3'];
+                    row['Total APE'] = row['Total APE'] || row['Total APE1'] || row['Total APE2'] || row['Total APE3'];
+                    row['Total ES'] = row['Total ES'] || row['Total ES1'] || row['Total ES2'] || row['Total ES3'];
+                    row['Total Unidad'] = row['Total Unidad'] || row['Total Unidad 1'] || row['Total Unidad 2'] || row['Total Unidad 3'];
+
+                    row['Categoria'] = obtenerCategoria(row['Total Unidad']).text;
+                    row['Comentario'] = row['Comentario'] || '';
+                });
+
+                unidadData[`unidad${unidad}`] = json;
+
+                updateTable(unidad, json);
+
+                if (Object.keys(unidadData).length === 3) {
+                    createFinalTable();
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function updateTable(unidad, data) {
+            const tableContainer = document.getElementById(`table-container-${unidad}`);
+            tableContainer.innerHTML = '';
+            const table = document.createElement('table');
+            table.classList.add('results-table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+
+            thead.innerHTML = `
+        <tr>
+            <th>ID</th>
+            <th>Matricula</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Total ACD</th>
+            <th>Total AA</th>
+            <th>Total APE</th>
+            <th>Total ES</th>
+            <th>Total Unidad</th>
+            <th>Categoría</th>
+            <th>Comentario</th>
+            <th>Acciones</th>
+        </tr>
+    `;
+
+            data.forEach(row => {
+                const matriculaClass = `matricula-${row.Matricula}`;
+                const rowElement = document.createElement('tr');
+                rowElement.innerHTML = `
+            <td>${row.Id}</td>
+            <td class="${matriculaClass}">${row.Matricula}</td>    
+            <td>${row.Nombre}</td>
+            <td>${row.Apellido}</td>
+            <td>${row['Total ACD'] || 0}</td>
+            <td>${row['Total AA'] || 0}</td>
+            <td>${row['Total APE'] || 0}</td>
+            <td>${row['Total ES'] || 0}</td>
+            <td>${row['Total Unidad'] || 0}</td>
+            <td class="category-${obtenerCategoria(row['Total Unidad']).text.toLowerCase()}">${obtenerCategoria(row['Total Unidad']).text}</td>
+            <td>${row.Comentario || ''}</td>
+            <td class="action-buttons">
+                <button class="action-button update-btn" onclick="updateStudent('${row.Id}')">
+                    <i class="bx bx-edit"></i>
+                </button>
+                <button class="action-button delete-btn" onclick="deleteStudent('${row.Id}')">
+                    <i class="bx bx-trash"></i>
+                </button>
+                <button onclick="addComment(${unidad}, '${row.Id}')">Observacion</button>
+                <button onclick="getPrediction('${row.Id}')">Predicción</button>
+            </td>
+        `;
+                tbody.appendChild(rowElement);
+            });
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            tableContainer.appendChild(table);
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.classList.add('button-container');
+            buttonContainer.innerHTML = `
+        <button class="action-button download-btn" onclick="downloadExcelUnit(${unidad})">
+            <i class="bx bx-download"></i> Descargar Excel Unidad ${unidad}
+        </button>
+        <button class="action-button send-btn" onclick="sendReport(${unidad})">
+            <i class="bx bx-send"></i> Enviar Datos Unidad ${unidad}
+        </button>
+    `;
+            tableContainer.appendChild(buttonContainer);
+            if (Object.keys(unidadData).length === 3) {
+                updateFinalTable();
+            }
+            checkAllUnitsUploaded();
+        }
+
+        function updateFinalTable() {
+            const finalTableContainer = document.getElementById('final-table-container');
+            if (finalTableContainer) {
+                finalTableContainer.innerHTML = '<h2>Tabla Final</h2>';
+                createFinalTable();
+            } else {
+                createFinalTable();
+            }
+        }
+
+        function checkAllUnitsUploaded() {
+            if (Object.keys(unidadData).length === 3) {
+                const finalButtonsContainer = document.getElementById('buttons-container');
+                finalButtonsContainer.innerHTML = `
+            <button class="action-button download-btn" onclick="downloadExcel()">
+                <i class="bx bx-download"></i> Descargar Excel
+            </button>
+            </button>
+            <button class="action-button chart-btn" onclick="generateChart()">
+                <i class="bx bx-bar-chart-alt-2"></i> Generar Gráfica
+            </button>
+            <button class="action-button send-btn" onclick="sendReport('final')">
+                <i class="bx bx-send"></i> Enviar reporte final
+            </button>
+        `;
+                finalButtonsContainer.style.display = 'flex';
+            }
+        }
+
+        function addComment(unidad, id) {
+            Swal.fire({
+                title: 'Ingrese un comentario para este estudiante:',
+                input: 'textarea',
+                inputLabel: 'Comentario',
+                inputPlaceholder: 'Escribe aquí...',
+                inputAttributes: {
+                    'aria-label': 'Escribe tu comentario aquí'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Guardar',
+                cancelButtonText: 'Cancelar',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return '¡El comentario no puede estar vacío!';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const comment = result.value;
+                    if (!unidadData[`unidad${unidad}`]) {
+                        unidadData[`unidad${unidad}`] = [];
+                    }
+                    const studentIndex = unidadData[`unidad${unidad}`].findIndex(s => s.Id.toString() === id);
+                    if (studentIndex !== -1) {
+                        unidadData[`unidad${unidad}`][studentIndex].Comentario = comment;
+                        updateTable(unidad, unidadData[`unidad${unidad}`]);
+                    }
+                }
+            });
+        }
+
+        function downloadExcelUnit(unidad) {
+            const workbook = XLSX.utils.book_new();
+            const data = unidadData[`unidad${unidad}`].map(row => ({
+                Id: row.Id,
+                Matricula: row.Matricula,
+                Nombre: row.Nombre,
+                Apellido: row.Apellido,
+                'Total ACD': row['Total ACD'],
+                'Total AA': row['Total AA'],
+                'Total APE': row['Total APE'],
+                'Total ES': row['Total ES'],
+                'Total Unidad': row['Total Unidad'],
+                Categoria: row.Categoria,
+                Comentario: row.Comentario || ''
+            }));
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            XLSX.utils.book_append_sheet(workbook, worksheet, `Unidad ${unidad}`);
+            XLSX.writeFile(workbook, `Reporte_Unidad_${unidad}.xlsx`);
+        }
+
+        function sendDataUnit(unidad) {
+            console.log(`Enviando datos de Unidad ${unidad}:`, unidadData[`unidad${unidad}`]);
+            alert(`Datos de Unidad ${unidad} enviados correctamente`);
+        }
+
+        function createFinalTable() {
+            const finalTableContainer = document.createElement('div');
+            finalTableContainer.id = 'final-table-container';
+            finalTableContainer.innerHTML = '<h2>Tabla Final</h2>';
+
+            const table = document.createElement('table');
+            table.classList.add('results-table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+
+            thead.innerHTML = `
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Matricula</th>
+            <th>Total Unidad 1</th>
+            <th>Total Unidad 2</th>
+            <th>Total Unidad 3</th>
+            <th>Promedio Final</th>
+            <th>Categoría Final</th>
+            <th>Supletorio</th>
+        </tr>
+    `;
+
+            const students = {};
+
+            for (let unidad = 1; unidad <= 3; unidad++) {
+                if (unidadData[`unidad${unidad}`]) {
+                    unidadData[`unidad${unidad}`].forEach(row => {
+                        const key = `${row.Nombre} ${row.Apellido}`;
+
+                        if (!students[key]) {
+                            students[key] = {
+                                Id: row.Id,
+                                Nombre: row.Nombre,
+                                Apellido: row.Apellido,
+                                Matricula: row.Matricula,
+                                totales: [null, null, null]
+                            };
+                        }
+
+                        students[key].totales[unidad - 1] = parseFloat(row['Total Unidad']) || 0;
+                    });
+                }
+            }
+
+            Object.entries(students).forEach(([key, info]) => {
+                const validTotales = info.totales.filter(t => t !== null && !isNaN(t));
+                const promedioFinal = validTotales.length > 0 ? validTotales.reduce((a, b) => a + b, 0) / validTotales.length : 0;
+                const categoriaFinal = obtenerCategoria(promedioFinal);
+                const necesitaSupletorio = info.totales.some(total => total !== null && !isNaN(total) && total < 7) || promedioFinal < 7 ? 'Sí' : 'No';
+
+                const rowElement = document.createElement('tr');
+                rowElement.innerHTML = `
+            <td>${info.Id}</td>
+            <td>${info.Nombre}</td>
+            <td>${info.Apellido}</td>
+            <td>${info.Matricula}</td>
+            <td>${info.totales[0] !== null && !isNaN(info.totales[0]) ? info.totales[0].toFixed(2) : 'N/A'}</td>
+            <td>${info.totales[1] !== null && !isNaN(info.totales[1]) ? info.totales[1].toFixed(2) : 'N/A'}</td>
+            <td>${info.totales[2] !== null && !isNaN(info.totales[2]) ? info.totales[2].toFixed(2) : 'N/A'}</td>
+            <td>${promedioFinal.toFixed(2)}</td>
+            <td class="${categoriaFinal.color}">${categoriaFinal.text}</td>
+            <td>${necesitaSupletorio}</td>
+        `;
+                tbody.appendChild(rowElement);
+            });
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            finalTableContainer.appendChild(table);
+
+            const existingFinalTable = document.getElementById('final-table-container');
+            if (existingFinalTable) {
+                existingFinalTable.replaceWith(finalTableContainer);
+            } else {
+                document.querySelector('.units-container').appendChild(finalTableContainer);
+            }
+        }
+
+        function deleteStudent(id) {
+            for (let unidad = 1; unidad <= 3; unidad++) {
+                if (unidadData[`unidad${unidad}`]) {
+                    unidadData[`unidad${unidad}`] = unidadData[`unidad${unidad}`].filter(student => student.Id.toString() !== id);
+                    updateTable(unidad, unidadData[`unidad${unidad}`]);
+                }
+            }
+            if (Object.keys(unidadData).length === 3) {
+                createFinalTable();
+            }
+        }
+
+        function applyFilter() {
+            const category = document.getElementById('average-select').value;
+            const matricula = document.getElementById('matricula-select').value;
+
+            let filteredData = [];
+            for (let unidad = 1; unidad <= 3; unidad++) {
+                if (unidadData[`unidad${unidad}`]) {
+                    const unitFilteredData = unidadData[`unidad${unidad}`].filter(student => {
+                        const studentCategory = obtenerCategoria(student['Total Unidad'] || 0).text;
+                        return (!category || studentCategory === category) &&
+                            (!matricula || student.Matricula.toString() === matricula);
+                    });
+                    filteredData = filteredData.concat(unitFilteredData.map(student => ({ ...student, Unidad: unidad })));
+                }
+            }
+
+            updateTableWithFilter(filteredData);
+        }
+
+        function updateTableWithFilter(data) {
+            const tableContainer = document.getElementById('filtered-results-container');
+            tableContainer.innerHTML = '';
+
+            if (data.length === 0) {
+                tableContainer.innerHTML = '<p>No se encontraron resultados.</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.classList.add('results-table');
+
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+        <tr>
+            <th>Matricula</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Total Unidad</th>
+            <th>Categoría</th>
+            <th>Unidad</th>
+        </tr>
+    `;
+
+            const tbody = document.createElement('tbody');
+
+            data.forEach(student => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+            <td>${student.Matricula}</td>
+            <td>${student.Nombre}</td>
+            <td>${student.Apellido}</td>
+            <td>${student['Total Unidad'].toFixed(2)}</td>
+            <td class="category-${student.Categoria.toLowerCase()}">${student.Categoria}</td>
+            <td>Unidad ${student.Unidad}</td>
+        `;
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            tableContainer.appendChild(table);
+        }
+
+        function sendReport(type) {
+            const cycleSelect = document.getElementById('cycle-select');
+            const subjectSelect = document.getElementById('subject-select');
+
+            let reportData;
+
+            if (type === 'final') {
+                reportData = {
+                    type: type,
+                    cycle: cycleSelect.value,
+                    subject: subjectSelect.value,
+                    data: unidadData
+                };
+            } else {
+                const unitNumber = type;
+                reportData = {
+                    type: `unidad${unitNumber}`,
+                    cycle: cycleSelect.value,
+                    subject: subjectSelect.value,
+                    data: unidadData[`unidad${unitNumber}`]
+                };
+            }
+
+            fetch('/login/moduloDocentes/send_report', {
+                method: 'POST',
+                body: JSON.stringify(reportData),
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Éxito',
+                            text: 'Reporte enviado correctamente'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al enviar el reporte: ' + (data.message || 'Error desconocido')
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al enviar el reporte'
+                    });
+                });
+        }
+
+        function getPrediction(id) {
+            const studentUnidad1 = unidadData.unidad1 ? unidadData.unidad1.find(s => s.Id.toString() === id) : null;
+            const studentUnidad2 = unidadData.unidad2 ? unidadData.unidad2.find(s => s.Id.toString() === id) : null;
+            const studentUnidad3 = unidadData.unidad3 ? unidadData.unidad3.find(s => s.Id.toString() === id) : null;
+
+            let mensaje = '';
+            let notaNecesaria1 = 0;
+            let notaNecesaria2 = 0;
+            let icon = 'info';
+
+            const getTotalUnidad = (student) => student ? parseFloat(student['Total Unidad']) || 0 : 0;
+
+            const unidad1Total = getTotalUnidad(studentUnidad1);
+            const unidad2Total = getTotalUnidad(studentUnidad2);
+            const unidad3Total = getTotalUnidad(studentUnidad3);
+
+            if (studentUnidad1 && studentUnidad2 && studentUnidad3) {
+                const sumaTotal = unidad1Total + unidad2Total + unidad3Total;
+                if (sumaTotal >= 21) {
+                    mensaje = 'Aprobado';
+                    icon = 'success';
+                } else {
+                    mensaje = 'Supletorio';
+                    icon = 'error';
+                }
+            }
+            else if (studentUnidad2 && studentUnidad3) {
+                notaNecesaria1 = Math.max(0, 21 - unidad2Total - unidad3Total);
+                if (notaNecesaria1 > 10) {
+                    mensaje = 'Supletorio';
+                    icon = 'error';
+                } else {
+                    mensaje = `Necesita sacar ${notaNecesaria1.toFixed(2)} en la Unidad 1 para aprobar`;
+                    icon = 'info';
+                }
+            }
+            else if (studentUnidad1 && studentUnidad3) {
+                notaNecesaria1 = Math.max(0, 21 - unidad1Total - unidad3Total);
+                if (notaNecesaria1 > 10) {
+                    mensaje = 'Supletorio';
+                    icon = 'error';
+                } else {
+                    mensaje = `Necesita sacar ${notaNecesaria1.toFixed(2)} en la Unidad 2 para aprobar`;
+                    icon = 'info';
+                }
+            }
+            else if (studentUnidad1 && studentUnidad2) {
+                notaNecesaria1 = Math.max(0, 21 - unidad1Total - unidad2Total);
+                if (notaNecesaria1 > 10) {
+                    mensaje = 'Supletorio';
+                    icon = 'error';
+                } else {
+                    mensaje = `Necesita sacar ${notaNecesaria1.toFixed(2)} en la Unidad 3 para aprobar`;
+                    icon = 'info';
+                }
+            }
+            else if (studentUnidad3) {
+                notaNecesaria1 = Math.max(0, (21 - unidad3Total) / 2);
+                if (notaNecesaria1 > 10) {
+                    mensaje = 'Supletorio';
+                    icon = 'error';
+                } else {
+                    mensaje = `Necesita sacar ${notaNecesaria1.toFixed(2)} en la Unidad 1 y ${notaNecesaria1.toFixed(2)} en la Unidad 2 para aprobar`;
+                    icon = 'info';
+                }
+            }
+            else if (studentUnidad2) {
+                notaNecesaria1 = Math.max(0, (21 - unidad2Total) / 2);
+                if (notaNecesaria1 > 10) {
+                    mensaje = 'Supletorio';
+                    icon = 'error';
+                } else {
+                    mensaje = `Necesita sacar ${notaNecesaria1.toFixed(2)} en la Unidad 1 y ${notaNecesaria1.toFixed(2)} en la Unidad 3 para aprobar`;
+                    icon = 'info';
+                }
+            }
+            else if (studentUnidad1) {
+                notaNecesaria1 = Math.max(0, (21 - unidad1Total) / 2);
+                if (notaNecesaria1 > 10) {
+                    mensaje = 'Supletorio';
+                    icon = 'error';
+                } else {
+                    mensaje = `Necesita sacar ${notaNecesaria1.toFixed(2)} en la Unidad 2 y ${notaNecesaria1.toFixed(2)} en la Unidad 3 para aprobar`;
+                    icon = 'info';
+                }
+            }
+            else {
+                mensaje = 'No hay suficientes datos para hacer una predicción';
+                icon = 'warning';
+            }
+
+            Swal.fire({
+                icon: icon,
+                title: 'Predicción',
+                text: mensaje
+            });
+        }
+
+        function generateChart() {
+            const unidades = ['Unidad 1', 'Unidad 2', 'Unidad 3'];
+            const categorias = ['A', 'B', 'C', 'D'];
+            const colors = ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)'];
+            const borderColors = ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)'];
+
+            const data = unidades.map((unidad, index) => {
+                const unitData = unidadData[`unidad${index + 1}`] || [];
+                return {
+                    unidad: unidad,
+                    categorias: categorias.map(categoria => ({
+                        categoria: categoria,
+                        valor: unitData.filter(student => obtenerCategoria(student['Total Unidad']).text === categoria).length
+                    }))
+                };
+            });
+
+            const datasets = categorias.map((categoria, index) => ({
+                label: categoria,
+                data: data.map(d => d.categorias[index].valor),
+                backgroundColor: colors[index],
+                borderColor: borderColors[index],
+                borderWidth: 1
+            }));
+
+            const modalHtml = `
+        <div id="chartModal" style="position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center;">
+            <div style="background-color: white; padding: 20px; border-radius: 5px; width: 90%; max-width: 800px; overflow-y: auto;">
+                <h2>Seguimiento Rendimiento Estudiantil</h2>
+                <canvas id="myChart"></canvas>
+                <button onclick="document.getElementById('chartModal').remove()" style="margin-top: 10px;">Cerrar</button>
+            </div>
+        </div>
+    `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const ctx = document.getElementById('myChart').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: unidades,
+                    datasets: datasets
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getColorForCategory(category) {
+            switch (category) {
+                case 'A': return '#00bfff';
+                case 'B': return '#00ff00';
+                case 'C': return '#ffff00';
+                case 'D': return '#ff0000';
+                default: return '#808080';
+            }
+        }
+
+        function downloadReport(reportId) {
+            window.location.href = `/download_report/${reportId}`;
+        }
+
+        function viewReport(reportId) {
+            window.open(`/view_report/${reportId}`, '_blank');
+        }
+
+        function updateStudent(matricula) {
+            alert(`actualizan el estudiante por medio de su id ${matricula}`);
+        }
+
+        document.getElementById('generate-chart-button').addEventListener('click', generateChart);
+
+
+    </script>
+</body>
+
+</html>

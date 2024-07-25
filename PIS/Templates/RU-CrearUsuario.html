@@ -380,7 +380,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Contraseña no segura',
-                    text: 'La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.',
+                    text: 'La contraseña debe tener al menos 8 caracteres, sin caracteres especiales, incluyendo una mayúscula, una minúscula y un número.',
                 });
                 return false;
             }
@@ -445,9 +445,11 @@
                             }
                         });
                     } else {
-                        let errorMessage = data.message;
-                        if (data.errors) {
-                            errorMessage += '\n' + data.errors.join('\n');
+                        let errorMessage = '';
+                        if (data.errors && Array.isArray(data.errors)) {
+                            errorMessage = data.errors.join('\n');
+                        } else if (data.message) {
+                            errorMessage = data.message;
                         }
                         Swal.fire({
                             title: 'Error',

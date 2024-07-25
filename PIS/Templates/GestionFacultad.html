@@ -272,6 +272,7 @@
                 <thead>
                     <tr>
                         <th>Nombre de la facultad</th>
+                        <th>Abreviación</th>
                         <th>Fecha de fundacion</th>
                         <th>Universidad</th>
                     </tr>
@@ -283,6 +284,9 @@
                             {% csrf_token %}
                             <input type="hidden" name="facultad_id" value="{{ facultad.id }}">
                             <td><input type="text" name="nombre_facultad" value="{{ facultad.nombre_facultad }}"></td>
+                            <input type="hidden" name="facultad_id" value="{{ facultad.id }}">
+                            <td><input type="text" name="abreviacion" value="{{ facultad.abreviacion }}"></td>
+
                             <!-- <td><input type="text" class="datepicker" name="fecha_fundacion" value="{{ facultad.fecha_fundacion|date:'d/m/Y' }}"></td> -->
 
                             <!-- <td><input type="text" name="fecha_fundacion_facultad"

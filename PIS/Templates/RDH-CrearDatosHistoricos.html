@@ -7,7 +7,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-    <title>Crear datos historicos</title>
+    <title>Crear datos históricos</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
 
@@ -32,7 +32,7 @@
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 450px;
+            max-width: 800px;
             padding: 30px;
             margin: auto;
         }
@@ -60,10 +60,11 @@
         input[type="text"],
         input[type="email"],
         input[type="password"],
-        input[type="number"],
         input[type="date"],
         input[type="tel"],
-        select {
+        input[type="number"],
+        select,
+        textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -71,6 +72,11 @@
             font-size: 16px;
             margin-top: 5px;
             color: #333;
+            box-sizing: border-box;
+        }
+
+        select option:first-child {
+            color: #aaa;
         }
 
         select option {
@@ -82,20 +88,20 @@
             color: #aaa;
         }
 
-        input.has-value,
         select.has-value {
             color: #333;
         }
 
         button[type="submit"],
         .btn-regresar {
-            width: 48%;
+            width: calc(50% - 5px);
             padding: 10px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-top: 10px;
         }
 
         button[type="submit"] {
@@ -120,6 +126,10 @@
             display: flex;
             justify-content: space-between;
             margin-top: 20px;
+        }
+
+        .button-group button {
+            margin-top: 0;
         }
 
         ::placeholder,
@@ -154,32 +164,93 @@
         input[type="date"]:not(:valid):not(:focus) {
             color: #999;
         }
+
+        .col-md-6 {
+            width: 50%;
+            float: left;
+            padding-right: 15px;
+            box-sizing: border-box;
+        }
+
+        .col-md-6:nth-child(even) {
+            padding-right: 0;
+        }
+
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
     </style>
 </head>
 
-<body onload="recordarPaginaAnterior()">
+<body onload="recordarPaginaAnterior(); checkSuccess();">
     <div class="caja">
         <div class="form-wrapper">
             <form method="POST" id="historicalDataForm" onsubmit="return validateForm(event)">
-                <h1 class="t">Crear datos historicos</h1>
+                <h1 class="t">Crear datos históricos</h1>
                 {% csrf_token %}
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.materia.id_for_label }}">Materia:</label>
+                            {{ form.materia }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.periodo_academico.id_for_label }}">Período académico:</label>
+                            {{ form.periodo_academico }}
+                        </div>
                         <div class="form-group">
                             <label for="{{ form.cantidad_matriculados.id_for_label }}">Cantidad de matriculados:</label>
                             {{ form.cantidad_matriculados }}
+                            <span class="error-message" id="error_matriculados"></span>
                         </div>
                         <div class="form-group">
                             <label for="{{ form.cantidad_aprobados.id_for_label }}">Cantidad de aprobados:</label>
                             {{ form.cantidad_aprobados }}
+                            <span class="error-message" id="error_aprobados"></span>
                         </div>
                         <div class="form-group">
                             <label for="{{ form.cantidad_reprobados.id_for_label }}">Cantidad de reprobados:</label>
                             {{ form.cantidad_reprobados }}
+                            <span class="error-message" id="error_reprobados"></span>
                         </div>
                         <div class="form-group">
                             <label for="{{ form.cantidad_desertores.id_for_label }}">Cantidad de desertores:</label>
                             {{ form.cantidad_desertores }}
+                            <span class="error-message" id="error_desertores"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.promedio_modalidad.id_for_label }}">Porcentaje con modalidad pesencial (%):</label>
+                            {{ form.promedio_modalidad }}
+                            <span class="error-message" id="error_modalidad"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.promedio_tipo_educacion.id_for_label }}">Porcentaje con educacion publica (%):</label>
+                            {{ form.promedio_tipo_educacion }}
+                            <span class="error-message" id="error_tipo_educacion"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.promedio_origen.id_for_label }}">Porcentaje de Foráneos (%):</label>
+                            {{ form.promedio_origen }}
+                            <span class="error-message" id="error_origen"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.promedio_trabajo.id_for_label }}">Porcentaje que Trabajan (%):</label>
+                            {{ form.promedio_trabajo }}
+                            <span class="error-message" id="error_trabajo"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.promedio_discapacidad.id_for_label }}">Porcentaje con Discapacidad (%):</label>
+                            {{ form.promedio_discapacidad }}
+                            <span class="error-message" id="error_discapacidad"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.promedio_hijos.id_for_label }}">Porcentaje con Hijos (%):</label>
+                            {{ form.promedio_hijos }}
+                            <span class="error-message" id="error_hijos"></span>
                         </div>
                     </div>
                 </div>
@@ -208,37 +279,108 @@
             localStorage.setItem('paginaAnterior', document.referrer);
         }
 
+        function setupInputValidation() {
+            const integerFields = [
+                '{{ form.cantidad_matriculados.id_for_label }}',
+                '{{ form.cantidad_aprobados.id_for_label }}',
+                '{{ form.cantidad_reprobados.id_for_label }}',
+                '{{ form.cantidad_desertores.id_for_label }}'
+            ];
+
+            const percentageFields = [
+                '{{ form.promedio_modalidad.id_for_label }}',
+                '{{ form.promedio_tipo_educacion.id_for_label }}',
+                '{{ form.promedio_origen.id_for_label }}',
+                '{{ form.promedio_trabajo.id_for_label }}',
+                '{{ form.promedio_discapacidad.id_for_label }}',
+                '{{ form.promedio_hijos.id_for_label }}'
+            ];
+
+            integerFields.forEach(fieldId => {
+                const input = document.getElementById(fieldId);
+                input.addEventListener('input', function (e) {
+                    if (this.value.includes('.')) {
+                        this.value = this.value.replace('.', '');
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Entrada no válida',
+                            text: 'Por favor, ingrese solo números enteros en este campo.',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                });
+            });
+
+            percentageFields.forEach(fieldId => {
+                const input = document.getElementById(fieldId);
+                input.addEventListener('input', function (e) {
+                    const value = parseFloat(this.value);
+                    if (value > 100) {
+                        this.value = '100';
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Valor excedido',
+                            text: 'El porcentaje no puede ser mayor a 100%.',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                });
+            });
+        }
+
         function validateForm(event) {
             event.preventDefault();
 
-            const matriculados = parseInt(document.getElementById('id_cantidad_matriculados').value) || 0;
-            const aprobados = parseInt(document.getElementById('id_cantidad_aprobados').value) || 0;
-            const reprobados = parseInt(document.getElementById('id_cantidad_reprobados').value) || 0;
-            const desertores = parseInt(document.getElementById('id_cantidad_desertores').value) || 0;
+            let isValid = true;
+            const fields = [
+                { id: '{{ form.cantidad_matriculados.id_for_label }}', error: 'error_matriculados', message: 'Ingrese un número entero válido.' },
+                { id: '{{ form.cantidad_aprobados.id_for_label }}', error: 'error_aprobados', message: 'Ingrese un número entero válido.' },
+                { id: '{{ form.cantidad_reprobados.id_for_label }}', error: 'error_reprobados', message: 'Ingrese un número entero válido.' },
+                { id: '{{ form.cantidad_desertores.id_for_label }}', error: 'error_desertores', message: 'Ingrese un número entero válido.' },
+                { id: '{{ form.promedio_modalidad.id_for_label }}', error: 'error_modalidad', message: 'Ingrese un porcentaje válido (0-100).' },
+                { id: '{{ form.promedio_tipo_educacion.id_for_label }}', error: 'error_tipo_educacion', message: 'Ingrese un porcentaje válido (0-100).' },
+                { id: '{{ form.promedio_origen.id_for_label }}', error: 'error_origen', message: 'Ingrese un porcentaje válido (0-100).' },
+                { id: '{{ form.promedio_trabajo.id_for_label }}', error: 'error_trabajo', message: 'Ingrese un porcentaje válido (0-100).' },
+                { id: '{{ form.promedio_discapacidad.id_for_label }}', error: 'error_discapacidad', message: 'Ingrese un porcentaje válido (0-100).' },
+                { id: '{{ form.promedio_hijos.id_for_label }}', error: 'error_hijos', message: 'Ingrese un porcentaje válido (0-100).' }
+            ];
+
+            fields.forEach(field => {
+                const input = document.getElementById(field.id);
+                const errorSpan = document.getElementById(field.error);
+                const value = parseFloat(input.value);
+
+                if (isNaN(value) || (field.id.includes('cantidad_') && !Number.isInteger(value))) {
+                    errorSpan.textContent = field.message;
+                    isValid = false;
+                } else if (field.id.includes('promedio_') && (value < 0 || value > 100)) {
+                    errorSpan.textContent = field.message;
+                    isValid = false;
+                } else {
+                    errorSpan.textContent = '';
+                }
+            });
+
+            const matriculados = parseInt(document.getElementById('{{ form.cantidad_matriculados.id_for_label }}').value) || 0;
+            const aprobados = parseInt(document.getElementById('{{ form.cantidad_aprobados.id_for_label }}').value) || 0;
+            const reprobados = parseInt(document.getElementById('{{ form.cantidad_reprobados.id_for_label }}').value) || 0;
+            const desertores = parseInt(document.getElementById('{{ form.cantidad_desertores.id_for_label }}').value) || 0;
 
             const suma = aprobados + reprobados + desertores;
 
-            if (suma > matriculados) {
+            if (suma !== matriculados) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error al ingrasar los datos',
-                    text: 'La suma de aprobados, reprobados y desertores no puede ser mayor a la cantidad de matriculados.',
+                    title: 'Error al ingresar los datos',
+                    text: 'La suma de aprobados, reprobados y desertores debe ser igual a la cantidad de matriculados.',
                     confirmButtonText: 'Entendido'
                 });
-                return false;
+                isValid = false;
             }
 
-            if (suma < matriculados) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error al ingrasar los datos",
-                    text: 'La suma de aprobados, reprobados y desertores no puede ser menor a la cantidad de matriculados.',
-                    confirmButtonText: 'Entendido'
-                })
-                return false;
+            if (isValid) {
+                document.getElementById('historicalDataForm').submit();
             }
-
-            document.getElementById('historicalDataForm').submit();
         }
 
         function checkSuccess() {
@@ -252,6 +394,10 @@
                 });
             }
         }
+
+        recordarPaginaAnterior();
+        checkSuccess();
+        setupInputValidation();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
