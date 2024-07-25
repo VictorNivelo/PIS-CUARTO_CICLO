@@ -7,7 +7,7 @@ Proyecto desarrollado para realizar las predicciones de deserciones estudiantile
 
 ### Integrantes:
 
-- Santiago Favian Apolo Vileta
+- Santiago Favian Apolo Vilela
 - Emilio Andres Bravo Herrera
 - Victor David Nivelo Yaguana
 - Elias Sebastian Poma Granda
