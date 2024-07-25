@@ -445,9 +445,11 @@
                             }
                         });
                     } else {
-                        let errorMessage = data.message;
-                        if (data.errors) {
-                            errorMessage += '\n' + data.errors.join('\n');
+                        let errorMessage = '';
+                        if (data.errors && Array.isArray(data.errors)) {
+                            errorMessage = data.errors.join('\n');
+                        } else if (data.message) {
+                            errorMessage = data.message;
                         }
                         Swal.fire({
                             title: 'Error',

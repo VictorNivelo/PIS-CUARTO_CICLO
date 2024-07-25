@@ -3,7 +3,7 @@ from django import forms
 from .models import (
     Usuario,
     PeriodoAcademico,
-    DatosHistoricos,
+    DatosHistorico,
     Universidad,
     Estudiante,
     Facultad,
@@ -428,9 +428,18 @@ class FacultadForm(forms.ModelForm):
         widget=forms.TextInput(
             attrs={"placeholder": "Ingrese el nombre de la facultad"}
         ),
-        max_length=100,
+        max_length=250,
         required=True,
         label="Nombre de la Facultad",
+    )
+
+    abreviacion = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ingrese la abreviación"}
+        ),
+        max_length=100,
+        required=True,
+        label="Abreviación de la Facultad",
     )
 
     fecha_fundacion = forms.DateField(
@@ -452,6 +461,7 @@ class FacultadForm(forms.ModelForm):
         model = Facultad
         fields = [
             "nombre_facultad",
+            "abreviacion",
             "fecha_fundacion",
             "universidad",
         ]
@@ -510,7 +520,8 @@ class CicloForm(forms.ModelForm):
     )
 
     periodo_academico = forms.ModelChoiceField(
-        queryset=PeriodoAcademico.objects.all(),
+        # queryset=PeriodoAcademico.objects.all(),
+        queryset=PeriodoAcademico.objects.filter(estado_periodo_academico="Activo"),
         to_field_name="codigo_periodo_academico",
         empty_label="Seleccione un periodo académico",
         required=True,
@@ -637,6 +648,14 @@ class DatosHistoricosForm(forms.ModelForm):
         label="Materia",
     )
 
+    periodo_academico = forms.ModelChoiceField(
+        queryset=PeriodoAcademico.objects.all(),
+        to_field_name="codigo_periodo_academico",
+        empty_label="Seleccione un periodo académico",
+        required=True,
+        label="Período Académico",
+    )
+
     cantidad_matriculados = forms.IntegerField(
         widget=forms.NumberInput(
             attrs={"placeholder": "Ingrese la cantidad de matriculados"}
@@ -710,9 +729,10 @@ class DatosHistoricosForm(forms.ModelForm):
     )
 
     class Meta:
-        model = DatosHistoricos
+        model = DatosHistorico
         fields = [
             "materia",
+            "periodo_academico",
             "cantidad_matriculados",
             "cantidad_aprobados",
             "cantidad_reprobados",

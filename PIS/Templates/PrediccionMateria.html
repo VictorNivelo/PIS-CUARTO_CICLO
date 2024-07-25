@@ -7,7 +7,9 @@
     <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-    <title>Predicción de Deserción</title>
+
+    <title>Predicción de Materia</title>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
 
@@ -31,9 +33,10 @@
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            min-height: 750px;
             width: 100%;
             max-width: 1550px;
-            padding: 30px;
+            padding: 20px;
             margin: auto;
         }
 
@@ -51,63 +54,48 @@
         .form-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            /* Reduce el margen inferior */
-        }
-
-        .form-row button {
-            flex: 0 0 auto;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .form-group {
-            flex: 1 1 auto;
-            display: flex;
-            justify-content: center;
-            /* Centra los items horizontalmente */
-            align-items: center;
-            /* Centra los items verticalmente */
+            flex: 1;
             margin: 0 10px;
-            /* Reduce el margen horizontal */
-        }
-
-        .form-group label,
-        .form-group select {
-            margin-right: 5px;
-            /* Reduce el espacio entre el label y el select */
-        }
-
-        .form-group:last-child {
-            margin-right: 0;
+            max-width: 200px;
+            display: flex;
+            flex-direction: column;
         }
 
         label {
             color: #555;
             font-weight: bold;
+            margin-bottom: 5px;
         }
 
-        select {
-            padding: 10px;
+        select,
+        input[type="number"] {
+            padding: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             color: #333;
-            box-sizing: border-box;
             width: 100%;
-            max-width: 300px;
         }
 
-        .centered-title {
-            text-align: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-
-        .centered-button {
+        .button-group {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            width: 100%;
             margin-top: 20px;
-            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+
+        .button-group button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 0 10px;
         }
 
         #btnRegresar {
@@ -120,341 +108,521 @@
         }
 
         #submitBtn {
-            background-color: #5bc0de;
+            background-color: #3fc582;
             color: white;
         }
 
         #submitBtn:hover {
-            background-color: #46b8da;
+            background-color: #177039;
+        }
+
+        .chart-container {
+            width: 100%;
+            max-width: 950px;
+            margin: 20px auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+            display: none;
+        }
+
+        .info-section,
+        .data-section {
+            margin-top: 20px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 80%;
+            margin: 10px auto;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #2b2929;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .breadcrumb {
+            padding: 10px;
+            list-style: none;
+            background-color: #f2f2f2;
+        }
+
+        .breadcrumb li {
+            display: inline;
+            font-size: 14px;
+        }
+
+        .breadcrumb li+li:before {
+            padding: 6px;
+            color: black;
+            content: "/\00a0";
         }
     </style>
 </head>
 
 <body>
     <div class="caja">
-        <div class="form-wrapper">
-            <h1 class="t">Predicción de Deserción por Materia</h1>
-            <form id="prediccion-form">
-                <div class="form-row">
-                    <button type="button" class="btn btn-warning" id="btnRegresar">Regresar</button>
-                    <div class="form-group">
-                        <label for="facultad">Facultad:</label>
-                        <select id="facultad" name="facultad">
-                            <option value="">Seleccione una facultad</option>
-                            {% for facultad in facultades %}
-                            <option value="{{ facultad.id }}">{{ facultad.nombre_facultad }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="carrera">Carrera:</label>
-                        <select id="carrera" name="carrera" disabled>
-                            <option value="">Seleccione una carrera</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="ciclo">Ciclo:</label>
-                        <select id="ciclo" name="ciclo" disabled>
-                            <option value="">Seleccione un ciclo</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="materias">Materias:</label>
-                        <select id="materias" name="materias" disabled>
-                            <option value="">Seleccione una materia</option>
-                        </select>
-                    </div>
-                    <button type="button" class="btn btn-primary" id="submitBtn">Predecir</button>
+        <ul class="breadcrumb">
+            <li><a href="#">Inicio</a></li>
+            <li><a href="{% url 'Pagina_Secretaria' %}">Pagina-Secretaria</a></li>
+            <li>Predicción de Materia</li>
+        </ul>
+        <h1 class="t">Predicción de Materia</h1>
+        <form id="predictionForm" method="post">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <button type="button" id="btnRegresar" class="btn"
+                        onclick="window.history.back();">Regresar</button>
                 </div>
-            </form>
-
-            <div id="grafica" style="margin-top: 30px;">
-                <canvas id="myChart"></canvas>
-            </div>
-            <div id="info-adicional" class="mt-4 p-3 border rounded bg-light" style="display: none;">
-                <h4 class="centered-title">Información Adicional</h4>
-                <p><strong>Facultad:</strong> <span id="facultad-info"></span></p>
-                <p><strong>Carrera:</strong> <span id="carrera-info"></span></p>
-                <p><strong>Ciclo:</strong> <span id="ciclo-info"></span></p>
-                <p><strong>Materia:</strong> <span id="materia-info"></span></p>
-                <p><strong>Periodo Académico:</strong> <span id="periodo-info"></span></p>
-            </div>
-
-            <div id="resumen-final" class="mt-4 p-3 border rounded bg-light" style="display: none;">
-                <h4 class="centered-title">Resumen Final</h4>
-                <div class="row">
-                    <div class="col-md-3">
-                        <p><strong>Matriculados finales:</strong> <span id="matriculados-finales"></span></p>
-                    </div>
-                    <div class="col-md-3">
-                        <p><strong>Aprobados:</strong> <span id="aprobados-finales"></span></p>
-                    </div>
-                    <div class="col-md-3">
-                        <p><strong>Reprobados:</strong> <span id="reprobados-finales"></span></p>
-                    </div>
-                    <div class="col-md-3">
-                        <p><strong>Desertores:</strong> <span id="desertores-finales"></span></p>
-                    </div>
+                <div class="form-group">
+                    <label for="facultad">Facultad:</label>
+                    <select name="facultad" id="facultad" required>
+                        <option value="">Seleccione una facultad</option>
+                        {% for facultad in facultades %}
+                        <option value="{{ facultad.id }}">{{ facultad.abreviacion }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="carrera">Carrera:</label>
+                    <select name="carrera" id="carrera" required>
+                        <option value="">Seleccione una carrera</option>
+                        {% for carrera in carreras %}
+                        <option value="{{ carrera.id }}">{{ carrera.nombre_carrera }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ciclo">Ciclo:</label>
+                    <select name="ciclo" id="ciclo" required>
+                        <option value="">Seleccione un ciclo</option>
+                        {% for ciclo in ciclos %}
+                        <option value="{{ ciclo.id }}">{{ ciclo.nombre_ciclo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="materia">Materia:</label>
+                    <select name="materia" id="materia" required>
+                        <option value="">Seleccione una materia</option>
+                        {% for materia in materias %}
+                        <option value="{{ materia.id }}">{{ materia.nombre_materia }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="anio_inicio">Año de inicio:</label>
+                    <input type="number" name="anio_inicio" id="anio_inicio" required min="2000" max="2100">
+                </div>
+                <div class="form-group">
+                    <label for="anio_fin">Año de fin:</label>
+                    <input type="number" name="anio_fin" id="anio_fin" required min="2000" max="2100">
+                </div>
+                <div class="form-group">
+                    <button type="submit" id="submitBtn" class="btn">Predecir</button>
                 </div>
             </div>
+        </form>
 
-            <div id="porcentajes" class="mt-4 p-3 border rounded bg-light" style="display: none;">
-                <h4 class="centered-title">Resumen de Predicción</h4>
-                <div class="row">
-                    <div class="col-md-4">
-                        <p><strong>Aprobados:</strong> <span id="porcentaje-aprobados"></span>%</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p><strong>Reprobados:</strong> <span id="porcentaje-reprobados"></span>%</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p><strong>Desertores:</strong> <span id="porcentaje-desertores"></span>%</p>
-                    </div>
-                </div>
-            </div>
-            <div id="factores-desercion" class="mt-4 p-3 border rounded bg-light" style="display: none;">
-                <h4 class="centered-title">Factores de Deserción y Reprobación</h4>
-                <div id="lista-factores"></div>
-            </div>
+        <h3 class="chart-title" id="matriculaChartTitle" style="display: none;">Predicción de Matrículados, Aprobados,
+            Reprobados y Desertores</h3>
+        <div class="chart-container">
+            <canvas id="matriculaChart"></canvas>
+        </div>
+
+        <!-- <hr class="section-divider" style="display: none;"> -->
+
+        <h3 class="chart-title" id="porcentajesChartTitle" style="display: none;">Predicción de Porcentajes</h3>
+        <div class="chart-container">
+            <canvas id="porcentajesChart"></canvas>
+        </div>
+
+        <hr class="section-divider" style="display: none;">
+
+        <div id="infoSection" class="info-section" style="display: none;">
+            <h3 class="section-title">Información de la predicción</h3>
+            <p><strong>Universidad:</strong> <span id="universidad"></span></p>
+            <p><strong>Facultad:</strong> <span id="facultadInfo"></span></p>
+            <p><strong>Carrera:</strong> <span id="carreraInfo"></span></p>
+            <p><strong>Ciclo:</strong> <span id="cicloInfo"></span></p>
+            <p><strong>Materia:</strong> <span id="materiaInfo"></span></p>
+            <p><strong>Docente encargado:</strong> <span id="docente"></span></p>
+            <p><strong>Periodo de predicción:</strong> <span id="periodo"></span></p>
+        </div>
+
+        <div id="matriculaTable" class="data-section" style="display: none;">
+            <h3 class="section-title">Datos de matrícula por año</h3>
+            <table id="matriculaDataTable">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Matriculados</th>
+                        <th>Aprobados</th>
+                        <th>Reprobados</th>
+                        <th>Desertores</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="porcentajesTable" class="data-section" style="display: none;">
+            <h3 class="section-title">Porcentajes por año</h3>
+            <table id="porcentajesDataTable">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>% Matriculados</th>
+                        <th>% Aprobados</th>
+                        <th>% Reprobados</th>
+                        <th>% Desertores</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="promediosTable" class="data-section" style="display: none;">
+            <h3 class="section-title">Promedios de porcentajes</h3>
+            <table id="promediosDataTable">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Modalidad</th>
+                        <th>Tipo de Educación</th>
+                        <th>Origen</th>
+                        <th>Trabajo</th>
+                        <th>Discapacidad</th>
+                        <th>Hijos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="datosHistoricos" class="data-section" style="display: none;">
+            <h3 class="section-title">Datos Históricos</h3>
+            <table id="datosHistoricosTable">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Matriculados</th>
+                        <th>Aprobados</th>
+                        <th>Reprobados</th>
+                        <th>Desertores</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="button-container" style="text-align: center; margin-top: 20px; display: none;"
+            id="descargarInformeContainer">
+            <button id="btnDescargarInforme" class="btn btn-primary">Descargar Informe</button>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.24/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.6.0/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <script>
-        $(document).ready(function () {
-            $('#facultad').change(function () {
-                var facultadId = $(this).val();
-                if (facultadId) {
-                    $.ajax({
-                        url: '{% url "Obtener_Carreras" %}',
-                        data: { 'facultad_id': facultadId },
-                        success: function (data) {
-                            $('#carrera').prop('disabled', false).html('<option value="">Seleccione una carrera</option>');
-                            $.each(data, function (index, value) {
-                                $('#carrera').append('<option value="' + value.id + '">' + value.nombre_carrera + '</option>');
-                            });
-                        }
-                    });
-                } else {
-                    $('#carrera').prop('disabled', true).html('<option value="">Seleccione una carrera</option>');
-                    $('#ciclo').prop('disabled', true).html('<option value="">Seleccione un ciclo</option>');
-                    $('#materias').prop('disabled', true).html('<option value="">Seleccione una materia</option>');
-                }
-            });
-
-            $('#carrera').change(function () {
-                var carreraId = $(this).val();
-                if (carreraId) {
-                    $.ajax({
-                        url: '{% url "Obtener_Ciclos" %}',
-                        data: { 'carrera_id': carreraId },
-                        success: function (data) {
-                            $('#ciclo').prop('disabled', false).html('<option value="">Seleccione un ciclo</option>');
-                            $.each(data, function (index, value) {
-                                $('#ciclo').append('<option value="' + value.id + '">' + value.nombre_ciclo + '</option>');
-                            });
-                        }
-                    });
-                } else {
-                    $('#ciclo').prop('disabled', true).html('<option value="">Seleccione un ciclo</option>');
-                    $('#materias').prop('disabled', true).html('<option value="">Seleccione una materia</option>');
-                }
-            });
-
-            $('#ciclo').change(function () {
-                var cicloId = $(this).val();
-                if (cicloId) {
-                    $.ajax({
-                        url: '{% url "Obtener_Materias" %}',
-                        data: { 'ciclo_id': cicloId },
-                        success: function (data) {
-                            $('#materias').prop('disabled', false).html('<option value="">Seleccione una materia</option>');
-                            $.each(data, function (index, value) {
-                                $('#materias').append('<option value="' + value.id + '">' + value.nombre_materia + '</option>');
-                            });
-                        }
-                    });
-                } else {
-                    $('#materias').prop('disabled', true).html('<option value="">Seleccione una materia</option>');
-                }
-            });
-
-            $('#submitBtn').click(function () {
-                var facultadId = $('#facultad').val();
-                var carreraId = $('#carrera').val();
-                var cicloId = $('#ciclo').val();
-                var materiaId = $('#materias').val();
-
-                if (!facultadId || !carreraId || !cicloId || !materiaId) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Por favor, seleccione todas las opciones',
-                    });
-                    return;
-                }
-
-                $.ajax({
-                    url: '{% url "Predecir_Desercion" %}',
-                    method: 'POST',
-                    data: {
-                        'materia_id': materiaId,
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
-                    },
-                    success: function (data) {
-                        var ctx = document.getElementById('myChart').getContext('2d');
-                        var myChart = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: data.labels,
-                                datasets: [{
-                                    label: 'Matriculados',
-                                    data: data.matriculados,
-                                    borderColor: 'rgba(60, 179, 113, 1)',
-                                    borderWidth: 2,
-                                    fill: false
-                                }, {
-                                    label: 'Aprobados',
-                                    data: data.aprobados,
-                                    borderColor: 'rgba(54, 162, 235, 1)',
-                                    borderWidth: 2,
-                                    fill: false
-                                }, {
-                                    label: 'Reprobados',
-                                    data: data.reprobados,
-                                    borderColor: 'rgba(255, 206, 86, 1)',
-                                    borderWidth: 2,
-                                    fill: false
-                                }, {
-                                    label: 'Desertores',
-                                    data: data.desertores,
-                                    borderColor: 'rgba(255, 99, 132, 1)',
-                                    borderWidth: 2,
-                                    fill: false
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                title: {
-                                    display: true,
-                                    text: data.titulo
-                                },
-                                scales: {
-                                    x: {
-                                        display: true,
-                                        title: {
-                                            display: true,
-                                            text: 'Periodo academico y unidades de la materia'
-                                        }
-                                    },
-                                    y: {
-                                        display: true,
-                                        title: {
-                                            display: true,
-                                            text: 'Número de Estudiantes'
-                                        },
-                                        suggestedMin: 0
-                                    }
-                                }
-                            }
-                        });
-
-                        $('#info-adicional').show();
-                        $('#resumen-final').show();
-                        $('#porcentajes').show();
-                        $('#factores-desercion').show();
-
-                        $('#facultad-info').text(data.facultad);
-                        $('#carrera-info').text(data.carrera);
-                        $('#ciclo-info').text(data.ciclo_nombre);
-                        $('#materia-info').text(data.materia_nombre);
-                        $('#periodo-info').text(data.periodo_inicio + " - " + data.periodo_fin);
-
-                        $('#matriculados-iniciales').text(data.matriculados_iniciales);
-                        $('#matriculados-finales').text(data.matriculados_finales);
-                        $('#aprobados-finales').text(data.aprobados_finales);
-                        $('#reprobados-finales').text(data.reprobados_finales);
-                        $('#desertores-finales').text(data.desertores_finales);
-
-                        var total_inicial = data.matriculados_iniciales;
-                        $('#porcentaje-aprobados').text(((data.aprobados_finales / total_inicial) * 100).toFixed(2) + '%');
-                        $('#porcentaje-reprobados').text(((data.reprobados_finales / total_inicial) * 100).toFixed(2) + '%');
-                        $('#porcentaje-desertores').text(((data.desertores_finales / total_inicial) * 100).toFixed(2) + '%');
-                        $('#porcentaje-matriculados').text(((data.matriculados_finales / total_inicial) * 100).toFixed(2) + '%');
-
-                        var factores = [
-                            { name: 'Modalidad', value: data.promedio_modalidad },
-                            { name: 'Tipo de Educación', value: data.promedio_tipo_educacion },
-                            { name: 'Origen', value: data.promedio_origen },
-                            { name: 'Trabajo', value: data.promedio_trabajo },
-                            { name: 'Discapacidad', value: data.promedio_discapacidad },
-                            { name: 'Hijos', value: data.promedio_hijos }
-                        ];
-
-                        var total = data.matriculados_iniciales;
-                        var suma_factores = factores.reduce((sum, factor) => sum + factor.value, 0);
-
-                        var factoresHtml = '<div class="row">';
-                        factores.forEach(function (factor, index) {
-                            var peso_factor = suma_factores > 0 ? factor.value / suma_factores : 0;
-                            var probabilidadReprobar = (peso_factor * (data.reprobados_finales / total) * 100).toFixed(2);
-                            var probabilidadDesertar = (peso_factor * (data.desertores_finales / total) * 100).toFixed(2);
-
-                            factoresHtml += '<div class="col-md-6">' +
-                                '<strong>' + factor.name + ':</strong>' +
-                                '<ul>' +
-                                '<li>Probabilidad de reprobar: ' + probabilidadReprobar + '%</li>' +
-                                '<li>Probabilidad de desertar: ' + probabilidadDesertar + '%</li>' +
-                                '</ul></div>';
-
-                            if (index % 2 !== 0 || index === factores.length - 1) {
-                                factoresHtml += '</div><div class="row">';
-                            }
-                        });
-                        factoresHtml += '</div>';
-
-                        $('#lista-factores').html(factoresHtml);
-
-                        $('#pdf-download').remove();
-                        $('<button id="pdf-download" class="btn btn-success mt-3 d-block mx-auto">Descargar PDF</button>')
-                            .insertAfter('#factores-desercion')
-                            .click(function () {
-                                generarPDF(data, total, data.aprobados_finales, data.reprobados_finales, data.desertores_finales, factores);
-                            });
-                    },
-                    error: function (xhr, status, error) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Error al obtener los datos para la predicción. Por favor, inténtelo nuevamente.',
-                        });
-                    }
-                });
-            });
-
-            $('#btnRegresar').click(function () {
-                window.history.back();
-            });
+        document.getElementById('facultad').addEventListener('change', function () {
+            cargarCarreras(this.value);
+            limpiarSelecciones(['carrera', 'ciclo', 'materia']);
         });
 
-        function generarPDF(data, total, aprobados, reprobados, desertores, factores) {
+        document.getElementById('carrera').addEventListener('change', function () {
+            if (!document.getElementById('facultad').value) {
+                mostrarError('Seleccione una facultad primero');
+                return;
+            }
+            cargarCiclos(this.value);
+            limpiarSelecciones(['ciclo', 'materia']);
+        });
+
+        document.getElementById('ciclo').addEventListener('change', function () {
+            if (!document.getElementById('carrera').value) {
+                mostrarError('Seleccione una carrera primero');
+                return;
+            }
+            cargarMaterias(this.value);
+            limpiarSelecciones(['materia']);
+        });
+
+        document.getElementById('materia').addEventListener('change', function () {
+            if (!document.getElementById('ciclo').value) {
+                mostrarError('Seleccione un ciclo primero');
+                return;
+            }
+        });
+
+        function cargarCarreras(facultadId) {
+            if (!facultadId) {
+                mostrarError('Seleccione una facultad primero');
+                return;
+            }
+            fetch(`{% url 'Obtener_Carreras' %}?facultad_id=${facultadId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const carreraSelect = document.getElementById('carrera');
+                    carreraSelect.innerHTML = '<option value="">Seleccione una carrera</option>';
+                    data.forEach(carrera => {
+                        carreraSelect.innerHTML += `<option value="${carrera.id}">${carrera.nombre_carrera}</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar carreras:', error);
+                    mostrarError('No se pudieron cargar las carreras');
+                });
+        }
+
+        function cargarCiclos(carreraId) {
+            if (!carreraId) {
+                mostrarError('Seleccione una carrera primero');
+                return;
+            }
+            fetch(`{% url 'Obtener_Ciclos' %}?carrera_id=${carreraId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const cicloSelect = document.getElementById('ciclo');
+                    cicloSelect.innerHTML = '<option value="">Seleccione un ciclo</option>';
+                    data.forEach(ciclo => {
+                        cicloSelect.innerHTML += `<option value="${ciclo.id}">${ciclo.nombre_ciclo}</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar ciclos:', error);
+                    mostrarError('No se pudieron cargar los ciclos');
+                });
+        }
+
+        function cargarMaterias(cicloId) {
+            if (!cicloId) {
+                mostrarError('Seleccione un ciclo primero');
+                return;
+            }
+            fetch(`{% url 'Obtener_Materias' %}?ciclo_id=${cicloId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const materiaSelect = document.getElementById('materia');
+                    materiaSelect.innerHTML = '<option value="">Seleccione una materia</option>';
+                    data.forEach(materia => {
+                        materiaSelect.innerHTML += `<option value="${materia.id}">${materia.nombre_materia}</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar materias:', error);
+                    mostrarError('No se pudieron cargar las materias');
+                });
+        }
+
+        function limpiarSelecciones(ids) {
+            ids.forEach(id => {
+                document.getElementById(id).innerHTML = `<option value="">Seleccione un ${id}</option>`;
+            });
+        }
+
+        function mostrarError(mensaje) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: mensaje
+            });
+        }
+
+        function validarFormulario() {
+            const campos = ['facultad', 'carrera', 'ciclo', 'materia', 'anio_inicio', 'anio_fin'];
+            for (let campo of campos) {
+                if (!document.getElementById(campo).value) {
+                    mostrarError(`Por favor, seleccione un ${campo.replace('_', ' ')}.`);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        document.getElementById('predictionForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (validarFormulario()) {
+                realizarPrediccion();
+            }
+        });
+
+        function realizarPrediccion() {
+            const formData = new FormData(document.getElementById('predictionForm'));
+
+            fetch("{% url 'Realizar_Prediccion' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Datos recibidos:", data);
+
+                    if (!data.años || data.años.length === 0) {
+                        throw new Error("No se recibieron años para la predicción");
+                    }
+
+                    const años = data.años;
+                    const ultimoIndice = años.length - 1;
+
+                    // Crear gráficos
+                    crearGraficoMatricula(data, años);
+                    crearGraficoPorcentajes(data, años);
+
+                    // Crear tablas
+                    crearTablaMatricula(data, años);
+                    crearTablaPorcentajes(data, años);
+                    crearTablaPromedios(data, años);
+
+                    if (data.datosHistoricos) {
+                        mostrarDatosHistoricos(data.datosHistoricos);
+                    }
+
+                    return fetch(`{% url 'Obtener_Docentes' %}?materia_id=${formData.get('materia')}`)
+                        .then(response => response.json())
+                        .then(docenteData => {
+                            data.docente = docenteData.nombre_docente;
+                            return data;
+                        });
+                })
+                .then(data => {
+                    actualizarInformacion(data);
+
+                    document.getElementById('descargarInformeContainer').style.display = 'block';
+
+                    document.querySelectorAll('.chart-title, .section-divider').forEach(el => el.style.display = 'block');
+
+                    console.log("Gráficos y tablas creados exitosamente");
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mostrarError('Algo salió mal al realizar la predicción: ' + error.message);
+                });
+        }
+
+        function mostrarDatosHistoricos(datosHistoricos) {
+            const tabla = document.getElementById('datosHistoricosTable').getElementsByTagName('tbody')[0];
+            tabla.innerHTML = '';
+            datosHistoricos.forEach(dato => {
+                let fila = tabla.insertRow();
+                fila.insertCell(0).textContent = dato.año;
+                fila.insertCell(1).textContent = dato.matriculados;
+                fila.insertCell(2).textContent = dato.aprobados;
+                fila.insertCell(3).textContent = dato.reprobados;
+                fila.insertCell(4).textContent = dato.desertores;
+            });
+            document.getElementById('datosHistoricos').style.display = 'block';
+        }
+
+        function crearGraficoMatricula(data, años) {
+            const ctx = document.getElementById('matriculaChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: años,
+                    datasets: [
+                        {
+                            label: 'Matriculados',
+                            data: data.matriculados,
+                            borderColor: 'blue',
+                            fill: false
+                        },
+                        {
+                            label: 'Aprobados',
+                            data: data.aprobados,
+                            borderColor: 'green',
+                            fill: false
+                        },
+                        {
+                            label: 'Reprobados',
+                            data: data.reprobados,
+                            borderColor: 'orange',
+                            fill: false
+                        },
+                        {
+                            label: 'Desertores',
+                            data: data.desertores,
+                            borderColor: 'red',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Predicción de Matrícula, Aprobados, Reprobados y Desertores'
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Año'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Cantidad'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generarPDF(data) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const imgPath = '../Static/Imagen/';
 
             doc.setProperties({
-                title: "Informe de Predicción de Deserción",
-                subject: "Análisis de deserción estudiantil",
+                title: "Informe de Predicción de Materia",
+                subject: "Análisis de rendimiento estudiantil",
                 author: "Universidad Nacional de Loja",
-                keywords: "deserción, informe, universidad",
+                keywords: "predicción, informe, universidad",
                 creator: "Sistema de Predicción"
             });
 
@@ -462,7 +630,7 @@
                 doc.setFontSize(12);
                 doc.setTextColor(150, 150, 150);
                 doc.setFont('times', 'bold');
-                doc.addImage(`${imgPath}Iconos/Logo-UNL-mediano.png`, 'PNG', 10, 5, 40, 20);
+                doc.addImage(`${imgPath}Iconos/Logo-UNL-mediano.png`, 'PNG', 10, 5, 45, 20);
                 doc.text("Universidad Nacional de Loja", 105, 10, { align: 'center' });
                 doc.setFontSize(10);
                 doc.text(`${data.facultad}`, 105, 16, { align: 'center' });
@@ -481,125 +649,347 @@
                 }
             };
 
+            // Portada
             doc.setFontSize(24);
             doc.setFont('times', 'bold');
             doc.text("Universidad Nacional de Loja", 105, 50, { align: 'center' });
 
             doc.setFontSize(20);
             doc.setFont('times', 'normal');
-            doc.text("Informe de Predicción de Deserción", 105, 70, { align: 'center' });
+            doc.text("Informe de Predicción de Materia", 105, 70, { align: 'center' });
 
             doc.addImage(`${imgPath}Iconos/LogoUnl.png`, 'PNG', 80, 90, 50, 40);
 
             doc.setFontSize(14);
             doc.text("Fecha: " + new Date().toLocaleDateString(), 105, 145, { align: 'center' });
 
+            // Información general
             doc.addPage();
-
             addHeader();
 
             doc.setFontSize(16);
             doc.setFont('times', 'bold');
-            doc.text("Información Adicional", 105, 30, { align: 'center' });
+            doc.text("Información General", 105, 35, { align: 'center' });
 
             doc.autoTable({
                 startY: 40,
                 head: [['Campo', 'Información']],
                 body: [
+                    ['Universidad', 'Universidad Nacional de Loja'],
                     ['Facultad', data.facultad],
                     ['Carrera', data.carrera],
-                    ['Ciclo', data.ciclo_nombre],
-                    ['Materia', data.materia_nombre],
-                    ['Periodo Académico', `${data.periodo_inicio} - ${data.periodo_fin}`]
+                    ['Ciclo', data.ciclo],
+                    ['Materia', data.materia],
+                    ['Docente', data.docente],
+                    ['Periodo de predicción', `${data.anio_inicio} - ${data.anio_fin}`]
                 ],
                 theme: 'grid',
                 headStyles: { fillColor: [100, 100, 100] },
                 styles: { font: 'times' }
             });
 
-            doc.setFontSize(16);
-            doc.setFont('times', 'bold');
-            doc.text("Resumen de Predicción", 105, doc.lastAutoTable.finalY + 20, { align: 'center' });
-
-            doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 30,
-                head: [['Categoría', 'Porcentaje']],
-                body: [
-                    ['Aprobados', `${((data.aprobados_finales / total) * 100).toFixed(2)}%`],
-                    ['Reprobados', `${((data.reprobados_finales / total) * 100).toFixed(2)}%`],
-                    ['Desertores', `${((data.desertores_finales / total) * 100).toFixed(2)}%`]
-                ],
-                theme: 'grid',
-                headStyles: { fillColor: [100, 100, 100] },
-                styles: { font: 'times' }
-            });
+            // Tabla de Matrícula
+            doc.addPage();
+            addHeader();
 
             doc.setFontSize(16);
             doc.setFont('times', 'bold');
-            doc.text("Resumen Final", 105, doc.lastAutoTable.finalY + 20, { align: 'center' });
+            doc.text("Datos de Matrícula por Año", 105, 30, { align: 'center' });
 
             doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 30,
-                head: [['Categoría', 'Cantidad']],
-                body: [
-                    ['Matriculados finales', data.matriculados_finales],
-                    ['Aprobados', data.aprobados_finales],
-                    ['Reprobados', data.reprobados_finales],
-                    ['Desertores', data.desertores_finales]
-                ],
+                startY: 40,
+                html: '#matriculaDataTable',
                 theme: 'grid',
                 headStyles: { fillColor: [100, 100, 100] },
                 styles: { font: 'times' }
             });
 
             doc.addPage();
-
             addHeader();
 
             doc.setFontSize(16);
             doc.setFont('times', 'bold');
-            doc.text("Factores de Deserción y Reprobación", 105, 30, { align: 'center' });
-
-            var suma_factores = factores.reduce((sum, factor) => sum + factor.value, 0);
-            var factoresBody = factores.map(factor => {
-                let probabilidadReprobar = "0.00";
-                let probabilidadDesertar = "0.00";
-                if (suma_factores > 0) {
-                    var peso_factor = factor.value / suma_factores;
-                    probabilidadReprobar = (peso_factor * (reprobados / total) * 100).toFixed(2);
-                    probabilidadDesertar = (peso_factor * (desertores / total) * 100).toFixed(2);
-                }
-                return [factor.name, `${probabilidadReprobar}%`, `${probabilidadDesertar}%`];
-            });
+            doc.text("Porcentajes por Año", 105, 30, { align: 'center' });
 
             doc.autoTable({
                 startY: 40,
-                head: [['Factor', 'Prob. Reprobar', 'Prob. Desertar']],
-                body: factoresBody,
+                html: '#porcentajesDataTable',
                 theme: 'grid',
                 headStyles: { fillColor: [100, 100, 100] },
                 styles: { font: 'times' }
             });
 
+            // Tabla de Promedios
             doc.setFontSize(16);
             doc.setFont('times', 'bold');
-            doc.text("Gráfica de Predicción", 105, doc.lastAutoTable.finalY + 20, { align: 'center' });
+            doc.text("Promedios de Porcentajes", 105, doc.lastAutoTable.finalY + 20, { align: 'center' });
 
-            html2canvas(document.getElementById('myChart')).then(function (canvas) {
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 30,
+                html: '#promediosDataTable',
+                theme: 'grid',
+                headStyles: { fillColor: [100, 100, 100] },
+                styles: { font: 'times' }
+            });
+
+            // Gráficas
+            doc.addPage();
+            addHeader();
+
+            doc.setFontSize(16);
+            doc.setFont('times', 'bold');
+            doc.text("Gráfica de Predicción de Matrícula", 105, 30, { align: 'center' });
+
+            html2canvas(document.getElementById('matriculaChart')).then(function (canvas) {
                 const imgData = canvas.toDataURL('image/png');
-                doc.addImage(imgData, 'PNG', 10, doc.lastAutoTable.finalY + 30, 190, 100);
+                doc.addImage(imgData, 'PNG', 10, 40, 190, 100);
+
+                doc.addPage();
+                addHeader();
+
+                doc.setFontSize(16);
+                doc.setFont('times', 'bold');
+                doc.text("Gráfica de Predicción de Porcentajes", 105, 30, { align: 'center' });
+
+                return html2canvas(document.getElementById('porcentajesChart'));
+            }).then(function (canvas) {
+                const imgData = canvas.toDataURL('image/png');
+                doc.addImage(imgData, 'PNG', 10, 40, 190, 100);
+
+                // Datos históricos
+                if (document.getElementById('datosHistoricos').style.display !== 'none') {
+                    doc.addPage();
+                    addHeader();
+                    doc.setFontSize(16);
+                    doc.setFont('times', 'bold');
+                    doc.text("Datos Históricos", 105, 30, { align: 'center' });
+
+                    doc.autoTable({
+                        startY: 40,
+                        html: '#datosHistoricosTable',
+                        theme: 'grid',
+                        headStyles: { fillColor: [100, 100, 100] },
+                        styles: { font: 'times' }
+                    });
+                }
 
                 addFooter();
-                const fileName = `Informe-Prediccion-${data.carrera}-${data.ciclo_nombre}-${data.materia_nombre}.pdf`;
+                const fileName = `Informe-Prediccion-${data.carrera}-${data.ciclo}-${data.materia}.pdf`;
                 doc.save(fileName);
-                // doc.save("Informe-Prediccion.pdf");
                 console.log("PDF guardado.");
             }).catch(error => {
-                console.error("Error al generar la gráfica:", error);
+                console.error("Error al generar las gráficas:", error);
             });
         }
 
+        function crearGraficoPorcentajes(data, años) {
+            const ctx = document.getElementById('porcentajesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: años,
+                    datasets: [
+                        {
+                            label: 'Modalidad',
+                            data: data.modalidad,
+                            borderColor: 'purple',
+                            fill: false
+                        },
+                        {
+                            label: 'Tipo de Educación',
+                            data: data.tipo_educacion,
+                            borderColor: 'brown',
+                            fill: false
+                        },
+                        {
+                            label: 'Origen',
+                            data: data.origen,
+                            borderColor: 'pink',
+                            fill: false
+                        },
+                        {
+                            label: 'Trabajo',
+                            data: data.trabajo,
+                            borderColor: 'cyan',
+                            fill: false
+                        },
+                        {
+                            label: 'Discapacidad',
+                            data: data.discapacidad,
+                            borderColor: 'magenta',
+                            fill: false
+                        },
+                        {
+                            label: 'Hijos',
+                            data: data.hijos,
+                            borderColor: 'yellow',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Predicción de Porcentajes'
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Año'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Porcentaje'
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function actualizarInformacion(data) {
+            const infoSection = document.getElementById('infoSection');
+            if (infoSection) {
+                infoSection.style.display = 'block';
+                document.getElementById('universidad').textContent = 'Universidad Nacional de Loja';
+                document.getElementById('facultadInfo').textContent = document.getElementById('facultad').options[document.getElementById('facultad').selectedIndex].text;
+                document.getElementById('carreraInfo').textContent = document.getElementById('carrera').options[document.getElementById('carrera').selectedIndex].text;
+                document.getElementById('cicloInfo').textContent = document.getElementById('ciclo').options[document.getElementById('ciclo').selectedIndex].text;
+                document.getElementById('materiaInfo').textContent = document.getElementById('materia').options[document.getElementById('materia').selectedIndex].text;
+                document.getElementById('docente').textContent = data.docente;
+                document.getElementById('periodo').textContent = `${document.getElementById('anio_inicio').value} - ${document.getElementById('anio_fin').value}`;
+            }
+        }
+
+        function crearTablaMatricula(data, años) {
+            const matriculaTable = document.getElementById('matriculaTable');
+            if (matriculaTable) {
+                matriculaTable.style.display = 'block';
+                const matriculaTableBody = document.getElementById('matriculaDataTable').getElementsByTagName('tbody')[0];
+                matriculaTableBody.innerHTML = '';
+                for (let i = 0; i < años.length; i++) {
+                    let row = matriculaTableBody.insertRow();
+                    row.insertCell(0).textContent = años[i];
+                    row.insertCell(1).textContent = Math.round(data.matriculados[i]);
+                    row.insertCell(2).textContent = Math.round(data.aprobados[i]);
+                    row.insertCell(3).textContent = Math.round(data.reprobados[i]);
+                    row.insertCell(4).textContent = Math.round(data.desertores[i]);
+                }
+            }
+        }
+
+        function crearTablaPorcentajes(data, años) {
+            const porcentajesTable = document.getElementById('porcentajesTable');
+            if (porcentajesTable) {
+                porcentajesTable.style.display = 'block';
+                const porcentajesTableBody = document.getElementById('porcentajesDataTable').getElementsByTagName('tbody')[0];
+                porcentajesTableBody.innerHTML = '';
+                for (let i = 0; i < años.length; i++) {
+                    let row = porcentajesTableBody.insertRow();
+                    row.insertCell(0).textContent = años[i];
+                    row.insertCell(1).textContent = Math.round(data.matriculados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(2).textContent = Math.round(data.aprobados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(3).textContent = Math.round(data.reprobados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(4).textContent = Math.round(data.desertores[i] / data.matriculados[i] * 100) + '%';
+                }
+            }
+        }
+
+        function crearTablaPromedios(data, años) {
+            const promediosTable = document.getElementById('promediosTable');
+            if (promediosTable) {
+                promediosTable.style.display = 'block';
+                const promediosTableBody = document.getElementById('promediosDataTable').getElementsByTagName('tbody')[0];
+                promediosTableBody.innerHTML = '';
+                for (let i = 0; i < años.length; i++) {
+                    let row = promediosTableBody.insertRow();
+                    row.insertCell(0).textContent = años[i];
+                    row.insertCell(1).textContent = Math.round(data.modalidad[i]) + '%';
+                    row.insertCell(2).textContent = Math.round(data.tipo_educacion[i]) + '%';
+                    row.insertCell(3).textContent = Math.round(data.origen[i]) + '%';
+                    row.insertCell(4).textContent = Math.round(data.trabajo[i]) + '%';
+                    row.insertCell(5).textContent = Math.round(data.discapacidad[i]) + '%';
+                    row.insertCell(6).textContent = Math.round(data.hijos[i]) + '%';
+                }
+            }
+        }
+
+        document.getElementById('btnDescargarInforme').addEventListener('click', function () {
+            const data = {
+                facultad: document.getElementById('facultad').options[document.getElementById('facultad').selectedIndex].text,
+                carrera: document.getElementById('carrera').options[document.getElementById('carrera').selectedIndex].text,
+                ciclo: document.getElementById('ciclo').options[document.getElementById('ciclo').selectedIndex].text,
+                materia: document.getElementById('materia').options[document.getElementById('materia').selectedIndex].text,
+                docente: document.getElementById('docente').textContent,
+                anio_inicio: document.getElementById('anio_inicio').value,
+                anio_fin: document.getElementById('anio_fin').value
+            };
+            generarPDF(data);
+        });
+
+        function validarAnios() {
+            const anioInicio = parseInt(document.getElementById('anio_inicio').value);
+            const anioFin = parseInt(document.getElementById('anio_fin').value);
+
+            if (anioInicio > anioFin) {
+                mostrarError('El año de inicio no puede ser superior al año de fin.');
+                return false;
+            }
+            return true;
+        }
+
+        function validarFormulario() {
+            const campos = ['facultad', 'carrera', 'ciclo', 'materia', 'anio_inicio', 'anio_fin'];
+            for (let campo of campos) {
+                if (!document.getElementById(campo).value) {
+                    mostrarError(`Por favor, seleccione un ${campo.replace('_', ' ')}.`);
+                    return false;
+                }
+            }
+            return validarAnios();
+        }
+
+        document.getElementById('predictionForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (validarFormulario()) {
+                realizarPrediccion();
+            }
+        });
+
+        document.getElementById('btnRegresar').addEventListener('click', function (e) {
+            e.preventDefault();
+            if (document.getElementById('matriculaChart').getContext('2d').canvas.style.display !== 'none') {
+                Swal.fire({
+                    title: '¿Está seguro?',
+                    text: "Si sale, perderá todos los cambios realizados.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, salir',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.history.back();
+                    }
+                });
+            } else {
+                window.history.back();
+            }
+        });
     </script>
+
 </body>
 
 </html>

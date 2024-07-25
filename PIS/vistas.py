@@ -14,11 +14,14 @@ from django.contrib.auth import get_user_model
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
 from datetime import datetime, timedelta
+from django.db.models import Avg, StdDev
 from django.core.mail import send_mail
 from scipy.integrate import solve_ivp
+from scipy.optimize import curve_fit
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
+from scipy.integrate import odeint
 from django.db import transaction
 from django.conf import settings
 from django.db.models import Avg
@@ -26,6 +29,7 @@ import matplotlib.pyplot as plt
 from django.urls import reverse
 from django.db.models import Q
 from django.views import View
+from scipy.stats import norm
 from docx import Document
 import numpy as np
 import pdfplumber
@@ -38,7 +42,7 @@ import os
 from PIS.models import (
     Usuario,
     PeriodoAcademico,
-    DatosHistoricos,
+    DatosHistorico,
     Universidad,
     Estudiante,
     Facultad,
@@ -116,49 +120,7 @@ def Informacion4(request):
     return render(request, "Informacion4.html")
 
 
-# Funciones del sistema
-
-
-def Reporte(request):
-    return render(request, "ReporteGenerado.html")
-
-
-def Prediccion(request):
-    return render(request, "Prediccion.html")
-
-
-def PrediccionPresente(request):
-    return render(request, "PrediccionPresente.html")
-
-
-def Grafico(request):
-    return render(request, "Grafico.html")
-
-
-# Gestion de clases
-
-
-def GestionUniversidad(request):
-    return render(request, "GestionUniversidad.html")
-
-
-def GestionFacultad(request):
-    return render(request, "GestionFacultad.html")
-
-
-def GestionCarrera(request):
-    return render(request, "GestionCarrera.html")
-
-
-def GestionCiclo(request):
-    return render(request, "GestionCiclo.html")
-
-
-def GestionMateria(request):
-    return render(request, "GestionMateria.html")
-
-
-# funciones de autenticacion
+# funciones de usuario
 
 
 def SubirImagenPerfil(request):
@@ -172,143 +134,6 @@ def SubirImagenPerfil(request):
         else:
             messages.error(request, "No se ha seleccionado ninguna imagen.")
     return redirect("Perfil_Usuario")
-
-
-@csrf_exempt
-@require_http_methods(["GET", "POST"])
-def RegistrarUsuario(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        form = RegistrarUsuarioForm(data)
-        if form.is_valid():
-            try:
-                user = form.save(commit=False)
-
-                if Usuario.objects.filter(username=user.username).exists():
-                    return JsonResponse(
-                        {
-                            "status": "error",
-                            "message": "El correo electrónico ya está registrado.",
-                        }
-                    )
-
-                if Usuario.objects.filter(dni=user.dni).exists():
-                    return JsonResponse(
-                        {
-                            "status": "error",
-                            "message": "El número de DNI ya está registrado.",
-                        }
-                    )
-
-                num_usuarios = Usuario.objects.count()
-                if num_usuarios == 0:
-                    user.is_superuser = True
-                    user.is_staff = True
-                    user.rol = "Personal Administrativo"
-                elif num_usuarios == 1:
-                    user.is_staff = True
-                    user.rol = "Secretaria"
-                else:
-                    user.rol = "Docente"
-
-                user.set_password(form.cleaned_data["password1"])
-                user.save()
-                login(request, user)
-                return JsonResponse(
-                    {"status": "success", "message": "Usuario registrado exitosamente."}
-                )
-            except Exception as e:
-                return JsonResponse(
-                    {
-                        "status": "error",
-                        "message": f"Error al guardar el usuario: {str(e)}",
-                    }
-                )
-        else:
-            error_message = "Por favor, corrija los siguientes errores:"
-            if "username" in form.errors:
-                error_message = "El correo electrónico ya está registrado."
-            elif "dni" in form.errors:
-                error_message = "El número de DNI ya está registrado."
-            else:
-                error_message = "Por favor, verifique los datos ingresados."
-
-            return JsonResponse({"status": "error", "message": error_message})
-    else:
-        form = RegistrarUsuarioForm()
-
-    return render(request, "RU-CrearUsuario.html", {"form": form})
-
-
-def GestionUsuario(request):
-    query = request.GET.get("search_query", "")
-    filter_rol = request.GET.get("rol", "")
-    filter_genero = request.GET.get("genero", "")
-    filter_tipo_dni = request.GET.get("tipo_dni", "")
-
-    usuarios = Usuario.objects.all()
-    generos = Genero.objects.all()
-    tipos_dni = TipoDNI.objects.all()
-
-    if query:
-        usuarios = usuarios.filter(
-            Q(username__icontains=query) | Q(dni__icontains=query)
-        )
-    if filter_rol:
-        usuarios = usuarios.filter(rol=filter_rol)
-    if filter_genero:
-        usuarios = usuarios.filter(genero_id=filter_genero)
-    if filter_tipo_dni:
-        usuarios = usuarios.filter(tipo_dni=filter_tipo_dni)
-
-    if request.method == "POST":
-        if "modify" in request.POST:
-            user_id = request.POST.get("user_id")
-            usuario = Usuario.objects.get(id=user_id)
-            usuario.username = request.POST.get("username")
-            usuario.first_name = request.POST.get("first_name")
-            usuario.last_name = request.POST.get("last_name")
-            usuario.rol = request.POST.get("rol")
-            usuario.genero_id = request.POST.get("genero")
-            usuario.tipo_dni_id = request.POST.get("tipo_dni")
-            usuario.dni = request.POST.get("dni")
-            fecha_nacimiento_str = request.POST.get("fecha_nacimiento")
-            try:
-                fecha_nacimiento = datetime.strptime(
-                    fecha_nacimiento_str, "%Y-%m-%d"
-                ).date()
-                usuario.fecha_nacimiento = fecha_nacimiento
-            except ValueError:
-                messages.error(
-                    request,
-                    "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
-                )
-                return redirect("Gestion_Usuario")
-            usuario.telefono = request.POST.get("telefono")
-            usuario.save()
-            messages.success(
-                request, "Información del usuario actualizada correctamente."
-            )
-        elif "delete" in request.POST:
-            user_id = request.POST.get("user_id")
-            usuario = Usuario.objects.get(id=user_id)
-            usuario.delete()
-            messages.success(request, "Usuario eliminado correctamente.")
-        return redirect("Gestion_Usuario")
-
-    return render(
-        request,
-        "GestionUsuario.html",
-        {
-            "usuarios": usuarios,
-            "query": query,
-            "filter_rol": filter_rol,
-            "filter_genero": filter_genero,
-            "filter_tipo_dni": filter_tipo_dni,
-            "generos": generos,
-            "tipos_dni": tipos_dni,
-        },
-    )
 
 
 def IniciarSesion(request):
@@ -339,163 +164,6 @@ def IniciarSesion(request):
 def CerrarSesion(request):
     logout(request)
     return redirect("Iniciar_Sesion")
-
-
-def RegistrarEstudiante(request):
-    if request.method == "POST":
-        form = RegistrarEstudianteForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Estudiante registrado exitosamente.")
-            return redirect("Gestion_Estudiante")
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"Error en el campo {field}: {error}")
-    else:
-        form = RegistrarEstudianteForm()
-
-    return render(request, "RE-CrearEstudiante.html", {"form": form})
-
-
-def GestionEstudiante(request):
-    query = request.GET.get("search_query", "")
-    filter_genero = request.GET.get("genero", "")
-    filter_modalidad = request.GET.get("modalidad_estudio", "")
-    filter_tipo_educacion = request.GET.get("tipo_educacion", "")
-
-    estudiantes = Estudiante.objects.all()
-    generos = Genero.objects.all()
-    tipos_dni = TipoDNI.objects.all()
-    materias = Materia.objects.all()
-
-    if query:
-        estudiantes = estudiantes.filter(
-            Q(nombre_estudiante__icontains=query) | Q(dni_estudiante__icontains=query)
-        )
-    if filter_genero:
-        estudiantes = estudiantes.filter(genero_id=filter_genero)
-    if filter_modalidad:
-        estudiantes = estudiantes.filter(modalidad_estudio=filter_modalidad)
-    if filter_tipo_educacion:
-        estudiantes = estudiantes.filter(tipo_educacion=filter_tipo_educacion)
-
-    if request.method == "POST":
-        if "modify" in request.POST:
-            estudiante_id = request.POST.get("estudiante_id")
-            estudiante = Estudiante.objects.get(id=estudiante_id)
-            estudiante.nombre_estudiante = request.POST.get("nombre_estudiante")
-            estudiante.apellido_estudiante = request.POST.get("apellido_estudiante")
-            estudiante.genero_id = request.POST.get("genero")
-            estudiante.tipo_dni_id = request.POST.get("tipo_dni")
-            estudiante.dni_estudiante = request.POST.get("dni_estudiante")
-            estudiante.modalidad_estudio = request.POST.get("modalidad_estudio")
-            estudiante.tipo_educacion = request.POST.get("tipo_educacion")
-            estudiante.origen = request.POST.get("origen")
-            estudiante.trabajo = request.POST.get("trabajo")
-            estudiante.discapacidad = request.POST.get("discapacidad")
-            estudiante.hijos = request.POST.get("hijos")
-            estudiante.estado = request.POST.get("estado")
-            materias_ids = request.POST.getlist("materia")
-            estudiante.materia.set(materias_ids)
-            estudiante.save()
-            messages.success(
-                request, "Información del estudiante actualizada correctamente."
-            )
-        elif "delete" in request.POST:
-            estudiante_id = request.POST.get("estudiante_id")
-            estudiante = Estudiante.objects.get(id=estudiante_id)
-            estudiante.delete()
-            messages.success(request, "Estudiante eliminado correctamente.")
-        return redirect("Gestion_Estudiante")
-
-    return render(
-        request,
-        "GestionEstudiante.html",
-        {
-            "estudiantes": estudiantes,
-            "generos": generos,
-            "tipos_dni": tipos_dni,
-            "materias": materias,
-            "query": query,
-            "filter_genero": filter_genero,
-            "filter_modalidad": filter_modalidad,
-            "filter_tipo_educacion": filter_tipo_educacion,
-            # "filter_tipo_dni": filter_tipo_dni,
-        },
-    )
-
-
-def ImportarEstudiante(request):
-    if request.method == "POST":
-        csv_file = request.FILES.get("archivo_csv")
-        if not csv_file.name.endswith(".csv"):
-            messages.error(request, "El archivo debe ser formato CSV.")
-            return redirect("Gestion_Estudiante")
-
-        csv_data = csv.reader(csv_file.read().decode("utf-8").splitlines())
-
-        next(csv_data, None)
-
-        for row in csv_data:
-            tipo_dni_nombre = [0].strip()
-            dni_estudiante = row[1].strip()
-            nombre_estudiante = row[2].strip()
-            apellido_estudiante = row[3].strip()
-            genero_nombre = row[4].strip()
-            modalidad_estudio = int(row[5].strip())
-            tipo_educacion = int(row[6].strip())
-            origen = int(row[7].strip())
-            trabajo = int(row[8].strip())
-            discapacidad = int(row[9].strip())
-            hijos = int(row[10].strip())
-            materias_nombres = [m.strip() for m in row[11].split(",")]
-
-            try:
-                tipo_dni = TipoDNI.objects.get(nombre_tipo_dni=tipo_dni_nombre)
-            except TipoDNI.DoesNotExist:
-                messages.error(
-                    request, f'El tipo de DNI "{tipo_dni_nombre}" no existe.'
-                )
-                return redirect("Gestion_Estudiante")
-
-            try:
-                genero = Genero.objects.get(nombre_genero=genero_nombre)
-            except Genero.DoesNotExist:
-                messages.error(request, f'El género "{genero_nombre}" no existe.')
-                return redirect("Gestion_Estudiante")
-
-            estudiante = Estudiante(
-                tipo_dni=tipo_dni,
-                dni_estudiante=dni_estudiante,
-                nombre_estudiante=nombre_estudiante,
-                apellido_estudiante=apellido_estudiante,
-                genero=genero,
-                modalidad_estudio=modalidad_estudio,
-                tipo_educacion=tipo_educacion,
-                origen=origen,
-                trabajo=trabajo,
-                discapacidad=discapacidad,
-                hijos=hijos,
-            )
-            estudiante.save()
-
-            for materia_nombre in materias_nombres:
-                try:
-                    materia = Materia.objects.get(nombre_materia=materia_nombre)
-                    estudiante.materia.add(materia)
-                except Materia.DoesNotExist:
-                    messages.warning(
-                        request,
-                        f'La materia "{materia_nombre}" no existe. No se agregó.',
-                    )
-
-        messages.success(
-            request, "Estudiantes importados exitosamente desde el archivo CSV."
-        )
-        return redirect("Gestion_Estudiante")
-
-    return render(request, "SubirEstudiante.html")
 
 
 def CorreoEnviado(request, uidb64, token):
@@ -593,6 +261,235 @@ def CambiarContrasenia(request, uidb64, token):
         return redirect("Recuperar_Contrasenia")
 
 
+# funciones de personal administrativo
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def RegistrarUsuario(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        form = RegistrarUsuarioForm(data)
+        if form.is_valid():
+            try:
+                user = form.save(commit=False)
+
+                if Usuario.objects.filter(username=user.username).exists():
+                    return JsonResponse(
+                        {
+                            "status": "error",
+                            "message": "Ya existe un usuario con este correo",
+                        }
+                    )
+
+                if Usuario.objects.filter(dni=user.dni).exists():
+                    return JsonResponse(
+                        {
+                            "status": "error",
+                            "message": "Ya existe Usuario con este DNI.",
+                        }
+                    )
+
+                num_usuarios = Usuario.objects.count()
+                if num_usuarios == 0:
+                    user.is_superuser = True
+                    user.is_staff = True
+                    user.rol = "Personal Administrativo"
+                elif num_usuarios == 1:
+                    user.is_staff = True
+                    user.rol = "Secretaria"
+                else:
+                    user.rol = "Docente"
+
+                user.set_password(form.cleaned_data["password1"])
+                user.save()
+                login(request, user)
+
+                return JsonResponse(
+                    {"status": "success", "message": "Usuario registrado exitosamente."}
+                )
+
+            except Exception as e:
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": f"Error al guardar el usuario: {str(e)}",
+                    }
+                )
+        else:
+            errors = []
+            for field, error_list in form.errors.items():
+                for error in error_list:
+                    if (
+                        field == "username"
+                        and "Ya existe un usuario con este nombre" in error
+                    ):
+                        error = "Ya existe un usuario con este correo"
+                    errors.append(error)
+
+            return JsonResponse({"status": "error", "errors": errors})
+    else:
+        form = RegistrarUsuarioForm()
+
+    return render(request, "RU-CrearUsuario.html", {"form": form})
+
+
+def GestionUsuario(request):
+    query = request.GET.get("search_query", "")
+    filter_rol = request.GET.get("rol", "")
+    filter_genero = request.GET.get("genero", "")
+    filter_tipo_dni = request.GET.get("tipo_dni", "")
+
+    usuarios = Usuario.objects.all()
+    generos = Genero.objects.all()
+    tipos_dni = TipoDNI.objects.all()
+
+    if query:
+        usuarios = usuarios.filter(
+            Q(username__icontains=query) | Q(dni__icontains=query)
+        )
+    if filter_rol:
+        usuarios = usuarios.filter(rol=filter_rol)
+    if filter_genero:
+        usuarios = usuarios.filter(genero_id=filter_genero)
+    if filter_tipo_dni:
+        usuarios = usuarios.filter(tipo_dni=filter_tipo_dni)
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            user_id = request.POST.get("user_id")
+            usuario = Usuario.objects.get(id=user_id)
+            usuario.username = request.POST.get("username")
+            usuario.first_name = request.POST.get("first_name")
+            usuario.last_name = request.POST.get("last_name")
+            usuario.rol = request.POST.get("rol")
+            usuario.genero_id = request.POST.get("genero")
+            usuario.tipo_dni_id = request.POST.get("tipo_dni")
+            usuario.dni = request.POST.get("dni")
+            fecha_nacimiento_str = request.POST.get("fecha_nacimiento")
+            try:
+                fecha_nacimiento = datetime.strptime(
+                    fecha_nacimiento_str, "%Y-%m-%d"
+                ).date()
+                usuario.fecha_nacimiento = fecha_nacimiento
+            except ValueError:
+                messages.error(
+                    request,
+                    "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
+                )
+                return redirect("Gestion_Usuario")
+            usuario.telefono = request.POST.get("telefono")
+            usuario.save()
+            messages.success(
+                request, "Información del usuario actualizada correctamente."
+            )
+        elif "delete" in request.POST:
+            user_id = request.POST.get("user_id")
+            usuario = Usuario.objects.get(id=user_id)
+            usuario.delete()
+            messages.success(request, "Usuario eliminado correctamente.")
+        return redirect("Gestion_Usuario")
+
+    return render(
+        request,
+        "GestionUsuario.html",
+        {
+            "usuarios": usuarios,
+            "query": query,
+            "filter_rol": filter_rol,
+            "filter_genero": filter_genero,
+            "filter_tipo_dni": filter_tipo_dni,
+            "generos": generos,
+            "tipos_dni": tipos_dni,
+        },
+    )
+
+
+def RegistrarEstudiante(request):
+    if request.method == "POST":
+        form = RegistrarEstudianteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Estudiante registrado exitosamente.")
+            return redirect("Gestion_Estudiante")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Error en el campo {field}: {error}")
+    else:
+        form = RegistrarEstudianteForm()
+
+    return render(request, "RE-CrearEstudiante.html", {"form": form})
+
+
+def GestionEstudiante(request):
+    query = request.GET.get("search_query", "")
+    filter_genero = request.GET.get("genero", "")
+    filter_modalidad = request.GET.get("modalidad_estudio", "")
+    filter_tipo_educacion = request.GET.get("tipo_educacion", "")
+
+    estudiantes = Estudiante.objects.all()
+    generos = Genero.objects.all()
+    tipos_dni = TipoDNI.objects.all()
+    materias = Materia.objects.all()
+
+    if query:
+        estudiantes = estudiantes.filter(
+            Q(nombre_estudiante__icontains=query) | Q(dni_estudiante__icontains=query)
+        )
+    if filter_genero:
+        estudiantes = estudiantes.filter(genero_id=filter_genero)
+    if filter_modalidad:
+        estudiantes = estudiantes.filter(modalidad_estudio=filter_modalidad)
+    if filter_tipo_educacion:
+        estudiantes = estudiantes.filter(tipo_educacion=filter_tipo_educacion)
+
+    if request.method == "POST":
+        if "modify" in request.POST:
+            estudiante_id = request.POST.get("estudiante_id")
+            estudiante = Estudiante.objects.get(id=estudiante_id)
+            estudiante.nombre_estudiante = request.POST.get("nombre_estudiante")
+            estudiante.apellido_estudiante = request.POST.get("apellido_estudiante")
+            estudiante.genero_id = request.POST.get("genero")
+            estudiante.tipo_dni_id = request.POST.get("tipo_dni")
+            estudiante.dni_estudiante = request.POST.get("dni_estudiante")
+            estudiante.modalidad_estudio = request.POST.get("modalidad_estudio")
+            estudiante.tipo_educacion = request.POST.get("tipo_educacion")
+            estudiante.origen = request.POST.get("origen")
+            estudiante.trabajo = request.POST.get("trabajo")
+            estudiante.discapacidad = request.POST.get("discapacidad")
+            estudiante.hijos = request.POST.get("hijos")
+            estudiante.estado = request.POST.get("estado")
+            materias_ids = request.POST.getlist("materia")
+            estudiante.materia.set(materias_ids)
+            estudiante.save()
+            messages.success(
+                request, "Información del estudiante actualizada correctamente."
+            )
+        elif "delete" in request.POST:
+            estudiante_id = request.POST.get("estudiante_id")
+            estudiante = Estudiante.objects.get(id=estudiante_id)
+            estudiante.delete()
+            messages.success(request, "Estudiante eliminado correctamente.")
+        return redirect("Gestion_Estudiante")
+
+    return render(
+        request,
+        "GestionEstudiante.html",
+        {
+            "estudiantes": estudiantes,
+            "generos": generos,
+            "tipos_dni": tipos_dni,
+            "materias": materias,
+            "query": query,
+            "filter_genero": filter_genero,
+            "filter_modalidad": filter_modalidad,
+            "filter_tipo_educacion": filter_tipo_educacion,
+            # "filter_tipo_dni": filter_tipo_dni,
+        },
+    )
+
+
 def RegistrarTipoDNI(request):
     if request.method == "POST":
         form = TipoDNIForm(request.POST)
@@ -647,8 +544,6 @@ def RegistrarGenero(request):
             messages.error(request, "Por favor, corrija los errores del formulario.")
     else:
         form = GeneroForm()
-        # messages.success(request, "Género registrado exitosamente.")
-        # return redirect("Gestion_Genero")
     return render(request, "RG-CrearGenero.html", {"form": form})
 
 
@@ -773,6 +668,7 @@ def GestionFacultad(request):
             facultad_id = request.POST.get("facultad_id")
             facultad = Facultad.objects.get(id=facultad_id)
             facultad.nombre_facultad = request.POST.get("nombre_facultad")
+            facultad.abreviacion = request.POST.get("abreviacion")
             fecha_fundacion_str = request.POST.get("fecha_fundacion")
             try:
                 fecha_fundacion = datetime.strptime(
@@ -1110,8 +1006,7 @@ def RegistrarDatosHistorico(request):
     if request.method == "POST":
         form = DatosHistoricosForm(request.POST)
         if form.is_valid():
-            datos_historicos = form.save(commit=False)
-            datos_historicos.save()
+            form.save()
             messages.success(request, "Datos históricos registrados exitosamente.")
             return redirect("Gestion_DatosHistorico")
         else:
@@ -1124,18 +1019,21 @@ def RegistrarDatosHistorico(request):
 
 def GestionDatosHistoricos(request):
     query = request.GET.get("search_query", "")
-    datos_Historicos = DatosHistoricos.objects.all()
+    datosHistoricos = DatosHistorico.objects.all()
     materias = Materia.objects.all()
+    periodosAcademico = PeriodoAcademico.objects.all()
 
     if query:
-        datos_Historicos = datos_Historicos.filter(
+        datosHistoricos = datosHistoricos.filter(
             Q(cantidad_matriculados__icontains=query)
         )
 
     if request.method == "POST":
         if "modify" in request.POST:
-            datos_historicos_id = request.POST.get("datos_historicos_id")
-            datos_historicos = DatosHistoricos.objects.get(id=datos_historicos_id)
+            datos_historicos_id = request.POST.get("datosHistoricos_id")
+            datos_historicos = DatosHistorico.objects.get(id=datos_historicos_id)
+
+            datos_historicos.materia_id = request.POST.get("materia")
             datos_historicos.cantidad_matriculados = request.POST.get(
                 "cantidad_matriculados"
             )
@@ -1146,509 +1044,35 @@ def GestionDatosHistoricos(request):
             datos_historicos.cantidad_desertores = request.POST.get(
                 "cantidad_desertores"
             )
+            datos_historicos.promedio_modalidad = request.POST.get("promedio_modalidad")
+            datos_historicos.promedio_tipo_educacion = request.POST.get(
+                "promedio_tipo_educacion"
+            )
+            datos_historicos.promedio_origen = request.POST.get("promedio_origen")
+            datos_historicos.promedio_trabajo = request.POST.get("promedio_trabajo")
+            datos_historicos.promedio_discapacidad = request.POST.get(
+                "promedio_discapacidad"
+            )
+            datos_historicos.promedio_hijos = request.POST.get("promedio_hijos")
 
             datos_historicos.save()
             messages.success(request, "Dato histórico actualizado exitosamente.")
 
         elif "delete" in request.POST:
-            datos_historicos_id = request.POST.get("datos_historicos_id")
-            datos_historicos = DatosHistoricos.objects.get(id=datos_historicos_id)
+            datos_historicos_id = request.POST.get("datosHistoricos_id")
+            datos_historicos = DatosHistorico.objects.get(id=datos_historicos_id)
             datos_historicos.delete()
             messages.success(request, "Dato histórico eliminado exitosamente.")
 
         return redirect("Gestion_DatosHistorico")
 
-    return render(
-        request,
-        "GestionDatosHistoricos.html",
-        {
-            "datos_Historicos": datos_Historicos,
-            "materias": materias,
-            "query": query,
-        },
-    )
-
-
-# Funcionalidad de subir archivo para su procesamiento
-
-
-def parse_university_data(content):
-    pattern = re.compile(
-        r"Universidad:\s*(.*?)\s*Direccion:\s*(.*?)\s*Telefono:\s*(.*?)\s*Correo:\s*(.*?)\s*Fecha de fundación:\s*(.*?)\s*(?=Universidad:|$)"
-    )
-    matches = pattern.findall(content)
-
-    universities = []
-    for match in matches:
-        universities.append(
-            {
-                "nombre_universidad": match[0],
-                "direccion_universidad": match[1],
-                "telefono_universidad": match[2],
-                "correo_universidad": match[3],
-                "fecha_fundacion": match[4],
-            }
-        )
-
-    return universities
-
-
-ENTITY_MAPPING = {
-    "universidad": Universidad,
-    "facultad": Facultad,
-    "carrera": Carrera,
-    "ciclo": Ciclo,
-    "materia": Materia,
-    "usuario": Usuario,
-}
-
-
-def extract_data_from_file(file, file_extension):
-    if file_extension == "docx":
-        return extract_docs(file)
-    elif file_extension == "pdf":
-        return extract_pdf(file)
-    elif file_extension in ["xlsx", "xls"]:
-        return extract_xlsx(file)
-    else:
-        raise ValueError("Unsupported file format")
-
-
-def extract_pdf(file):
-    data = []
-    with pdfplumber.open(file) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text()
-            if text:
-                current_item = {}
-                for line in text.split("\n"):
-                    key, value = map(str.strip, line.split(":", 1))
-                    if key.lower() in ENTITY_MAPPING:
-                        if current_item:
-                            data.append(current_item)
-                        current_item = {"tipo": key.lower(), "datos": {}}
-                    if current_item:
-                        current_item["datos"][key.lower().replace(" ", "_")] = value
-                if current_item:
-                    data.append(current_item)
-    return data
-
-
-def extract_xlsx(file):
-    data = []
-    workbook = openpyxl.load_workbook(file)
-    sheet = workbook.active
-    headers = [cell.value for cell in sheet[1]]
-
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        item = {"tipo": row[0].lower(), "datos": {}}
-        for header, value in zip(headers[1:], row[1:]):
-            if value:
-                item["datos"][header.lower().replace(" ", "_")] = value
-        data.append(item)
-
-    return data
-
-
-def extract_docs(file):
-    document = Document(file)
-    data = []
-    current_item = None
-
-    for para in document.paragraphs:
-        text = para.text.strip()
-        if ":" in text:
-            key, value = map(str.strip, text.split(":", 1))
-            if key.lower() in ENTITY_MAPPING:
-                if current_item:
-                    data.append(current_item)
-                current_item = {"tipo": key.lower(), "datos": {}}
-            if current_item:
-                current_item["datos"][key.lower().replace(" ", "_")] = value
-
-    if current_item:
-        data.append(current_item)
-
-    return data
-
-
-def save_entities(data):
-    for item in data:
-        model = ENTITY_MAPPING.get(item["tipo"])
-        if model:
-            model.objects.create(**item["datos"])
-        else:
-            print(f"Unrecognized entity type: {item['tipo']}")
-
-
-def CargarInforme(request):
-    if request.method == "POST" and request.FILES["document"]:
-        file = request.FILES["document"]
-        file_extension = file.name.split(".")[-1].lower()
-
-        path = default_storage.save(f"tmp/{file.name}", ContentFile(file.read()))
-        tmp_file = os.path.join(settings.MEDIA_ROOT, path)
-
-        try:
-            data = extract_data_from_file(tmp_file, file_extension)
-            save_entities(data)
-            messages.success(request, "Datos importados exitosamente.")
-            return redirect("Index")
-        except Exception as e:
-            messages.error(request, f"Error al importar datos: {str(e)}")
-        finally:
-            default_storage.delete(tmp_file)
-
-    return render(request, "CargarInforme.html")
-
-
-def PredecirDesercion(request):
-    params = params_list[0]
-
-    y0 = [500, 0, 0, 0]
-
-    t_span = [0, 180]
-    t_eval = np.linspace(t_span[0], t_span[1], 1000)
-
-    sol = solve_ivp(
-        model,
-        t_span,
-        y0,
-        t_eval=t_eval,
-        args=(
-            params["ciclo"],
-            params["for"],
-            params["trab"],
-            params["disc"],
-            params["edu"],
-            params["hijos"],
-            params["gen"],
-        ),
-    )
-
-    S_sol = sol.y[0]
-    R_sol = sol.y[1]
-    D_sol = sol.y[2]
-    A_sol = sol.y[3]
-
-    prob_desercion = np.clip((D_sol / 500) * 100, 1, 100)
-
-    prob_desercion_final = prob_desercion[-1]
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(sol.t, S_sol, label="Estudiantes Matriculados (S(t))")
-    plt.plot(sol.t, R_sol, label="Estudiantes Reprobados (R(t))")
-    plt.plot(sol.t, D_sol, label="Estudiantes Desertores (D(t))")
-    plt.plot(sol.t, A_sol, label="Estudiantes Aprobados (A(t))")
-    plt.xlabel("Tiempo (días)")
-    plt.ylabel("Número de estudiantes")
-    plt.title(
-        f'Parámetros para Género {params["gen"]}: Ciclo {params["ciclo"]}, Foráneo {params["for"]}, Trabaja {params["trab"]}, Discapacidad {params["disc"]}, Educación {params["edu"]}, Hijos {params["hijos"]}'
-    )
-    plt.legend()
-    plt.grid()
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(sol.t, prob_desercion, label="Probabilidad de Deserción (%)")
-    plt.xlabel("Tiempo (días)")
-    plt.ylabel("Probabilidad de Deserción (%)")
-    plt.title(f'Probabilidad de Deserción para Género {params["gen"]}')
-    plt.legend()
-    plt.grid()
-    plt.ylim(1, 100)
-
-    plt.tight_layout()
-
-    filename = os.path.join(
-        settings.STATIC_ROOT,
-        "Predicciones",
-        "prediccion.png",
-    )
-
-    try:
-        plt.savefig(filename)
-        plt.close()
-
-    except Exception as e:
-        print(f"Error al guardar la imagen: {e}")
-
-    relative_filename = os.path.join(
-        settings.STATIC_URL,
-        "Predicciones",
-        "prediccion.png",
-    )
-
-    return render(
-        request,
-        "PredecirDesercion.html",
-        {"prediccion": prob_desercion_final, "imagen": relative_filename},
-    )
-
-
-def predecir_desercion(request):
-    facultades = Facultad.objects.all()
-    return render(request, "predecir.html", {"facultades": facultades})
-
-
-def realizar_prediccion(request):
-    materia_id = request.GET.get("materia_id")
-
-    materia = Materia.objects.get(id=materia_id)
-    estudiantes = Estudiante.objects.filter(materia=materia)
-    total_estudiantes = estudiantes.count()
-    desertores = estudiantes.filter(estado="Desertor").count()
-    cursando = estudiantes.filter(estado="Cursando").count()
-    aprobado = estudiantes.filter(estado="Aprobado").count()
-    reprobado = estudiantes.filter(estado="Reprobado").count()
-
-    data = {
-        "nombre_materia": materia.nombre_materia,
-        "total_estudiantes": total_estudiantes,
-        "desertores": desertores,
-        "cursando": cursando,
-        "aprobado": aprobado,
-        "reprobado": reprobado,
-    }
-
-    return JsonResponse({"prediccion": data})
-
-
-# class PrediccionDesercionView(View):
-
-#     def runge_kutta_4(self, f, t0, y0, t_final, h, params):
-#         t = np.arange(t0, t_final + h, h)
-#         n = len(t)
-#         y = np.zeros((n, len(y0)))
-#         y[0] = y0
-
-#         for i in range(1, n):
-#             k1 = h * f(t[i - 1], y[i - 1], params)
-#             k2 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k1, params)
-#             k3 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k2, params)
-#             k4 = h * f(t[i - 1] + h, y[i - 1] + k3, params)
-
-#             y[i] = y[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
-
-#         return t, y
-
-#     def sistema_ecuaciones(self, t, y, params):
-#         S, R, D, A = y
-#         dSdt = -0.1 * S
-#         dRdt = 0.1 * S - 0.05 * R
-#         dDdt = 0.05 * R
-#         dAdt = 0.1 * R
-#         return [dSdt, dRdt, dDdt, dAdt]
-
-#     def get(self, request):
-#         universidades = Universidad.objects.all()
-
-#         universidad_id = request.GET.get("universidad")
-#         facultad_id = request.GET.get("facultad")
-#         carrera_id = request.GET.get("carrera")
-#         ciclo_id = request.GET.get("ciclo")
-#         materia_id = request.GET.get("materia")
-
-#         universidad = (
-#             get_object_or_404(Universidad, id=universidad_id)
-#             if universidad_id
-#             else None
-#         )
-#         facultad = get_object_or_404(Facultad, id=facultad_id) if facultad_id else None
-#         carrera = get_object_or_404(Carrera, id=carrera_id) if carrera_id else None
-#         ciclo = get_object_or_404(Ciclo, id=ciclo_id) if ciclo_id else None
-#         materia = get_object_or_404(Materia, id=materia_id) if materia_id else None
-
-#         periodo_academico = PeriodoAcademico.objects.filter(
-#             estado_periodo_academico="activo"
-#         ).first()
-
-#         if (
-#             universidad
-#             and facultad
-#             and carrera
-#             and ciclo
-#             and materia
-#             and periodo_academico
-#         ):
-#             datos_historicos = Datos_Historicos.objects.filter(
-#                 estudiante__materia=materia,
-#                 estudiante__ciclo=ciclo,
-#                 estudiante__tipo_educacion=carrera.tipo_educacion,
-#                 estudiante__trabajo=carrera.trabajo,
-#                 estudiante__discapacidad=carrera.discapacidad,
-#                 estudiante__hijos=carrera.hijos,
-#                 estudiante__genero=carrera.genero,
-#                 periodo_academico=periodo_academico,
-#             ).first()
-
-#             if datos_historicos:
-#                 t0 = 0
-#                 y0 = [1000, 0, 0, 0]
-#                 t_final = 50
-#                 h = 0.1
-
-#                 params = {}
-
-#                 t, y = self.runge_kutta_4(
-#                     self.sistema_ecuaciones, t0, y0, t_final, h, params
-#                 )
-
-#                 data = {
-#                     "universidades": universidades,
-#                     "universidad_seleccionada": universidad,
-#                     "facultad_seleccionada": facultad,
-#                     "carrera_seleccionada": carrera,
-#                     "ciclo_seleccionado": ciclo,
-#                     "materia_seleccionada": materia,
-#                     "periodo_academico": periodo_academico,
-#                     "t": t.tolist(),
-#                     "S": y[:, 0].tolist(),
-#                     "R": y[:, 1].tolist(),
-#                     "D": y[:, 2].tolist(),
-#                     "A": y[:, 3].tolist(),
-#                 }
-
-#                 return render(request, "prediccion_desercion.html", data)
-
-#         return render(
-#             request,
-#             "error.html",
-#             {
-#                 "mensaje": "No se encontraron datos históricos válidos para la predicción"
-#             },
-#         )
-
-
-def prediccion_desercion(request):
-    universidades = Universidad.objects.all()
-    facultades = Facultad.objects.all()
-    carreras = Carrera.objects.all()
-    ciclos = Ciclo.objects.all()
-    materias = Materia.objects.all()
-
-    universidad_seleccionada = None
-    facultad_seleccionada = None
-    carrera_seleccionada = None
-    ciclo_seleccionado = None
-    materia_seleccionada = None
-
-    if request.method == "GET":
-        universidad_id = request.GET.get("universidad")
-        facultad_id = request.GET.get("facultad")
-        carrera_id = request.GET.get("carrera")
-        ciclo_id = request.GET.get("ciclo")
-        materia_id = request.GET.get("materia")
-
-        if universidad_id:
-            universidad_seleccionada = Universidad.objects.get(pk=universidad_id)
-            facultades = Facultad.objects.filter(universidad=universidad_seleccionada)
-
-        if facultad_id:
-            facultad_seleccionada = Facultad.objects.get(pk=facultad_id)
-            carreras = Carrera.objects.filter(facultad=facultad_seleccionada)
-
-        if carrera_id:
-            carrera_seleccionada = Carrera.objects.get(pk=carrera_id)
-            ciclos = Ciclo.objects.filter(carrera=carrera_seleccionada)
-
-        if ciclo_id:
-            ciclo_seleccionado = Ciclo.objects.get(pk=ciclo_id)
-            materias = Materia.objects.filter(ciclo=ciclo_seleccionado)
-
-        if materia_id:
-            materia_seleccionada = Materia.objects.get(pk=materia_id)
-
     context = {
-        "universidades": universidades,
-        "facultades": facultades,
-        "carreras": carreras,
-        "ciclos": ciclos,
+        "DatosHistorico": datosHistoricos,
+        "periodosAcademico": periodosAcademico,
         "materias": materias,
-        "universidad_seleccionada": universidad_seleccionada,
-        "facultad_seleccionada": facultad_seleccionada,
-        "carrera_seleccionada": carrera_seleccionada,
-        "ciclo_seleccionado": ciclo_seleccionado,
-        "materia_seleccionada": materia_seleccionada,
+        "search_query": query,
     }
-
-    if materia_seleccionada and ciclo_seleccionado:
-        datos_historicos = DatosHistoricos.objects.filter(materia=materia_seleccionada)
-        t = [
-            datetime.date.today() + datetime.timedelta(days=i)
-            for i in range(len(datos_historicos))
-        ]
-        S = [dh.cantidad_estudiantes for dh in datos_historicos]
-        R = [dh.cantidad_aprobados for dh in datos_historicos]
-        D = [dh.cantidad_desertores for dh in datos_historicos]
-        A = [dh.cantidad_retirados for dh in datos_historicos]
-
-        def model(t, y):
-            S, R, D, A = y
-            dSdt = -0.1 * S
-            dRdt = 0.1 * S
-            dDdt = 0.05 * S
-            dAdt = 0.05 * S
-            return [dSdt, dRdt, dDdt, dAdt]
-
-        y0 = [S[0], R[0], D[0], A[0]]
-        sol = solve_ivp(model, [0, len(t)], y0, t_eval=t)
-
-        context.update(
-            {
-                "t": sol.t.tolist(),
-                "S": sol.y[0].tolist(),
-                "R": sol.y[1].tolist(),
-                "D": sol.y[2].tolist(),
-                "A": sol.y[3].tolist(),
-            }
-        )
-
-    return render(request, "prediccion_desercion.html", context)
-
-
-class SeleccionarDatosView(View):
-    def get(self, request):
-        universidades = Universidad.objects.all()
-        return render(
-            request, "seleccionar_datos.html", {"universidades": universidades}
-        )
-
-
-class PrediccionView(View):
-    def post(self, request):
-        universidad_id = request.POST.get("universidad")
-        facultades = Facultad.objects.filter(universidad_id=universidad_id)
-        return render(request, "seleccionar_datos.html", {"facultades": facultades})
-
-
-class CarreraView(View):
-    def post(self, request):
-        facultad_id = request.POST.get("facultad")
-        carreras = Carrera.objects.filter(facultad_id=facultad_id)
-        return render(request, "seleccionar_datos.html", {"carreras": carreras})
-
-
-class CicloView(View):
-    def post(self, request):
-        carrera_id = request.POST.get("carrera")
-        ciclos = Ciclo.objects.filter(carrera_id=carrera_id)
-        return render(request, "seleccionar_datos.html", {"ciclos": ciclos})
-
-
-class MateriaView(View):
-    def post(self, request):
-        ciclo_id = request.POST.get("ciclo")
-        materias = Materia.objects.filter(ciclo_id=ciclo_id)
-        return render(request, "seleccionar_datos.html", {"materias": materias})
-
-
-class PeriodoAcademicoView(View):
-    def post(self, request):
-        materia_id = request.POST.get("materia")
-        periodos = (
-            PeriodoAcademico.objects.all()
-        )  # Aquí puedes filtrar los periodos según tus criterios
-        return render(request, "seleccionar_datos.html", {"periodos": periodos})
+    return render(request, "GestionDatosHistoricos.html", context)
 
 
 # importar datos desde csv
@@ -1788,11 +1212,11 @@ def ImportarDatosCVS(model, csv_file):
                         estado_periodo_academico=row["estado_periodo_academico"],
                     )
 
-                elif model == DatosHistoricos:
+                elif model == DatosHistorico:
                     materia = get_or_create_related(
                         Materia, nombre_materia=row["materia"]
                     )
-                    instance = DatosHistoricos(
+                    instance = DatosHistorico(
                         materia=materia,
                         cantidad_matriculados=int(row["cantidad_matriculados"]),
                         cantidad_aprobados=int(row["cantidad_aprobados"]),
@@ -1979,6 +1403,12 @@ def ImportarEstudiante(request):
 
                     instance.full_clean()
                     instance.save()
+                    for materia_nombre in row["materias"].split(","):
+                        materia = get_or_create_related(
+                            Materia, nombre_materia=materia_nombre.strip()
+                        )
+                        instance.materia.add(materia)
+
                     created_count += 1
 
                 except Exception as e:
@@ -2188,6 +1618,7 @@ def ImportarFacultades(request):
                     )
                     instance = Facultad(
                         nombre_facultad=row["nombre_facultad"],
+                        abreviacion=row["abreviacion"],
                         fecha_fundacion=row["fecha_fundacion"],
                         universidad=universidad,
                     )
@@ -2298,11 +1729,14 @@ def ImportarCiclos(request):
                     carrera = get_or_create_related(
                         Carrera, nombre_carrera=row["carrera"]
                     )
+                    periodo_academico = get_or_create_related(
+                        PeriodoAcademico,
+                        codigo_periodo_academico=row["periodo_academico"],
+                    )
                     instance = Ciclo(
                         nombre_ciclo=row["nombre_ciclo"],
                         numero_ciclo=row["numero_ciclo"],
-                        fecha_inicio=row["fecha_inicio"],
-                        fecha_fin=row["fecha_fin"],
+                        periodo_academico=periodo_academico,
                         carrera=carrera,
                     )
 
@@ -2353,10 +1787,6 @@ def ImportarMaterias(request):
         with transaction.atomic():
             for row in reader:
                 try:
-                    periodo_academico = get_or_create_related(
-                        PeriodoAcademico,
-                        codigo_periodo_academico=row["periodo_academico"],
-                    )
                     docente = get_or_create_related(
                         Usuario, username=row["docente_encargado"]
                     )
@@ -2365,7 +1795,6 @@ def ImportarMaterias(request):
                         nombre_materia=row["nombre_materia"],
                         numero_horas=int(row["numero_horas"]),
                         unidades=int(row["unidades"]) if row["unidades"] else None,
-                        periodo_academico=periodo_academico,
                         docente_encargado=docente,
                         ciclo=ciclo,
                     )
@@ -2471,16 +1900,26 @@ def ImportarDatoHistoricos(request):
         with transaction.atomic():
             for row in reader:
                 try:
-                    # materia = get_or_create_related(
-                    #     Materia, nombre_materia=row["materia"]
-                    # )
-                    instance = DatosHistoricos(
-                        # para futuro
-                        # materia=materia,
+                    materia = get_or_create_related(
+                        Materia, nombre_materia=row["materia"]
+                    )
+                    periodo_academico = get_or_create_related(
+                        PeriodoAcademico,
+                        codigo_periodo_academico=row["periodo_academico"],
+                    )
+                    instance = DatosHistorico(
+                        materia=materia,
+                        periodo_academico=periodo_academico,
                         cantidad_matriculados=int(row["cantidad_matriculados"]),
                         cantidad_aprobados=int(row["cantidad_aprobados"]),
                         cantidad_reprobados=int(row["cantidad_reprobados"]),
                         cantidad_desertores=int(row["cantidad_desertores"]),
+                        promedio_modalidad=float(row["promedio_modalidad"]),
+                        promedio_tipo_educacion=float(row["promedio_tipo_educacion"]),
+                        promedio_origen=float(row["promedio_origen"]),
+                        promedio_trabajo=float(row["promedio_trabajo"]),
+                        promedio_discapacidad=float(row["promedio_discapacidad"]),
+                        promedio_hijos=float(row["promedio_hijos"]),
                     )
 
                     instance.full_clean()
@@ -2495,13 +1934,13 @@ def ImportarDatoHistoricos(request):
                 {
                     "success": False,
                     "errors": errors,
-                    "message": f"Se importaron {created_count} datos historicos, pero hubo algunos errores.",
+                    "message": f"Se importaron {created_count} datos históricos, pero hubo algunos errores.",
                 }
             )
         return JsonResponse(
             {
                 "success": True,
-                "message": f"Se importaron exitosamente {created_count} datos historicos.",
+                "message": f"Se importaron exitosamente {created_count} datos históricos.",
             }
         )
     except Exception as e:
@@ -2511,7 +1950,17 @@ def ImportarDatoHistoricos(request):
 # Obtencion de los datos para la prediccion
 
 
-def obtener_carreras(request):
+def ObtenerUniversidades(request):
+    universidades = Universidad.objects.all().values("id", "nombre_universidad")
+    return JsonResponse(list(universidades), safe=False)
+
+
+def ObtenerFacultades(request):
+    facultades = Facultad.objects.all().values("id", "abreviacion")
+    return JsonResponse(list(facultades), safe=False)
+
+
+def ObtenerCarreras(request):
     facultad_id = request.GET.get("facultad_id")
     carreras = Carrera.objects.filter(facultad_id=facultad_id).values(
         "id", "nombre_carrera"
@@ -2519,194 +1968,1019 @@ def obtener_carreras(request):
     return JsonResponse(list(carreras), safe=False)
 
 
-def obtener_ciclos(request):
+def ObtenerCiclos(request):
     carrera_id = request.GET.get("carrera_id")
     ciclos = Ciclo.objects.filter(carrera_id=carrera_id).values("id", "nombre_ciclo")
     return JsonResponse(list(ciclos), safe=False)
 
 
-def obtener_materias(request):
+def ObtenerMaterias(request):
     ciclo_id = request.GET.get("ciclo_id")
     materias = Materia.objects.filter(ciclo_id=ciclo_id).values("id", "nombre_materia")
     return JsonResponse(list(materias), safe=False)
 
 
-def seleccion_facultad(request):
-    facultades = Facultad.objects.all()
-    return render(request, "PrediccionMateria.html", {"facultades": facultades})
-
-
-def RungeKutta(
-    matriculados,
-    tasa_desercion,
-    tasa_aprobacion,
-    tasa_reprobacion,
-    tiempo_total,
-    num_pasos,
-):
-    h = tiempo_total / (num_pasos - 1)
-    tiempo = np.linspace(0, tiempo_total, num_pasos)
-    resultados = np.zeros((4, num_pasos))
-    resultados[0, 0] = matriculados
-
-    for i in range(1, num_pasos):
-        k1 = h * (-tasa_desercion * resultados[0, i - 1])
-        k2 = h * (-tasa_desercion * (resultados[0, i - 1] + 0.5 * k1))
-        k3 = h * (-tasa_desercion * (resultados[0, i - 1] + 0.5 * k2))
-        k4 = h * (-tasa_desercion * (resultados[0, i - 1] + k3))
-
-        delta_matriculados = (k1 + 2 * k2 + 2 * k3 + k4) / 6
-        delta_desertores = -delta_matriculados
-        delta_aprobados = tasa_aprobacion * resultados[0, i - 1] * h
-        delta_reprobados = tasa_reprobacion * resultados[0, i - 1] * h
-
-        resultados[0, i] = (
-            resultados[0, i - 1]
-            + delta_matriculados
-            - delta_aprobados
-            - delta_reprobados
-        )
-        resultados[1, i] = resultados[1, i - 1] + delta_aprobados
-        resultados[2, i] = resultados[2, i - 1] + delta_reprobados
-        resultados[3, i] = resultados[3, i - 1] + delta_desertores
-
-    return resultados, tiempo
-
-
-def PredecirDesercion(request):
-    if request.method == "POST":
-        materia_id = request.POST.get("materia_id")
+def ObtenerDocentes(request):
+    materia_id = request.GET.get("materia_id")
+    try:
         materia = Materia.objects.get(id=materia_id)
-        periodo_academico = materia.ciclo.periodo_academico
-        datos_historicos = DatosHistoricos.objects.filter(materia=materia)
-
-        if not datos_historicos.exists():
-            return JsonResponse(
-                {"error": "No hay datos históricos disponibles para esta materia."},
-                status=400,
-            )
-
-        promedio_matriculados = datos_historicos.aggregate(
-            Avg("cantidad_matriculados")
-        )["cantidad_matriculados__avg"]
-        promedio_aprobados = datos_historicos.aggregate(Avg("cantidad_aprobados"))[
-            "cantidad_aprobados__avg"
-        ]
-        promedio_reprobados = datos_historicos.aggregate(Avg("cantidad_reprobados"))[
-            "cantidad_reprobados__avg"
-        ]
-        promedio_desertores = datos_historicos.aggregate(Avg("cantidad_desertores"))[
-            "cantidad_desertores__avg"
-        ]
-
-        tasa_aprobacion = promedio_aprobados / promedio_matriculados
-        tasa_reprobacion = promedio_reprobados / promedio_matriculados
-        tasa_desercion = promedio_desertores / promedio_matriculados
-
-        matriculados_iniciales = int(promedio_matriculados)
-        unidades = materia.unidades
-        dias_periodo = (
-            periodo_academico.fecha_fin - periodo_academico.fecha_inicio
-        ).days
-
-        tiempo = np.linspace(0, dias_periodo, unidades + 2)
-        matriculados = np.zeros(len(tiempo))
-        aprobados = np.zeros(len(tiempo))
-        reprobados = np.zeros(len(tiempo))
-        desertores = np.zeros(len(tiempo))
-
-        matriculados[0] = matriculados_iniciales
-
-        for i in range(1, len(tiempo)):
-            delta_tiempo = tiempo[i] - tiempo[i - 1]
-            delta_desertores = (
-                tasa_desercion * matriculados[i - 1] * delta_tiempo / dias_periodo
-            )
-            delta_aprobados = (
-                tasa_aprobacion * matriculados[i - 1] * delta_tiempo / dias_periodo
-            )
-            delta_reprobados = (
-                tasa_reprobacion * matriculados[i - 1] * delta_tiempo / dias_periodo
-            )
-
-            desertores[i] = desertores[i - 1] + delta_desertores
-            aprobados[i] = aprobados[i - 1] + delta_aprobados
-            reprobados[i] = reprobados[i - 1] + delta_reprobados
-            matriculados[i] = matriculados[i - 1] - delta_desertores
-
-        total_final = aprobados[-1] + reprobados[-1] + desertores[-1]
-        factor_ajuste = matriculados_iniciales / total_final
-
-        aprobados *= factor_ajuste
-        reprobados *= factor_ajuste
-        desertores *= factor_ajuste
-
-        matriculados_finales = int(matriculados[-1])
-        aprobados_finales = int(aprobados[-1])
-        reprobados_finales = int(reprobados[-1])
-        desertores_finales = int(desertores[-1])
-
-        diferencia = matriculados_iniciales - (
-            aprobados_finales + reprobados_finales + desertores_finales
+        docente = materia.docente_encargado
+        return JsonResponse(
+            {"nombre_docente": f"{docente.first_name} {docente.last_name}"}
         )
-        aprobados_finales += diferencia
+    except Materia.DoesNotExist:
+        return JsonResponse({"nombre_docente": "No asignado"}, status=404)
 
-        labels = [
-            f"Unidad {i}" if i > 0 and i <= unidades else fecha.strftime("%d/%m/%Y")
-            for i, fecha in enumerate(
-                [periodo_academico.fecha_inicio]
-                + [
-                    periodo_academico.fecha_inicio + timedelta(days=int(d))
-                    for d in tiempo[1:-1]
-                ]
-                + [periodo_academico.fecha_fin]
-            )
+
+def PredecirMetricas(request):
+    if request.method == "POST":
+        tipo_prediccion = request.POST.get("tipo_prediccion")
+        id_item = request.POST.get("id_item")
+        anio_inicio = int(request.POST.get("anio_inicio"))
+        anio_fin = int(request.POST.get("anio_fin"))
+
+        filtro_base = {}
+        if tipo_prediccion == "facultad":
+            filtro_base = {"materia__ciclo__carrera__facultad_id": id_item}
+        elif tipo_prediccion == "carrera":
+            filtro_base = {"materia__ciclo__carrera_id": id_item}
+        elif tipo_prediccion == "ciclo":
+            filtro_base = {"materia__ciclo_id": id_item}
+        elif tipo_prediccion == "materia":
+            filtro_base = {"materia_id": id_item}
+
+        periodos = PeriodoAcademico.objects.filter(
+            fecha_inicio__year__gte=anio_inicio, fecha_fin__year__lte=anio_fin
+        ).order_by("fecha_inicio")
+
+        datos_historicos = DatosHistorico.objects.filter(**filtro_base)
+
+        promedios_historicos = datos_historicos.aggregate(
+            Avg("cantidad_matriculados"),
+            Avg("cantidad_aprobados"),
+            Avg("cantidad_reprobados"),
+            Avg("cantidad_desertores"),
+            Avg("promedio_modalidad"),
+            Avg("promedio_tipo_educacion"),
+            Avg("promedio_origen"),
+            Avg("promedio_trabajo"),
+            Avg("promedio_discapacidad"),
+            Avg("promedio_hijos"),
+        )
+
+        metricas_iniciales = [
+            promedios_historicos["cantidad_matriculados__avg"],
+            promedios_historicos["cantidad_aprobados__avg"],
+            promedios_historicos["cantidad_reprobados__avg"],
+            promedios_historicos["cantidad_desertores__avg"],
+            promedios_historicos["promedio_modalidad__avg"],
+            promedios_historicos["promedio_tipo_educacion__avg"],
+            promedios_historicos["promedio_origen__avg"],
+            promedios_historicos["promedio_trabajo__avg"],
+            promedios_historicos["promedio_discapacidad__avg"],
+            promedios_historicos["promedio_hijos__avg"],
         ]
 
-        data = {
-            "labels": labels,
-            "matriculados": matriculados.tolist(),
-            "aprobados": aprobados.tolist(),
-            "reprobados": reprobados.tolist(),
-            "desertores": desertores.tolist(),
-            "titulo": f"Predicción {periodo_academico.codigo_periodo_academico} - {materia.nombre_materia} (Ciclo {materia.ciclo.nombre_ciclo})",
-            "facultad": materia.ciclo.carrera.facultad.nombre_facultad,
-            "carrera": materia.ciclo.carrera.nombre_carrera,
-            "ciclo_nombre": materia.ciclo.nombre_ciclo,
-            "materia_nombre": materia.nombre_materia,
-            "periodo_inicio": periodo_academico.fecha_inicio.strftime("%d/%m/%Y"),
-            "periodo_fin": periodo_academico.fecha_fin.strftime("%d/%m/%Y"),
-            "promedio_modalidad": datos_historicos.aggregate(Avg("promedio_modalidad"))[
-                "promedio_modalidad__avg"
-            ]
-            or 0,
-            "promedio_tipo_educacion": datos_historicos.aggregate(
-                Avg("promedio_tipo_educacion")
-            )["promedio_tipo_educacion__avg"]
-            or 0,
-            "promedio_origen": datos_historicos.aggregate(Avg("promedio_origen"))[
-                "promedio_origen__avg"
-            ]
-            or 0,
-            "promedio_trabajo": datos_historicos.aggregate(Avg("promedio_trabajo"))[
-                "promedio_trabajo__avg"
-            ]
-            or 0,
-            "promedio_discapacidad": datos_historicos.aggregate(
-                Avg("promedio_discapacidad")
-            )["promedio_discapacidad__avg"]
-            or 0,
-            "promedio_hijos": datos_historicos.aggregate(Avg("promedio_hijos"))[
-                "promedio_hijos__avg"
-            ]
-            or 0,
-            "matriculados_iniciales": matriculados_iniciales,
-            "matriculados_finales": matriculados_finales,
-            "aprobados_finales": aprobados_finales,
-            "reprobados_finales": reprobados_finales,
-            "desertores_finales": desertores_finales,
+        def modelo_crecimiento(tiempo, valores):
+            return np.array([0.05 * valor for valor in valores])
+
+        tiempo_simulacion = np.linspace(0, anio_fin - anio_inicio, len(periodos))
+        predicciones_rk = runge_kutta(
+            modelo_crecimiento, metricas_iniciales, tiempo_simulacion
+        )
+        predicciones_mc = monte_carlo(metricas_iniciales, 1000, len(periodos))
+
+        resultados_prediccion = {
+            "periodos": [p.codigo_periodo_academico for p in periodos],
+            "predicciones_rk": predicciones_rk.tolist(),
+            "predicciones_mc": predicciones_mc.tolist(),
         }
 
-        return JsonResponse(data)
+        return render(
+            request, "resultados_prediccion.html", {"resultados": resultados_prediccion}
+        )
+
+    facultades = Facultad.objects.all()
+    carreras = Carrera.objects.all()
+    ciclos = Ciclo.objects.all()
+    materias = Materia.objects.all()
+
+    return render(
+        request,
+        "formulario_prediccion.html",
+        {
+            "facultades": facultades,
+            "carreras": carreras,
+            "ciclos": ciclos,
+            "materias": materias,
+        },
+    )
+
+
+def monte_carlo(valores_iniciales, num_simulaciones, num_anios):
+    resultados = np.zeros((num_simulaciones, len(valores_iniciales), num_anios))
+    for sim in range(num_simulaciones):
+        for metrica in range(len(valores_iniciales)):
+            resultados[sim, metrica, 0] = valores_iniciales[metrica]
+            for anio in range(1, num_anios):
+                resultados[sim, metrica, anio] = resultados[sim, metrica, anio - 1] * (
+                    1 + np.random.normal(0.05, 0.1)
+                )
+    return np.mean(resultados, axis=0)
+
+
+def runge_kutta(funcion, valores_iniciales, tiempo):
+    n = len(tiempo)
+    y = np.zeros((n, len(valores_iniciales)))
+    y[0] = valores_iniciales
+    for i in range(n - 1):
+        h = tiempo[i + 1] - tiempo[i]
+        k1 = h * funcion(tiempo[i], y[i])
+        k2 = h * funcion(tiempo[i] + 0.5 * h, y[i] + 0.5 * k1)
+        k3 = h * funcion(tiempo[i] + 0.5 * h, y[i] + 0.5 * k2)
+        k4 = h * funcion(tiempo[i] + h, y[i] + k3)
+        y[i + 1] = y[i] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    return y
+
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def RealizarPrediccion(request):
+    if request.method == "POST":
+        materia_id = request.POST.get("materia")
+        anio_inicio = int(request.POST.get("anio_inicio"))
+        anio_fin = int(request.POST.get("anio_fin"))
+
+        try:
+            materia = Materia.objects.get(id=materia_id)
+            datos_historicos = DatosHistorico.objects.filter(
+                materia_id=materia_id,
+                periodo_academico__fecha_inicio__year__lt=anio_inicio,
+            ).order_by("periodo_academico__fecha_inicio")
+
+            stats = datos_historicos.aggregate(
+                Avg("cantidad_matriculados"),
+                Avg("cantidad_aprobados"),
+                Avg("cantidad_reprobados"),
+                Avg("cantidad_desertores"),
+                Avg("promedio_modalidad"),
+                Avg("promedio_tipo_educacion"),
+                Avg("promedio_origen"),
+                Avg("promedio_trabajo"),
+                Avg("promedio_discapacidad"),
+                Avg("promedio_hijos"),
+                StdDev("cantidad_matriculados"),
+                StdDev("cantidad_aprobados"),
+                StdDev("cantidad_reprobados"),
+                StdDev("cantidad_desertores"),
+                StdDev("promedio_modalidad"),
+                StdDev("promedio_tipo_educacion"),
+                StdDev("promedio_origen"),
+                StdDev("promedio_trabajo"),
+                StdDev("promedio_discapacidad"),
+                StdDev("promedio_hijos"),
+            )
+
+            def sistema_ecuaciones(y, t, params):
+                M, A, R, D, Mo, Te, O, Tr, Di, H = y
+                a, b, c, d, e, f, g, h, i, j = params
+                dMdt = a * M * (1 - M / 100) - b * M
+                dAdt = c * M - d * A
+                dRdt = e * M - f * R
+                dDdt = g * M - h * D
+                dModt = i * (Mo - Mo**2 / 100)
+                dTedt = j * (Te - Te**2 / 100)
+                dOdt = i * (O - O**2 / 100)
+                dTrdt = j * (Tr - Tr**2 / 100)
+                dDidt = i * (Di - Di**2 / 100)
+                dHdt = j * (H - H**2 / 100)
+                return [dMdt, dAdt, dRdt, dDdt, dModt, dTedt, dOdt, dTrdt, dDidt, dHdt]
+
+            params = [0.2, 0.1, 0.6, 0.2, 0.3, 0.1, 0.2, 0.1, 0.05, 0.05]
+
+            y0 = [
+                stats["cantidad_matriculados__avg"],
+                stats["cantidad_aprobados__avg"],
+                stats["cantidad_reprobados__avg"],
+                stats["cantidad_desertores__avg"],
+                stats["promedio_modalidad__avg"],
+                stats["promedio_tipo_educacion__avg"],
+                stats["promedio_origen__avg"],
+                stats["promedio_trabajo__avg"],
+                stats["promedio_discapacidad__avg"],
+                stats["promedio_hijos__avg"],
+            ]
+
+            t = np.linspace(
+                0, anio_fin - anio_inicio + 1, (anio_fin - anio_inicio + 1) * 12
+            )
+
+            sol = odeint(sistema_ecuaciones, y0, t, args=(params,))
+
+            ruido = np.random.normal(0, 0.02, sol.shape)
+            sol_con_ruido = sol + ruido * sol
+
+            sol_con_ruido = np.clip(sol_con_ruido, 0, 100)
+
+            for i in range(len(sol_con_ruido)):
+                total = sol_con_ruido[i, 1] + sol_con_ruido[i, 2] + sol_con_ruido[i, 3]
+                if total > sol_con_ruido[i, 0]:
+                    factor = sol_con_ruido[i, 0] / total
+                    sol_con_ruido[i, 1:4] *= factor
+
+            años = list(range(anio_inicio, anio_fin + 1))
+            predicciones = {
+                "años": años,
+                "matriculados": sol_con_ruido[::12, 0].tolist(),
+                "aprobados": sol_con_ruido[::12, 1].tolist(),
+                "reprobados": sol_con_ruido[::12, 2].tolist(),
+                "desertores": sol_con_ruido[::12, 3].tolist(),
+                "modalidad": sol_con_ruido[::12, 4].tolist(),
+                "tipo_educacion": sol_con_ruido[::12, 5].tolist(),
+                "origen": sol_con_ruido[::12, 6].tolist(),
+                "trabajo": sol_con_ruido[::12, 7].tolist(),
+                "discapacidad": sol_con_ruido[::12, 8].tolist(),
+                "hijos": sol_con_ruido[::12, 9].tolist(),
+            }
+
+            return JsonResponse(predicciones)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
+def PrediccionMateria(request):
+    facultades = Facultad.objects.all()
+    carreras = Carrera.objects.all()
+    ciclos = Ciclo.objects.all()
+    materias = Materia.objects.all()
+
+    context = {
+        "facultades": facultades,
+        "carreras": carreras,
+        "ciclos": ciclos,
+        "materias": materias,
+    }
+
+    return render(request, "PrediccionMateria.html", context)
+
+
+# def RealizarPrediccion(request):
+#     if request.method == "POST":
+#         materia_id = request.POST.get("materia")
+#         anio_inicio = int(request.POST.get("anio_inicio"))
+#         anio_fin = int(request.POST.get("anio_fin"))
+
+#         logger.info(f"Realizando predicción para materia {materia_id} desde {anio_inicio} hasta {anio_fin}")
+
+#         try:
+#             # Obtener la materia
+#             materia = Materia.objects.get(id=materia_id)
+
+#             # Obtener todos los datos históricos de la materia antes del año de inicio
+#             datos_historicos = DatosHistorico.objects.filter(
+#                 materia_id=materia_id,
+#                 periodo_academico__fecha_inicio__year__lt=anio_inicio
+#             ).order_by('periodo_academico__fecha_inicio')
+
+#             # Calcular promedios
+#             promedios = datos_historicos.aggregate(
+#                 Avg('cantidad_matriculados'),
+#                 Avg('cantidad_aprobados'),
+#                 Avg('cantidad_reprobados'),
+#                 Avg('cantidad_desertores'),
+#                 Avg('promedio_modalidad'),
+#                 Avg('promedio_tipo_educacion'),
+#                 Avg('promedio_origen'),
+#                 Avg('promedio_trabajo'),
+#                 Avg('promedio_discapacidad'),
+#                 Avg('promedio_hijos'),
+#             )
+
+#             # Preparar datos para la predicción
+#             años = list(range(anio_inicio, anio_fin + 1))
+
+#             # Función para aplicar crecimiento y limitar entre 0 y 100
+#             def aplicar_crecimiento(valor_base, tasa_crecimiento, num_años):
+#                 return [min(max(valor_base * (1 + tasa_crecimiento * i), 0), 100) for i in range(num_años)]
+
+#             # Realizar predicciones
+#             num_años = len(años)
+#             predicciones = {
+#                 'años': años,
+#                 'matriculados': aplicar_crecimiento(promedios['cantidad_matriculados__avg'] or 0, 0.02, num_años),
+#                 'aprobados': aplicar_crecimiento(promedios['cantidad_aprobados__avg'] or 0, 0.01, num_años),
+#                 'reprobados': aplicar_crecimiento(promedios['cantidad_reprobados__avg'] or 0, -0.01, num_años),
+#                 'desertores': aplicar_crecimiento(promedios['cantidad_desertores__avg'] or 0, -0.02, num_años),
+#                 'modalidad': aplicar_crecimiento(promedios['promedio_modalidad__avg'] or 0, 0.005, num_años),
+#                 'tipo_educacion': aplicar_crecimiento(promedios['promedio_tipo_educacion__avg'] or 0, 0.005, num_años),
+#                 'origen': aplicar_crecimiento(promedios['promedio_origen__avg'] or 0, 0.005, num_años),
+#                 'trabajo': aplicar_crecimiento(promedios['promedio_trabajo__avg'] or 0, 0.005, num_años),
+#                 'discapacidad': aplicar_crecimiento(promedios['promedio_discapacidad__avg'] or 0, 0.005, num_años),
+#                 'hijos': aplicar_crecimiento(promedios['promedio_hijos__avg'] or 0, 0.005, num_años),
+#             }
+
+#             # Agregar separaciones por unidades
+#             unidades = materia.unidades
+#             if unidades and unidades > 0:
+#                 separaciones_unidades = np.linspace(0, len(años) - 1, min(unidades + 1, len(años))).astype(int)
+#                 predicciones['separaciones_unidades'] = [años[i] for i in separaciones_unidades if i < len(años)]
+#             else:
+#                 predicciones['separaciones_unidades'] = []
+
+#             # Obtener periodos académicos para los años de predicción
+#             periodos_futuros = PeriodoAcademico.objects.filter(
+#                 fecha_inicio__year__gte=anio_inicio,
+#                 fecha_fin__year__lte=anio_fin
+#             ).order_by('fecha_inicio')
+
+#             # Agregar etiquetas de periodos académicos
+#             predicciones['etiquetas_periodos'] = [
+#                 f"{periodo.fecha_inicio.strftime('%d/%m/%Y')} - {periodo.fecha_fin.strftime('%d/%m/%Y')}"
+#                 for periodo in periodos_futuros
+#             ]
+
+#             logger.info(f"Predicciones generadas: {predicciones}")
+
+#             return JsonResponse(predicciones)
+
+#         except Exception as e:
+#             logger.error(f"Error en RealizarPrediccion: {str(e)}")
+#             return JsonResponse({"error": str(e)}, status=500)
+
+#     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+# ================================================================================================
+
+# def RealizarPrediccion(request):
+#     if request.method == "POST":
+#         facultad_id = request.POST.get("facultad")
+#         carrera_id = request.POST.get("carrera")
+#         ciclo_id = request.POST.get("ciclo")
+#         materia_id = request.POST.get("materia")
+#         anio_inicio = int(request.POST.get("anio_inicio"))
+#         anio_fin = int(request.POST.get("anio_fin"))
+
+#         datos_historicos = DatosHistorico.objects.filter(
+#             materia__ciclo__carrera__facultad_id=facultad_id,
+#             materia__ciclo__carrera_id=carrera_id,
+#             materia__ciclo_id=ciclo_id,
+#             materia_id=materia_id,
+#             periodo_academico__fecha_inicio__year__lt=anio_inicio,
+#         )
+
+#         promedios = datos_historicos.aggregate(
+#             Avg("cantidad_matriculados"),
+#             Avg("cantidad_aprobados"),
+#             Avg("cantidad_reprobados"),
+#             Avg("cantidad_desertores"),
+#             Avg("promedio_modalidad"),
+#             Avg("promedio_tipo_educacion"),
+#             Avg("promedio_origen"),
+#             Avg("promedio_trabajo"),
+#             Avg("promedio_discapacidad"),
+#             Avg("promedio_hijos"),
+#         )
+
+#         años = list(range(anio_inicio, anio_fin + 1))
+#         predicciones = {
+#             "años": años,
+#             "matriculados": [
+#                 promedios["cantidad_matriculados__avg"] * (1 + 0.02 * i)
+#                 for i in range(len(años))
+#             ],
+#             "aprobados": [
+#                 promedios["cantidad_aprobados__avg"] * (1 + 0.01 * i)
+#                 for i in range(len(años))
+#             ],
+#             "reprobados": [
+#                 promedios["cantidad_reprobados__avg"] * (1 - 0.01 * i)
+#                 for i in range(len(años))
+#             ],
+#             "desertores": [
+#                 promedios["cantidad_desertores__avg"] * (1 - 0.02 * i)
+#                 for i in range(len(años))
+#             ],
+#             "modalidad": [
+#                 promedios["promedio_modalidad__avg"] * (1 + 0.005 * i)
+#                 for i in range(len(años))
+#             ],
+#             "tipo_educacion": [
+#                 promedios["promedio_tipo_educacion__avg"] * (1 + 0.005 * i)
+#                 for i in range(len(años))
+#             ],
+#             "origen": [
+#                 promedios["promedio_origen__avg"] * (1 + 0.005 * i)
+#                 for i in range(len(años))
+#             ],
+#             "trabajo": [
+#                 promedios["promedio_trabajo__avg"] * (1 + 0.005 * i)
+#                 for i in range(len(años))
+#             ],
+#             "discapacidad": [
+#                 promedios["promedio_discapacidad__avg"] * (1 + 0.005 * i)
+#                 for i in range(len(años))
+#             ],
+#             "hijos": [
+#                 promedios["promedio_hijos__avg"] * (1 + 0.005 * i)
+#                 for i in range(len(años))
+#             ],
+#         }
+
+#         return JsonResponse(predicciones)
+
+#     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
+# def ObtenerPrediccion(request):
+#     facultades = Facultad.objects.all()
+#     current_year = datetime.now().year
+#     years = range(current_year, current_year + 20)
+#     return render(
+#         request, "PrediccionMateria.html", {"facultades": facultades, "years": years}
+#     )
+
+
+# def ObtenerPeriodosFuturos(request):
+#     if request.method == "GET":
+#         materia_id = request.GET.get("materia_id")
+
+#         if not materia_id:
+#             return JsonResponse(
+#                 {"error": "Se requiere el ID de la materia"}, status=400
+#             )
+
+#         try:
+#             materia = Materia.objects.get(id=materia_id)
+#         except Materia.DoesNotExist:
+#             return JsonResponse({"error": "Materia no encontrada"}, status=404)
+
+#         fecha_actual = datetime.now().date()
+#         periodos_futuros = PeriodoAcademico.objects.filter(
+#             fecha_inicio__gt=fecha_actual, estado_periodo_academico="Activo"
+#         ).order_by("fecha_inicio")
+
+#         data = [
+#             {
+#                 "id": periodo.id,
+#                 "codigo_periodo_academico": periodo.codigo_periodo_academico,
+#                 "fecha_inicio": periodo.fecha_inicio.strftime("%d/%m/%Y"),
+#                 "fecha_fin": periodo.fecha_fin.strftime("%d/%m/%Y"),
+#             }
+#             for periodo in periodos_futuros
+#         ]
+
+#         return JsonResponse(data, safe=False)
+
+#     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+# def RungeKutta(
+#     matriculados,
+#     tasa_desercion,
+#     tasa_aprobacion,
+#     tasa_reprobacion,
+#     tiempo_total,
+#     num_pasos,
+# ):
+#     h = tiempo_total / (num_pasos - 1)
+#     tiempo = np.linspace(0, tiempo_total, num_pasos)
+#     resultados = np.zeros((4, num_pasos))
+#     resultados[0, 0] = matriculados
+
+#     for i in range(1, num_pasos):
+#         k1 = h * (-tasa_desercion * resultados[0, i - 1])
+#         k2 = h * (-tasa_desercion * (resultados[0, i - 1] + 0.5 * k1))
+#         k3 = h * (-tasa_desercion * (resultados[0, i - 1] + 0.5 * k2))
+#         k4 = h * (-tasa_desercion * (resultados[0, i - 1] + k3))
+
+#         delta_matriculados = (k1 + 2 * k2 + 2 * k3 + k4) / 6
+#         delta_desertores = -delta_matriculados
+#         delta_aprobados = tasa_aprobacion * resultados[0, i - 1] * h
+#         delta_reprobados = tasa_reprobacion * resultados[0, i - 1] * h
+
+#         resultados[0, i] = (
+#             resultados[0, i - 1]
+#             + delta_matriculados
+#             - delta_aprobados
+#             - delta_reprobados
+#         )
+#         resultados[1, i] = resultados[1, i - 1] + delta_aprobados
+#         resultados[2, i] = resultados[2, i - 1] + delta_reprobados
+#         resultados[3, i] = resultados[3, i - 1] + delta_desertores
+
+#     return resultados, tiempo
+
+
+# def ObtenerPeriodosFuturos(request):
+#     if request.method == "GET":
+#         materia_id = request.GET.get("materia_id")
+
+#         if not materia_id:
+#             return JsonResponse(
+#                 {"error": "Se requiere el ID de la materia"}, status=400
+#             )
+
+#         try:
+#             materia = Materia.objects.get(id=materia_id)
+#         except Materia.DoesNotExist:
+#             return JsonResponse({"error": "Materia no encontrada"}, status=404)
+
+#         fecha_actual = datetime.now().date()
+#         periodos_futuros = PeriodoAcademico.objects.filter(
+#             fecha_inicio__gt=fecha_actual, estado_periodo_academico="Activo"
+#         ).order_by("fecha_inicio")
+
+#         data = [
+#             {
+#                 "id": periodo.id,
+#                 "codigo_periodo_academico": periodo.codigo_periodo_academico,
+#                 "fecha_inicio": periodo.fecha_inicio.strftime("%d/%m/%Y"),
+#                 "fecha_fin": periodo.fecha_fin.strftime("%d/%m/%Y"),
+#             }
+#             for periodo in periodos_futuros
+#         ]
+
+#         return JsonResponse(data, safe=False)
+
+#     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
+# def PredecirDesercion(request):
+#     if request.method == "POST":
+#         materia_id = request.POST.get("materia_id")
+#         periodo_futuro_id = request.POST.get("periodo_futuro_id")
+#         filtros = json.loads(request.POST.get("filtros"))
+
+#         materia = Materia.objects.get(id=materia_id)
+#         periodo_futuro = PeriodoAcademico.objects.get(id=periodo_futuro_id)
+
+#         datos_historicos = DatosHistorico.objects.filter(materia=materia)
+
+#         if not datos_historicos.exists():
+#             return JsonResponse(
+#                 {"error": "No hay datos históricos disponibles."}, status=400
+#             )
+
+#         promedios = datos_historicos.aggregate(
+#             avg_matriculados=Avg("cantidad_matriculados"),
+#             avg_aprobados=Avg("cantidad_aprobados"),
+#             avg_reprobados=Avg("cantidad_reprobados"),
+#             avg_desertores=Avg("cantidad_desertores"),
+#             avg_modalidad=Avg("promedio_modalidad"),
+#             avg_tipo_educacion=Avg("promedio_tipo_educacion"),
+#             avg_origen=Avg("promedio_origen"),
+#             avg_trabajo=Avg("promedio_trabajo"),
+#             avg_discapacidad=Avg("promedio_discapacidad"),
+#             avg_hijos=Avg("promedio_hijos"),
+#         )
+
+#         desviaciones = datos_historicos.aggregate(
+#             std_matriculados=StdDev("cantidad_matriculados"),
+#             std_aprobados=StdDev("cantidad_aprobados"),
+#             std_reprobados=StdDev("cantidad_reprobados"),
+#             std_desertores=StdDev("cantidad_desertores"),
+#             std_modalidad=StdDev("promedio_modalidad"),
+#             std_tipo_educacion=StdDev("promedio_tipo_educacion"),
+#             std_origen=StdDev("promedio_origen"),
+#             std_trabajo=StdDev("promedio_trabajo"),
+#             std_discapacidad=StdDev("promedio_discapacidad"),
+#             std_hijos=StdDev("promedio_hijos"),
+#         )
+
+#         num_simulaciones = 1000
+#         resultados_simulacion = []
+
+#         for _ in range(num_simulaciones):
+#             matriculados = np.random.normal(
+#                 promedios["avg_matriculados"], desviaciones["std_matriculados"]
+#             )
+#             tasa_aprobacion = np.random.normal(
+#                 promedios["avg_aprobados"] / promedios["avg_matriculados"], 0.1
+#             )
+#             tasa_reprobacion = np.random.normal(
+#                 promedios["avg_reprobados"] / promedios["avg_matriculados"], 0.1
+#             )
+#             tasa_desercion = np.random.normal(
+#                 promedios["avg_desertores"] / promedios["avg_matriculados"], 0.1
+#             )
+
+#             factores = {
+#                 "modalidad": norm.rvs(
+#                     promedios["avg_modalidad"], desviaciones["std_modalidad"]
+#                 ),
+#                 "tipo_educacion": norm.rvs(
+#                     promedios["avg_tipo_educacion"], desviaciones["std_tipo_educacion"]
+#                 ),
+#                 "origen": norm.rvs(promedios["avg_origen"], desviaciones["std_origen"]),
+#                 "trabajo": norm.rvs(
+#                     promedios["avg_trabajo"], desviaciones["std_trabajo"]
+#                 ),
+#                 "discapacidad": norm.rvs(
+#                     promedios["avg_discapacidad"], desviaciones["std_discapacidad"]
+#                 ),
+#                 "hijos": norm.rvs(promedios["avg_hijos"], desviaciones["std_hijos"]),
+#             }
+
+#             if (
+#                 (
+#                     not filtros["modalidad"]
+#                     or factores["modalidad"] > promedios["avg_modalidad"]
+#                 )
+#                 and (
+#                     not filtros["tipo_educacion"]
+#                     or factores["tipo_educacion"] > promedios["avg_tipo_educacion"]
+#                 )
+#                 and (
+#                     not filtros["origen"]
+#                     or factores["origen"] > promedios["avg_origen"]
+#                 )
+#                 and (
+#                     not filtros["trabajo"]
+#                     or factores["trabajo"] > promedios["avg_trabajo"]
+#                 )
+#                 and (
+#                     not filtros["discapacidad"]
+#                     or factores["discapacidad"] > promedios["avg_discapacidad"]
+#                 )
+#                 and (not filtros["hijos"] or factores["hijos"] > promedios["avg_hijos"])
+#             ):
+
+#                 # if (
+#                 #     not filtros["modalidad"]
+#                 #     or factores["modalidad"] > promedios["avg_modalidad"]
+#                 # ) and (
+#                 #     not filtros["tipo_educacion"]
+#                 #     or factores["tipo_educacion"] > promedios["avg_tipo_educacion"]
+#                 # ):
+
+#                 resultados, tiempo = RungeKutta(
+#                     matriculados,
+#                     tasa_desercion,
+#                     tasa_aprobacion,
+#                     tasa_reprobacion,
+#                     (periodo_futuro.fecha_fin - periodo_futuro.fecha_inicio).days,
+#                     materia.unidades + 2,
+#                 )
+
+#                 resultados_simulacion.append(
+#                     {"resultados": resultados, "factores": factores}
+#                 )
+
+#         resultados_promedio = np.mean(
+#             [r["resultados"] for r in resultados_simulacion], axis=0
+#         )
+#         factores_promedio = {
+#             k: np.mean([r["factores"][k] for r in resultados_simulacion])
+#             for k in resultados_simulacion[0]["factores"]
+#         }
+
+#         labels = [
+#             (
+#                 f"Unidad {i}"
+#                 if i > 0 and i <= materia.unidades
+#                 else fecha.strftime("%d/%m/%Y")
+#             )
+#             for i, fecha in enumerate(
+#                 [periodo_futuro.fecha_inicio]
+#                 + [
+#                     periodo_futuro.fecha_inicio + timedelta(days=int(d))
+#                     for d in tiempo[1:-1]
+#                 ]
+#                 + [periodo_futuro.fecha_fin]
+#             )
+#         ]
+
+#         data = {
+#             "labels": labels,
+#             "matriculados": resultados_promedio[0].tolist(),
+#             "aprobados": resultados_promedio[1].tolist(),
+#             "reprobados": resultados_promedio[2].tolist(),
+#             "desertores": resultados_promedio[3].tolist(),
+#             "titulo": f"Predicción {periodo_futuro.codigo_periodo_academico} - {materia.nombre_materia} (Ciclo {materia.ciclo.nombre_ciclo})",
+#             "facultad": materia.ciclo.carrera.facultad.nombre_facultad,
+#             "carrera": materia.ciclo.carrera.nombre_carrera,
+#             "ciclo_nombre": materia.ciclo.nombre_ciclo,
+#             "materia_nombre": materia.nombre_materia,
+#             "periodo_inicio": periodo_futuro.fecha_inicio.strftime("%d/%m/%Y"),
+#             "periodo_fin": periodo_futuro.fecha_fin.strftime("%d/%m/%Y"),
+#             "factores": factores_promedio,
+#         }
+
+#         return JsonResponse(data)
+
+#     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
+def PRI(request):
+    return render(request, "ZZ.html")
+
+
+# segundo intento
+# def PredecirDesercion(request):
+#     if request.method == "POST":
+#         materia_id = request.POST.get("materia_id")
+#         periodo_futuro_id = request.POST.get("periodo_futuro_id")
+#         filtros = json.loads(request.POST.get("filtros"))
+
+#         materia = Materia.objects.get(id=materia_id)
+#         periodo_futuro = PeriodoAcademico.objects.get(id=periodo_futuro_id)
+
+#         datos_historicos = DatosHistoricos.objects.filter(materia=materia)
+
+#         if not datos_historicos.exists():
+#             return JsonResponse(
+#                 {"error": "No hay datos históricos disponibles."}, status=400
+#             )
+
+#         promedios = datos_historicos.aggregate(
+#             avg_matriculados=Avg("cantidad_matriculados"),
+#             avg_aprobados=Avg("cantidad_aprobados"),
+#             avg_reprobados=Avg("cantidad_reprobados"),
+#             avg_desertores=Avg("cantidad_desertores"),
+#             avg_modalidad=Avg("promedio_modalidad"),
+#             avg_tipo_educacion=Avg("promedio_tipo_educacion"),
+#             avg_origen=Avg("promedio_origen"),
+#             avg_trabajo=Avg("promedio_trabajo"),
+#             avg_discapacidad=Avg("promedio_discapacidad"),
+#             avg_hijos=Avg("promedio_hijos"),
+#         )
+
+#         desviaciones = datos_historicos.aggregate(
+#             std_matriculados=StdDev("cantidad_matriculados"),
+#             std_aprobados=StdDev("cantidad_aprobados"),
+#             std_reprobados=StdDev("cantidad_reprobados"),
+#             std_desertores=StdDev("cantidad_desertores"),
+#             std_modalidad=StdDev("promedio_modalidad"),
+#             std_tipo_educacion=StdDev("promedio_tipo_educacion"),
+#             std_origen=StdDev("promedio_origen"),
+#             std_trabajo=StdDev("promedio_trabajo"),
+#             std_discapacidad=StdDev("promedio_discapacidad"),
+#             std_hijos=StdDev("promedio_hijos"),
+#         )
+
+#         num_simulaciones = 1000
+#         resultados_simulacion = []
+
+#         for _ in range(num_simulaciones):
+#             matriculados = np.random.normal(
+#                 promedios["avg_matriculados"], desviaciones["std_matriculados"]
+#             )
+#             tasa_aprobacion = np.random.normal(
+#                 promedios["avg_aprobados"] / promedios["avg_matriculados"], 0.1
+#             )
+#             tasa_reprobacion = np.random.normal(
+#                 promedios["avg_reprobados"] / promedios["avg_matriculados"], 0.1
+#             )
+#             tasa_desercion = np.random.normal(
+#                 promedios["avg_desertores"] / promedios["avg_matriculados"], 0.1
+#             )
+
+#             factores = {
+#                 "modalidad": norm.rvs(
+#                     promedios["avg_modalidad"], desviaciones["std_modalidad"]
+#                 ),
+#                 "tipo_educacion": norm.rvs(
+#                     promedios["avg_tipo_educacion"], desviaciones["std_tipo_educacion"]
+#                 ),
+#                 "origen": norm.rvs(promedios["avg_origen"], desviaciones["std_origen"]),
+#                 "trabajo": norm.rvs(
+#                     promedios["avg_trabajo"], desviaciones["std_trabajo"]
+#                 ),
+#                 "discapacidad": norm.rvs(
+#                     promedios["avg_discapacidad"], desviaciones["std_discapacidad"]
+#                 ),
+#                 "hijos": norm.rvs(promedios["avg_hijos"], desviaciones["std_hijos"]),
+#             }
+
+#             if (
+#                 (
+#                     not filtros["modalidad"]
+#                     or factores["modalidad"] > promedios["avg_modalidad"]
+#                 )
+#                 and (
+#                     not filtros["tipo_educacion"]
+#                     or factores["tipo_educacion"] > promedios["avg_tipo_educacion"]
+#                 )
+#                 and (
+#                     not filtros["origen"]
+#                     or factores["origen"] > promedios["avg_origen"]
+#                 )
+#                 and (
+#                     not filtros["trabajo"]
+#                     or factores["trabajo"] > promedios["avg_trabajo"]
+#                 )
+#                 and (
+#                     not filtros["discapacidad"]
+#                     or factores["discapacidad"] > promedios["avg_discapacidad"]
+#                 )
+#                 and (not filtros["hijos"] or factores["hijos"] > promedios["avg_hijos"])
+#             ):
+
+#                 # if (
+#                 #     not filtros["modalidad"]
+#                 #     or factores["modalidad"] > promedios["avg_modalidad"]
+#                 # ) and (
+#                 #     not filtros["tipo_educacion"]
+#                 #     or factores["tipo_educacion"] > promedios["avg_tipo_educacion"]
+#                 # ):
+
+#                 resultados, tiempo = RungeKutta(
+#                     matriculados,
+#                     tasa_desercion,
+#                     tasa_aprobacion,
+#                     tasa_reprobacion,
+#                     (periodo_futuro.fecha_fin - periodo_futuro.fecha_inicio).days,
+#                     materia.unidades + 2,
+#                 )
+
+#                 resultados_simulacion.append(
+#                     {"resultados": resultados, "factores": factores}
+#                 )
+
+#         resultados_promedio = np.mean(
+#             [r["resultados"] for r in resultados_simulacion], axis=0
+#         )
+#         factores_promedio = {
+#             k: np.mean([r["factores"][k] for r in resultados_simulacion])
+#             for k in resultados_simulacion[0]["factores"]
+#         }
+
+#         labels = [
+#             (
+#                 f"Unidad {i}"
+#                 if i > 0 and i <= materia.unidades
+#                 else fecha.strftime("%d/%m/%Y")
+#             )
+#             for i, fecha in enumerate(
+#                 [periodo_futuro.fecha_inicio]
+#                 + [
+#                     periodo_futuro.fecha_inicio + timedelta(days=int(d))
+#                     for d in tiempo[1:-1]
+#                 ]
+#                 + [periodo_futuro.fecha_fin]
+#             )
+#         ]
+
+#         data = {
+#             "labels": labels,
+#             "matriculados": resultados_promedio[0].tolist(),
+#             "aprobados": resultados_promedio[1].tolist(),
+#             "reprobados": resultados_promedio[2].tolist(),
+#             "desertores": resultados_promedio[3].tolist(),
+#             "titulo": f"Predicción {periodo_futuro.codigo_periodo_academico} - {materia.nombre_materia} (Ciclo {materia.ciclo.nombre_ciclo})",
+#             "facultad": materia.ciclo.carrera.facultad.nombre_facultad,
+#             "carrera": materia.ciclo.carrera.nombre_carrera,
+#             "ciclo_nombre": materia.ciclo.nombre_ciclo,
+#             "materia_nombre": materia.nombre_materia,
+#             "periodo_inicio": periodo_futuro.fecha_inicio.strftime("%d/%m/%Y"),
+#             "periodo_fin": periodo_futuro.fecha_fin.strftime("%d/%m/%Y"),
+#             "factores": factores_promedio,
+#         }
+
+#         return JsonResponse(data)
+
+#     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
+# def PredecirDesercion(request):
+#     if request.method == "POST":
+#         materia_id = request.POST.get("materia_id")
+#         materia = Materia.objects.get(id=materia_id)
+#         periodo_academico = materia.ciclo.periodo_academico
+#         datos_historicos = DatosHistoricos.objects.filter(materia=materia)
+
+#         if not datos_historicos.exists():
+#             return JsonResponse(
+#                 {"error": "No hay datos históricos disponibles para esta materia."},
+#                 status=400,
+#             )
+
+#         promedio_matriculados = datos_historicos.aggregate(
+#             Avg("cantidad_matriculados")
+#         )["cantidad_matriculados__avg"]
+#         promedio_aprobados = datos_historicos.aggregate(Avg("cantidad_aprobados"))[
+#             "cantidad_aprobados__avg"
+#         ]
+#         promedio_reprobados = datos_historicos.aggregate(Avg("cantidad_reprobados"))[
+#             "cantidad_reprobados__avg"
+#         ]
+#         promedio_desertores = datos_historicos.aggregate(Avg("cantidad_desertores"))[
+#             "cantidad_desertores__avg"
+#         ]
+
+#         tasa_aprobacion = promedio_aprobados / promedio_matriculados
+#         tasa_reprobacion = promedio_reprobados / promedio_matriculados
+#         tasa_desercion = promedio_desertores / promedio_matriculados
+
+#         matriculados_iniciales = int(promedio_matriculados)
+#         unidades = materia.unidades
+#         dias_periodo = (
+#             periodo_academico.fecha_fin - periodo_academico.fecha_inicio
+#         ).days
+
+#         tiempo = np.linspace(0, dias_periodo, unidades + 2)
+#         matriculados = np.zeros(len(tiempo))
+#         aprobados = np.zeros(len(tiempo))
+#         reprobados = np.zeros(len(tiempo))
+#         desertores = np.zeros(len(tiempo))
+
+#         matriculados[0] = matriculados_iniciales
+
+#         for i in range(1, len(tiempo)):
+#             delta_tiempo = tiempo[i] - tiempo[i - 1]
+#             delta_desertores = (
+#                 tasa_desercion * matriculados[i - 1] * delta_tiempo / dias_periodo
+#             )
+#             delta_aprobados = (
+#                 tasa_aprobacion * matriculados[i - 1] * delta_tiempo / dias_periodo
+#             )
+#             delta_reprobados = (
+#                 tasa_reprobacion * matriculados[i - 1] * delta_tiempo / dias_periodo
+#             )
+
+#             desertores[i] = desertores[i - 1] + delta_desertores
+#             aprobados[i] = aprobados[i - 1] + delta_aprobados
+#             reprobados[i] = reprobados[i - 1] + delta_reprobados
+#             matriculados[i] = matriculados[i - 1] - delta_desertores
+
+#         total_final = aprobados[-1] + reprobados[-1] + desertores[-1]
+#         factor_ajuste = matriculados_iniciales / total_final
+
+#         aprobados *= factor_ajuste
+#         reprobados *= factor_ajuste
+#         desertores *= factor_ajuste
+
+#         matriculados_finales = int(matriculados[-1])
+#         aprobados_finales = int(aprobados[-1])
+#         reprobados_finales = int(reprobados[-1])
+#         desertores_finales = int(desertores[-1])
+
+#         diferencia = matriculados_iniciales - (
+#             aprobados_finales + reprobados_finales + desertores_finales
+#         )
+#         aprobados_finales += diferencia
+
+#         labels = [
+#             f"Unidad {i}" if i > 0 and i <= unidades else fecha.strftime("%d/%m/%Y")
+#             for i, fecha in enumerate(
+#                 [periodo_academico.fecha_inicio]
+#                 + [
+#                     periodo_academico.fecha_inicio + timedelta(days=int(d))
+#                     for d in tiempo[1:-1]
+#                 ]
+#                 + [periodo_academico.fecha_fin]
+#             )
+#         ]
+
+#         data = {
+#             "labels": labels,
+#             "matriculados": matriculados.tolist(),
+#             "aprobados": aprobados.tolist(),
+#             "reprobados": reprobados.tolist(),
+#             "desertores": desertores.tolist(),
+#             "titulo": f"Predicción {periodo_academico.codigo_periodo_academico} - {materia.nombre_materia} (Ciclo {materia.ciclo.nombre_ciclo})",
+#             "facultad": materia.ciclo.carrera.facultad.nombre_facultad,
+#             "carrera": materia.ciclo.carrera.nombre_carrera,
+#             "ciclo_nombre": materia.ciclo.nombre_ciclo,
+#             "materia_nombre": materia.nombre_materia,
+#             "periodo_inicio": periodo_academico.fecha_inicio.strftime("%d/%m/%Y"),
+#             "periodo_fin": periodo_academico.fecha_fin.strftime("%d/%m/%Y"),
+#             "promedio_modalidad": datos_historicos.aggregate(Avg("promedio_modalidad"))[
+#                 "promedio_modalidad__avg"
+#             ]
+#             or 0,
+#             "promedio_tipo_educacion": datos_historicos.aggregate(
+#                 Avg("promedio_tipo_educacion")
+#             )["promedio_tipo_educacion__avg"]
+#             or 0,
+#             "promedio_origen": datos_historicos.aggregate(Avg("promedio_origen"))[
+#                 "promedio_origen__avg"
+#             ]
+#             or 0,
+#             "promedio_trabajo": datos_historicos.aggregate(Avg("promedio_trabajo"))[
+#                 "promedio_trabajo__avg"
+#             ]
+#             or 0,
+#             "promedio_discapacidad": datos_historicos.aggregate(
+#                 Avg("promedio_discapacidad")
+#             )["promedio_discapacidad__avg"]
+#             or 0,
+#             "promedio_hijos": datos_historicos.aggregate(Avg("promedio_hijos"))[
+#                 "promedio_hijos__avg"
+#             ]
+#             or 0,
+#             "matriculados_iniciales": matriculados_iniciales,
+#             "matriculados_finales": matriculados_finales,
+#             "aprobados_finales": aprobados_finales,
+#             "reprobados_finales": reprobados_finales,
+#             "desertores_finales": desertores_finales,
+#         }
+
+#         return JsonResponse(data)
+
+#     return JsonResponse({"error": "Método no permitido"}, status=405)

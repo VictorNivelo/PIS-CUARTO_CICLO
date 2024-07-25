@@ -1,62 +1,42 @@
 from django.contrib import admin
 from django.urls import path
 from .vistas import (
-    GestionPeriodoAcademico,
-    GestionTipoDNI,
     PaginaPrincipal,
-    
-    IniciarSesion,
-    CerrarSesion,
-    RegistrarUsuario,
-    RecuperarContrasenia,
-    CambiarContrasenia,
-    CorreoEnviado,
-    
-    Informacion1,
-    Informacion2,
-    Informacion3,
-    Informacion4,
-    
-    Grafico,
-    Galeria,
-    Prediccion,
-    PrediccionPresente,
-    Reporte,
-    CargarInforme,
-    
     PaginaAdministrador,
     PaginaDocente,
     PaginaSecretaria,
     
+    IniciarSesion,
+    CerrarSesion,
+    RecuperarContrasenia,
+    CambiarContrasenia,
+    CorreoEnviado,
+    
     RegistrarUniversidad,
     RegistrarTipoDNI,
     RegistrarGenero,
+    RegistrarUsuario,
+    RegistrarEstudiante,
     RegistrarFacultad,
     RegistrarCarrera,
     RegistrarCarrera,
     RegistrarCiclo,
     RegistrarMateria,
     RegistrarPeriodoAcademico,
-    RegistrarEstudiante,
     RegistrarDatosHistorico,
     
-    GestionUsuario,
-    GestionGenero,
     GestionUniversidad,
+    GestionGenero,
+    GestionTipoDNI,
+    GestionUsuario,
     GestionFacultad,
     GestionCarrera,
     GestionCiclo,
     GestionMateria,
     GestionEstudiante,
     GestionDatosHistoricos,
+    GestionPeriodoAcademico,
     
-    PredecirDesercion,
-
-    obtener_carreras,
-    obtener_ciclos,
-    obtener_materias,
-    realizar_prediccion,
-
     ImportarDatosModelo,
     ImportarUsuario,
     ImportarEstudiante,
@@ -69,9 +49,18 @@ from .vistas import (
     ImportarGenero,
     ImportarTipoDNI,
     ImportarDatoHistoricos,
+    
+    ObtenerUniversidades,
+    ObtenerFacultades,
+    ObtenerCarreras,
+    ObtenerCiclos,
+    ObtenerMaterias,
+    ObtenerDocentes,
 
-    seleccion_facultad,
-    PredecirDesercion,
+    PrediccionMateria,
+    RealizarPrediccion,
+
+    PRI,
 )
 
 urlpatterns = [
@@ -125,26 +114,19 @@ urlpatterns = [
     path("Cambiar-Contrasenia/<uidb64>/<token>/", CambiarContrasenia, name="Cambiar_Contrasenia"),
     path("Correo-Enviado/<str:uidb64>/<str:token>/", CorreoEnviado, name="Correo_Enviado"),
 
-    # path("Predecir/", PredecirDesercion, name="Predecir_Desercion"),
+    path('Obtener-Universidad/', ObtenerUniversidades, name='Obtener_Universidad'),
+    path('Obtener-Facultad', ObtenerFacultades, name='Obtener_Facultades'),
+    path('Obtener-Carrera/', ObtenerCarreras, name='Obtener_Carreras'),
+    path('Obtener-Ciclo/', ObtenerCiclos, name='Obtener_Ciclos'),
+    path('Obtener-materia/', ObtenerMaterias, name='Obtener_Materias'),
+    path('Obtener-Docente/', ObtenerDocentes, name='Obtener_Docentes'),
 
-    path('Predecir-Desercion/', PredecirDesercion, name='Predecir_Desercion'),
 
-    path('Prediccion-Materia', seleccion_facultad, name='Prediccion_Materia'),
-    path('Obtener-Carrera/', obtener_carreras, name='Obtener_Carreras'),
-    path('Obtener-Ciclo/', obtener_ciclos, name='Obtener_Ciclos'),
-    path('Obtener-materia/', obtener_materias, name='Obtener_Materias'),
+    path('Prediccion-Materia/', PrediccionMateria, name='Prediccion_Materia'),
+    path('Realizar-Prediccion/',RealizarPrediccion, name='Realizar_Prediccion'),
+    # path('Prediccion-Desercion/', Predecir_Desercion, name='Predecir_Desercion'),
 
-    path('Realizar-Prediccion/', realizar_prediccion, name='realizar_prediccion'),
+    # path('Predecir/', PredecirDesercion, name='Predecir_Desercion'),
+    path('1/',PRI, name='PI'),
 
-    path("Grafico/", Grafico, name="Grafico"),
-    path("Prediccion/", Prediccion, name="Prediccion"),
-    path("PrediccionP/", PrediccionPresente, name="Prediccion_Presente"),
-    path("Reporte-Generado/", Reporte, name="Reporte_Generado"),
-    path("Cargar-Informe/", CargarInforme, name="Cargar_Informe"),
-
-    path("Informacion-1/", Informacion1, name="Informacion_1"),
-    path("Informacion-2/", Informacion2, name="Informacion_2"),
-    path("Informacion-3/", Informacion3, name="Informacion_3"),
-    path("Informacion-4/", Informacion4, name="Informacion_4"),
-    path("Galeria/", Galeria, name="Galeria"),
 ]

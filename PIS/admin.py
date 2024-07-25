@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Usuario,
     PeriodoAcademico,
-    DatosHistoricos,
+    DatosHistorico,
     Universidad,
     Estudiante,
     Facultad,
@@ -23,7 +23,7 @@ admin.site.register(Carrera)
 admin.site.register(Ciclo)
 admin.site.register(Materia)
 admin.site.register(PeriodoAcademico)
-admin.site.register(DatosHistoricos)
+admin.site.register(DatosHistorico)
 
 # admin.site.register(InformeCarrera)
 # admin.site.register(InformeMateria)
