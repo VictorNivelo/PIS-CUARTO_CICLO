@@ -1,6 +1,6 @@
 # Proyecto PIS
 
-## Tema: Prediccion de desercion estudiantil por medio de un modelo matematico.
+## Tema: Predicción de desercion estudiantil por medio de un modelo mátematico.
 Proyecto colaborativo del cuarto ciclo de la carrera de Ciencias de la Computación.
 ### Rama principal: Main
 Proyecto desarrollado para realizar las predicciones de deserciones estudiantiles en la carrera de electromecanica.
