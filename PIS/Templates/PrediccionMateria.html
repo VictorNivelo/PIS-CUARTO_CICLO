@@ -554,9 +554,16 @@
             document.getElementById('datosHistoricos').style.display = 'block';
         }
 
+        let matriculaChartInstance = null;
+        let porcentajesChartInstance = null;
+
         function crearGraficoMatricula(data, años) {
             const ctx = document.getElementById('matriculaChart').getContext('2d');
-            new Chart(ctx, {
+            if (matriculaChartInstance) {
+                matriculaChartInstance.destroy();
+            }
+            // new Chart(ctx, {
+            matriculaChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: años,
@@ -784,7 +791,11 @@
 
         function crearGraficoPorcentajes(data, años) {
             const ctx = document.getElementById('porcentajesChart').getContext('2d');
-            new Chart(ctx, {
+            if (porcentajesChartInstance) {
+                porcentajesChartInstance.destroy();
+            }
+            porcentajesChartInstance = new Chart(ctx, {
+                // new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: años,
