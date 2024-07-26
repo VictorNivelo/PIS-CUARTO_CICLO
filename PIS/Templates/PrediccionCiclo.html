@@ -8,13 +8,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
 
-    <title>Predicción de ciclo</title>
+    <title>Predicción de Ciclo</title>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
 
-        html,
-        body {
+        html, body {
             height: 100%;
             margin: 0;
             padding: 0;
@@ -38,10 +37,6 @@
             max-width: 1550px;
             padding: 20px;
             margin: auto;
-        }
-
-        .form-wrapper {
-            padding: 20px;
         }
 
         .t {
@@ -73,22 +68,13 @@
             margin-bottom: 5px;
         }
 
-        select,
-        input[type="number"] {
+        select, input[type="number"] {
             padding: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 14px;
             color: #333;
             width: 100%;
-        }
-
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-top: 20px;
-            align-items: flex-end;
         }
 
         .button-group button {
@@ -138,21 +124,13 @@
             display: none;
         }
 
-        .info-section,
-        .data-section {
-            margin-top: 20px;
-            padding: 5px;
-            border-radius: 5px;
-        }
-
         table {
             width: 80%;
             margin: 10px auto;
             border-collapse: collapse;
         }
 
-        th,
-        td {
+        th, td {
             border: 1px solid #2b2929;
             padding: 8px;
             text-align: center;
@@ -160,23 +138,6 @@
 
         th {
             background-color: #f2f2f2;
-        }
-
-        .breadcrumb {
-            padding: 10px;
-            list-style: none;
-            background-color: #f2f2f2;
-        }
-
-        .breadcrumb li {
-            display: inline;
-            font-size: 14px;
-        }
-
-        .breadcrumb li+li:before {
-            padding: 6px;
-            color: black;
-            content: "/\00a0";
         }
 
         #controlMaterias {
@@ -196,4 +157,144 @@
             margin-right: 5px;
         }
     </style>
-    
+</head>
+
+<body>
+    <div class="caja">
+        <h1 class="t">Predicción de Ciclo</h1>
+        <form id="predictionForm" method="post">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <button type="button" id="btnRegresar" class="btn" onclick="window.history.back();">Regresar</button>
+                </div>
+                <div class="form-group">
+                    <label for="facultad">Facultad:</label>
+                    <select name="facultad" id="facultad" required>
+                        <option value="">Seleccione una facultad</option>
+                        {% for facultad in facultades %}
+                        <option value="{{ facultad.id }}">{{ facultad.abreviacion }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="carrera">Carrera:</label>
+                    <select name="carrera" id="carrera" required>
+                        <option value="">Seleccione una carrera</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ciclo">Ciclo:</label>
+                    <select name="ciclo" id="ciclo" required>
+                        <option value="">Seleccione un ciclo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="anio_inicio">Año de inicio:</label>
+                    <input type="number" name="anio_inicio" id="anio_inicio" required min="2000" max="2100">
+                </div>
+                <div class="form-group">
+                    <label for="anio_fin">Año de fin:</label>
+                    <input type="number" name="anio_fin" id="anio_fin" required min="2000" max="2100">
+                </div>
+                <div class="form-group">
+                    <button type="submit" id="submitBtn" class="btn">Predecir</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="controlMaterias" style="display: none;">
+            <!-- Los checkboxes de materias se insertarán aquí dinámicamente -->
+        </div>
+
+        <h3 class="chart-title" id="matriculaChartTitle" style="display: none;">Predicción de Matrículados, Aprobados, Reprobados y Desertores</h3>
+        <div class="chart-container">
+            <canvas id="matriculaChart"></canvas>
+        </div>
+
+        <h3 class="chart-title" id="porcentajesChartTitle" style="display: none;">Predicción de Porcentajes</h3>
+        <div class="chart-container">
+            <canvas id="porcentajesChart"></canvas>
+        </div>
+
+        <div id="infoSection" class="info-section" style="display: none;">
+            <h3 class="section-title">Información de la predicción</h3>
+            <p><strong>Universidad:</strong> <span id="universidad"></span></p>
+            <p><strong>Facultad:</strong> <span id="facultadInfo"></span></p>
+            <p><strong>Carrera:</strong> <span id="carreraInfo"></span></p>
+            <p><strong>Ciclo:</strong> <span id="cicloInfo"></span></p>
+            <p><strong>Periodo de predicción:</strong> <span id="periodo"></span></p>
+        </div>
+
+        <div id="matriculaTable" class="data-section" style="display: none;">
+            <h3 class="section-title">Datos de estudiantes por año</h3>
+            <table id="matriculaDataTable">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Matriculados</th>
+                        <th>Aprobados</th>
+                        <th>Reprobados</th>
+                        <th>Desertores</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="porcentajesTable" class="data-section" style="display: none;">
+            <h3 class="section-title">Porcentajes estudiantes por año</h3>
+            <table id="porcentajesDataTable">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Porcentaje de matriculados</th>
+                        <th>Porcentaje de aprobados</th>
+                        <th>Porcentaje de reprobados</th>
+                        <th>Porcentaje de desertores</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="promediosTable" class="data-section" style="display: none;">
+            <h3 class="section-title">Promedios de porcentajes de factores de estudiantes</h3>
+            <table id="promediosDataTable">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Modalidad</th>
+                        <th>Tipo de Educación</th>
+                        <th>Origen</th>
+                        <th>Trabajo</th>
+                        <th>Discapacidad</th>
+                        <th>Hijos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="button-container" style="text-align: center; margin-top: 20px; display: none;" id="descargarInformeContainer">
+            <button id="btnDescargarInforme" class="btn btn-primary">Descargar Informe</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Código JavaScript aquí
+        });
+    </script>
+</body>
+
+</html>

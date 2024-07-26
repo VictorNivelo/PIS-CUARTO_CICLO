@@ -140,9 +140,8 @@
 
         .info-section,
         .data-section {
-            margin-top: 20px;
-            padding: 5px;
             border-radius: 5px;
+            margin: 10px auto;
         }
 
         table {
@@ -261,7 +260,7 @@
 
         <hr class="section-divider" style="display: none;">
 
-        <div id="infoSection" class="info-section" style="display: none;">
+        <div id="infoSection" class="info-section" style="display: none; padding: 130px;">
             <h3 class="section-title">Información de la predicción</h3>
             <p><strong>Universidad:</strong> <span id="universidad"></span></p>
             <p><strong>Facultad:</strong> <span id="facultadInfo"></span></p>
@@ -273,7 +272,7 @@
         </div>
 
         <div id="matriculaTable" class="data-section" style="display: none;">
-            <h3 class="section-title">Datos de matrícula por año</h3>
+            <h3 class="section-title">Datos de estudiantes por año</h3>
             <table id="matriculaDataTable">
                 <thead>
                     <tr>
@@ -290,15 +289,15 @@
         </div>
 
         <div id="porcentajesTable" class="data-section" style="display: none;">
-            <h3 class="section-title">Porcentajes por año</h3>
+            <h3 class="section-title">Porcentajes estudiantes por año</h3>
             <table id="porcentajesDataTable">
                 <thead>
                     <tr>
                         <th>Año</th>
-                        <th>% Matriculados</th>
-                        <th>% Aprobados</th>
-                        <th>% Reprobados</th>
-                        <th>% Desertores</th>
+                        <th>Porcentaje de matriculados</th>
+                        <th>Porcentaje de aprobados</th>
+                        <th>Porcentaje de reprobados</th>
+                        <th>Porcentaje de desertores</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -307,7 +306,7 @@
         </div>
 
         <div id="promediosTable" class="data-section" style="display: none;">
-            <h3 class="section-title">Promedios de porcentajes</h3>
+            <h3 class="section-title">Promedios de porcentajes de factores de estudiantes</h3>
             <table id="promediosDataTable">
                 <thead>
                     <tr>
@@ -326,11 +325,12 @@
         </div>
 
         <div id="datosHistoricos" class="data-section" style="display: none;">
-            <h3 class="section-title">Datos Históricos</h3>
+            <h3 class="section-title">Datos históricos usados para la predicción</h3>
             <table id="datosHistoricosTable">
                 <thead>
                     <tr>
                         <th>Año</th>
+                        <th>Periodo</th>
                         <th>Matriculados</th>
                         <th>Aprobados</th>
                         <th>Reprobados</th>
@@ -514,8 +514,10 @@
                     crearTablaPorcentajes(data, años);
                     crearTablaPromedios(data, años);
 
-                    if (data.datosHistoricos) {
+                    if (data.datosHistoricos && data.datosHistoricos.length > 0) {
                         mostrarDatosHistoricos(data.datosHistoricos);
+                    } else {
+                        console.log("No se recibieron datos históricos");
                     }
 
                     return fetch(`{% url 'Obtener_Docentes' %}?materia_id=${formData.get('materia')}`)
@@ -543,15 +545,24 @@
         function mostrarDatosHistoricos(datosHistoricos) {
             const tabla = document.getElementById('datosHistoricosTable').getElementsByTagName('tbody')[0];
             tabla.innerHTML = '';
-            datosHistoricos.forEach(dato => {
+            if (datosHistoricos && datosHistoricos.length > 0) {
+                datosHistoricos.forEach(dato => {
+                    let fila = tabla.insertRow();
+                    fila.insertCell(0).textContent = dato.periodo_academico__fecha_inicio__year;
+                    fila.insertCell(1).textContent = dato.periodo_academico__fecha_inicio__day;
+                    fila.insertCell(2).textContent = dato.cantidad_matriculados;
+                    fila.insertCell(3).textContent = dato.cantidad_aprobados;
+                    fila.insertCell(4).textContent = dato.cantidad_reprobados;
+                    fila.insertCell(5).textContent = dato.cantidad_desertores;
+                });
+                document.getElementById('datosHistoricos').style.display = 'block';
+            } else {
                 let fila = tabla.insertRow();
-                fila.insertCell(0).textContent = dato.año;
-                fila.insertCell(1).textContent = dato.matriculados;
-                fila.insertCell(2).textContent = dato.aprobados;
-                fila.insertCell(3).textContent = dato.reprobados;
-                fila.insertCell(4).textContent = dato.desertores;
-            });
-            document.getElementById('datosHistoricos').style.display = 'block';
+                let celda = fila.insertCell(0);
+                celda.colSpan = 6;
+                celda.textContent = "No hay datos históricos disponibles";
+                document.getElementById('datosHistoricos').style.display = 'block';
+            }
         }
 
         let matriculaChartInstance = null;
@@ -605,14 +616,14 @@
                             display: true,
                             title: {
                                 display: true,
-                                text: 'Año'
+                                text: 'Año (s)'
                             }
                         },
                         y: {
                             display: true,
                             title: {
                                 display: true,
-                                text: 'Cantidad'
+                                text: 'Estudiantes'
                             }
                         }
                     }

@@ -34,6 +34,7 @@ from docx import Document
 import numpy as np
 import pdfplumber
 import openpyxl
+import logging
 import PyPDF2
 import json
 import csv
@@ -2021,6 +2022,7 @@ def PredecirMetricas(request):
             Avg("cantidad_reprobados"),
             Avg("cantidad_desertores"),
             Avg("promedio_modalidad"),
+            Avg("periodo_academico"),
             Avg("promedio_tipo_educacion"),
             Avg("promedio_origen"),
             Avg("promedio_trabajo"),
@@ -2103,8 +2105,6 @@ def runge_kutta(funcion, valores_iniciales, tiempo):
     return y
 
 
-import logging
-
 logger = logging.getLogger(__name__)
 
 
@@ -2120,6 +2120,16 @@ def RealizarPrediccion(request):
                 materia_id=materia_id,
                 periodo_academico__fecha_inicio__year__lt=anio_inicio,
             ).order_by("periodo_academico__fecha_inicio")
+
+            datos_historicos_lista = list(
+                datos_historicos.values(
+                    "periodo_academico__fecha_inicio__year",
+                    "cantidad_matriculados",
+                    "cantidad_aprobados",
+                    "cantidad_reprobados",
+                    "cantidad_desertores",
+                )
+            )
 
             stats = datos_historicos.aggregate(
                 Avg("cantidad_matriculados"),
@@ -2162,16 +2172,16 @@ def RealizarPrediccion(request):
             params = [0.2, 0.1, 0.6, 0.2, 0.3, 0.1, 0.2, 0.1, 0.05, 0.05]
 
             y0 = [
-                stats["cantidad_matriculados__avg"],
-                stats["cantidad_aprobados__avg"],
-                stats["cantidad_reprobados__avg"],
-                stats["cantidad_desertores__avg"],
-                stats["promedio_modalidad__avg"],
-                stats["promedio_tipo_educacion__avg"],
-                stats["promedio_origen__avg"],
-                stats["promedio_trabajo__avg"],
-                stats["promedio_discapacidad__avg"],
-                stats["promedio_hijos__avg"],
+                stats["cantidad_matriculados__avg"] or 0,
+                stats["cantidad_aprobados__avg"] or 0,
+                stats["cantidad_reprobados__avg"] or 0,
+                stats["cantidad_desertores__avg"] or 0,
+                stats["promedio_modalidad__avg"] or 0,
+                stats["promedio_tipo_educacion__avg"] or 0,
+                stats["promedio_origen__avg"] or 0,
+                stats["promedio_trabajo__avg"] or 0,
+                stats["promedio_discapacidad__avg"] or 0,
+                stats["promedio_hijos__avg"] or 0,
             ]
 
             t = np.linspace(
@@ -2204,11 +2214,13 @@ def RealizarPrediccion(request):
                 "trabajo": sol_con_ruido[::12, 7].tolist(),
                 "discapacidad": sol_con_ruido[::12, 8].tolist(),
                 "hijos": sol_con_ruido[::12, 9].tolist(),
+                "datosHistoricos": datos_historicos_lista,
             }
 
             return JsonResponse(predicciones)
 
         except Exception as e:
+            logger.error(f"Error en RealizarPrediccion: {str(e)}")
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
