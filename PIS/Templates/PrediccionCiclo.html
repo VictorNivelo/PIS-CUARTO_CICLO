@@ -7,43 +7,93 @@
     <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
 
     <title>Predicción de Ciclo</title>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
 
-        html, body {
+        html,
+        body {
             height: 100%;
             margin: 0;
             padding: 0;
-        }
-
-        body {
-            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
-            background-size: cover;
-            font-family: Arial, sans-serif;
-            display: flex;
             justify-content: center;
             align-items: center;
+            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Open Sans', sans-serif;
+            position: relative;
+        }
+
+        html::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.500);
+            z-index: 1;
         }
 
         .caja {
+            position: relative;
+            z-index: 2;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            min-height: 750px;
-            width: 100%;
             max-width: 1550px;
-            padding: 20px;
-            margin: auto;
+            margin: 30px auto;
+            padding: 30px;
         }
 
-        .t {
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .header-logo {
+            position: absolute;
+        }
+
+        .header-logo img {
+            width: 220px;
+            height: auto;
+        }
+
+        .title-and-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .title {
             font-family: 'Lobster', cursive;
-            text-align: center;
-            margin-bottom: 30px;
             color: #333;
+            margin: 0;
+            font-size: 2.5rem;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb-item a {
+            color: #298eb6;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #1c4066;
         }
 
         .form-row {
@@ -66,10 +116,17 @@
             color: #555;
             font-weight: bold;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
         }
 
-        select, input[type="number"] {
-            padding: 5px;
+        label i {
+            margin-right: 5px;
+        }
+
+        select,
+        input[type="number"] {
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 14px;
@@ -77,29 +134,41 @@
             width: 100%;
         }
 
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+            align-items: flex-end;
+        }
+
         .button-group button {
-            padding: 10px;
+            padding: 10px 15px;
             border: none;
             border-radius: 5px;
-            margin: 0 10px;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
         }
 
         #btnRegresar {
-            background-color: #f0ad4e;
-            color: white;
+            background-color: #e74c3c;
+            color: #ffffff !important;
         }
 
         #btnRegresar:hover {
-            background-color: #eea236;
+            background-color: #af3a2d;
         }
 
         #submitBtn {
-            background-color: #3fc582;
-            color: white;
+            background-color: #28a745;
+            color: #ffffff !important;
         }
 
         #submitBtn:hover {
-            background-color: #177039;
+            background-color: #218838;
         }
 
         .chart-container {
@@ -110,7 +179,7 @@
 
         .section-title {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 20px;
             margin-bottom: 20px;
             font-weight: bold;
             color: #333;
@@ -124,56 +193,79 @@
             display: none;
         }
 
-        table {
-            width: 80%;
-            margin: 10px auto;
-            border-collapse: collapse;
+        .info-section {
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 800px;
         }
 
-        th, td {
-            border: 1px solid #2b2929;
+        .data-section {
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 1200px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
             padding: 8px;
             text-align: center;
         }
 
         th {
             background-color: #f2f2f2;
+            font-weight: bold;
         }
 
-        #controlMaterias {
+        .button-container {
+            text-align: center;
             margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        #controlMaterias label {
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        #controlMaterias input[type="checkbox"] {
-            margin-right: 5px;
         }
     </style>
 </head>
 
 <body>
     <div class="caja">
-        <h1 class="t">Predicción de Ciclo</h1>
+        <div class="header">
+            <div class="header-logo">
+                <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo de la Universidad">
+            </div>
+            <div class="title-and-logo">
+                <h1 class="title">Predicción de desercion por ciclo</h1>
+            </div>
+        </div>
+
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
+                    Inicio de sesión</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'Pagina_Secretaria' %}"><i class="fas fa-building"></i>
+                    Página-Secretaria</a></li>
+            <li class="breadcrumb-item active"><i class="fas fa-book"></i> Predicción de ciclo</li>
+        </ul>
         <form id="predictionForm" method="post">
             {% csrf_token %}
             <div class="form-row">
                 <div class="form-group">
-                    <button type="button" id="btnRegresar" class="btn" onclick="window.history.back();">Regresar</button>
+                    <button type="button" id="btnRegresar" class="btn"
+                        onclick="window.history.back();">Regresar</button>
                 </div>
                 <div class="form-group">
                     <label for="facultad">Facultad:</label>
                     <select name="facultad" id="facultad" required>
                         <option value="">Seleccione una facultad</option>
                         {% for facultad in facultades %}
-                        <option value="{{ facultad.id }}">{{ facultad.abreviacion }}</option>
+                        <!-- <option value="{{ facultad.id }}">{{ facultad.abreviacion }}</option> -->
+                        <option value="{{ facultad.id }}" data-nombre-completo="{{ facultad.nombre_facultad }}">
+                            {{ facultad.abreviacion }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -181,12 +273,18 @@
                     <label for="carrera">Carrera:</label>
                     <select name="carrera" id="carrera" required>
                         <option value="">Seleccione una carrera</option>
+                        {% for carrera in carreras %}
+                        <option value="{{ carrera.id }}">{{ carrera.nombre_carrera }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="ciclo">Ciclo:</label>
                     <select name="ciclo" id="ciclo" required>
                         <option value="">Seleccione un ciclo</option>
+                        {% for ciclo in ciclos %}
+                        <option value="{{ ciclo.id }}">{{ ciclo.nombre_ciclo }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
@@ -203,11 +301,18 @@
             </div>
         </form>
 
-        <div id="controlMaterias" style="display: none;">
-            <!-- Los checkboxes de materias se insertarán aquí dinámicamente -->
+        <div id="infoSection" class="info-section" style="display: none;">
+            <h3 class="section-title">Información de la predicción</h3>
+            <p><strong>Universidad:</strong> <span id="universidad"></span></p>
+            <p><strong>Facultad:</strong> <span id="facultadInfo"></span></p>
+            <p><strong>Carrera:</strong> <span id="carreraInfo"></span></p>
+            <p><strong>Ciclo:</strong> <span id="cicloInfo"></span></p>
+            <div id="materiasContainer"></div>
+            <p><strong>Periodo de predicción:</strong> <span id="periodo"></span></p>
         </div>
 
-        <h3 class="chart-title" id="matriculaChartTitle" style="display: none;">Predicción de Matrículados, Aprobados, Reprobados y Desertores</h3>
+        <h3 class="chart-title" id="matriculaChartTitle" style="display: none;">Predicción de Matrículados, Aprobados,
+            Reprobados y Desertores</h3>
         <div class="chart-container">
             <canvas id="matriculaChart"></canvas>
         </div>
@@ -217,15 +322,6 @@
             <canvas id="porcentajesChart"></canvas>
         </div>
 
-        <div id="infoSection" class="info-section" style="display: none;">
-            <h3 class="section-title">Información de la predicción</h3>
-            <p><strong>Universidad:</strong> <span id="universidad"></span></p>
-            <p><strong>Facultad:</strong> <span id="facultadInfo"></span></p>
-            <p><strong>Carrera:</strong> <span id="carreraInfo"></span></p>
-            <p><strong>Ciclo:</strong> <span id="cicloInfo"></span></p>
-            <p><strong>Periodo de predicción:</strong> <span id="periodo"></span></p>
-        </div>
-
         <div id="matriculaTable" class="data-section" style="display: none;">
             <h3 class="section-title">Datos de estudiantes por año</h3>
             <table id="matriculaDataTable">
@@ -233,15 +329,21 @@
                     <tr>
                         <th>Año</th>
                         <th>Matriculados</th>
+                        <th>% Matriculados</th>
                         <th>Aprobados</th>
+                        <th>% Aprobados</th>
                         <th>Reprobados</th>
+                        <th>% Reprobados</th>
                         <th>Desertores</th>
+                        <th>% Desertores</th>
+                        <th>Ciclo</th>
                     </tr>
                 </thead>
                 <tbody>
                 </tbody>
             </table>
         </div>
+
 
         <div id="porcentajesTable" class="data-section" style="display: none;">
             <h3 class="section-title">Porcentajes estudiantes por año</h3>
@@ -279,7 +381,28 @@
             </table>
         </div>
 
-        <div class="button-container" style="text-align: center; margin-top: 20px; display: none;" id="descargarInformeContainer">
+        <div id="datosHistoricos" class="data-section" style="display: none;">
+            <h3 class="section-title">Datos históricos usados para la predicción</h3>
+            <table id="datosHistoricosTable">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Periodo</th>
+                        <th>Materia</th>
+                        <th>Ciclo</th>
+                        <th>Matriculados</th>
+                        <th>Aprobados</th>
+                        <th>Reprobados</th>
+                        <th>Desertores</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="button-container" style="text-align: center; margin-top: 20px; display: none;"
+            id="descargarInformeContainer">
             <button id="btnDescargarInforme" class="btn btn-primary">Descargar Informe</button>
         </div>
     </div>
@@ -291,8 +414,411 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Código JavaScript aquí
+        document.getElementById('facultad').addEventListener('change', function () {
+            cargarCarreras(this.value);
+            limpiarSelecciones(['carrera', 'ciclo']);
+        });
+
+        document.getElementById('carrera').addEventListener('change', function () {
+            if (!document.getElementById('facultad').value) {
+                mostrarError('Seleccione una facultad primero');
+                return;
+            }
+            cargarCiclos(this.value);
+            limpiarSelecciones(['ciclo']);
+        });
+
+        function cargarCarreras(facultadId) {
+            if (!facultadId) {
+                mostrarError('Seleccione una facultad primero');
+                return;
+            }
+            fetch(`{% url 'Obtener_Carreras' %}?facultad_id=${facultadId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const carreraSelect = document.getElementById('carrera');
+                    carreraSelect.innerHTML = '<option value="">Seleccione una carrera</option>';
+                    data.forEach(carrera => {
+                        carreraSelect.innerHTML += `<option value="${carrera.id}">${carrera.nombre_carrera}</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar carreras:', error);
+                    mostrarError('No se pudieron cargar las carreras');
+                });
+        }
+
+        function cargarCiclos(carreraId) {
+            if (!carreraId) {
+                mostrarError('Seleccione una carrera primero');
+                return;
+            }
+            fetch(`{% url 'Obtener_Ciclos' %}?carrera_id=${carreraId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const cicloSelect = document.getElementById('ciclo');
+                    cicloSelect.innerHTML = '<option value="">Seleccione un ciclo</option>';
+                    data.forEach(ciclo => {
+                        cicloSelect.innerHTML += `<option value="${ciclo.id}">${ciclo.nombre_ciclo}</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar ciclos:', error);
+                    mostrarError('No se pudieron cargar los ciclos');
+                });
+        }
+
+        function limpiarSelecciones(ids) {
+            ids.forEach(id => {
+                document.getElementById(id).innerHTML = `<option value="">Seleccione un ${id}</option>`;
+            });
+        }
+
+        function mostrarError(mensaje) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: mensaje
+            });
+        }
+
+        function validarFormulario() {
+            const campos = ['facultad', 'carrera', 'ciclo', 'anio_inicio', 'anio_fin'];
+            for (let campo of campos) {
+                if (!document.getElementById(campo).value) {
+                    mostrarError(`Por favor, seleccione un ${campo.replace('_', ' ')}.`);
+                    return false;
+                }
+            }
+            return validarAnios();
+        }
+
+        function validarAnios() {
+            const anioInicio = parseInt(document.getElementById('anio_inicio').value);
+            const anioFin = parseInt(document.getElementById('anio_fin').value);
+
+            if (anioInicio > anioFin) {
+                mostrarError('El año de inicio no puede ser superior al año de fin.');
+                return false;
+            }
+            return true;
+        }
+
+        document.getElementById('predictionForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (validarFormulario()) {
+                realizarPrediccion();
+            }
+        });
+
+        function realizarPrediccion() {
+            const formData = new FormData(document.getElementById('predictionForm'));
+
+            fetch("{% url 'Prediccion_Ciclo' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Datos recibidos:", data);
+
+                    if (!data.años || data.años.length === 0) {
+                        throw new Error("No se recibieron años para la predicción");
+                    }
+
+                    const años = data.años;
+                    const ultimoIndice = años.length - 1;
+
+                    crearGraficoMatricula(data, años);
+                    crearGraficoPorcentajes(data, años);
+
+                    crearTablaMatricula(data, años);
+                    crearTablaPromedios(data, años);
+
+                    if (data.datosHistoricos && data.datosHistoricos.length > 0) {
+                        mostrarDatosHistoricos(data.datosHistoricos);
+                    } else {
+                        console.log("No se recibieron datos históricos");
+                    }
+
+                    actualizarInformacion(data);
+
+                    document.getElementById('descargarInformeContainer').style.display = 'block';
+
+                    document.querySelectorAll('.chart-title, .section-divider').forEach(el => el.style.display = 'block');
+
+                    console.log("Gráficos y tablas creados exitosamente");
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mostrarError('Algo salió mal al realizar la predicción: ' + error.message);
+                });
+        }
+
+        let matriculaChartInstance = null;
+        let porcentajesChartInstance = null;
+
+        function crearGraficoMatricula(data, años) {
+            const ctx = document.getElementById('matriculaChart').getContext('2d');
+            if (matriculaChartInstance) {
+                matriculaChartInstance.destroy();
+            }
+            matriculaChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: años,
+                    datasets: [
+                        {
+                            label: 'Matriculados',
+                            data: data.matriculados,
+                            borderColor: 'blue',
+                            fill: false
+                        },
+                        {
+                            label: 'Aprobados',
+                            data: data.aprobados,
+                            borderColor: 'green',
+                            fill: false
+                        },
+                        {
+                            label: 'Reprobados',
+                            data: data.reprobados,
+                            borderColor: 'orange',
+                            fill: false
+                        },
+                        {
+                            label: 'Desertores',
+                            data: data.desertores,
+                            borderColor: 'red',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Predicción de Matrícula, Aprobados, Reprobados y Desertores'
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Año (s)'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Estudiantes'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficoPorcentajes(data, años) {
+            const ctx = document.getElementById('porcentajesChart').getContext('2d');
+            if (porcentajesChartInstance) {
+                porcentajesChartInstance.destroy();
+            }
+            porcentajesChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: años,
+                    datasets: [
+                        {
+                            label: 'Modalidad',
+                            data: data.modalidad,
+                            borderColor: 'purple',
+                            fill: false
+                        },
+                        {
+                            label: 'Tipo de Educación',
+                            data: data.tipo_educacion,
+                            borderColor: 'brown',
+                            fill: false
+                        },
+                        {
+                            label: 'Origen',
+                            data: data.origen,
+                            borderColor: 'pink',
+                            fill: false
+                        },
+                        {
+                            label: 'Trabajo',
+                            data: data.trabajo,
+                            borderColor: 'cyan',
+                            fill: false
+                        },
+                        {
+                            label: 'Discapacidad',
+                            data: data.discapacidad,
+                            borderColor: 'magenta',
+                            fill: false
+                        },
+                        {
+                            label: 'Hijos',
+                            data: data.hijos,
+                            borderColor: 'yellow',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Predicción de Porcentajes'
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Año'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Porcentaje'
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function actualizarInformacion(data) {
+            const infoSection = document.getElementById('infoSection');
+            if (infoSection) {
+                infoSection.style.display = 'block';
+                document.getElementById('universidad').textContent = 'Universidad Nacional de Loja';
+
+                const facultadSelect = document.getElementById('facultad');
+                const facultadOption = facultadSelect.options[facultadSelect.selectedIndex];
+                const facultadNombreCompleto = facultadOption.getAttribute('data-nombre-completo');
+                document.getElementById('facultadInfo').textContent = facultadNombreCompleto;
+
+                document.getElementById('carreraInfo').textContent = document.getElementById('carrera').options[document.getElementById('carrera').selectedIndex].text;
+                document.getElementById('cicloInfo').textContent = document.getElementById('ciclo').options[document.getElementById('ciclo').selectedIndex].text;
+                document.getElementById('periodo').textContent = `${document.getElementById('anio_inicio').value} - ${document.getElementById('anio_fin').value}`;
+
+                const materiasLista = document.createElement('ul');
+                data.materias.forEach(materia => {
+                    const li = document.createElement('li');
+                    li.textContent = materia;
+                    materiasLista.appendChild(li);
+                });
+
+                const materiasContainer = document.getElementById('materiasContainer');
+                if (materiasContainer) {
+                    materiasContainer.innerHTML = '<strong>Materias incluidas:</strong>';
+                    materiasContainer.appendChild(materiasLista);
+                } else {
+                    console.error('Elemento materiasContainer no encontrado');
+                }
+            } else {
+                console.error('Elemento infoSection no encontrado');
+            }
+        }
+
+        function crearTablaMatricula(data, años) {
+            const matriculaTable = document.getElementById('matriculaTable');
+            const matriculaTableBody = document.getElementById('matriculaDataTable')?.getElementsByTagName('tbody')[0];
+            if (matriculaTable && matriculaTableBody) {
+                matriculaTable.style.display = 'block';
+                matriculaTableBody.innerHTML = '';
+                for (let i = 0; i < años.length; i++) {
+                    let row = matriculaTableBody.insertRow();
+                    row.insertCell(0).textContent = años[i];
+                    row.insertCell(1).textContent = Math.round(data.matriculados[i]);
+                    row.insertCell(2).textContent = (100).toFixed(2) + '%';
+                    row.insertCell(3).textContent = Math.round(data.aprobados[i]);
+                    row.insertCell(4).textContent = (data.aprobados[i] / data.matriculados[i] * 100).toFixed(2) + '%';
+                    row.insertCell(5).textContent = Math.round(data.reprobados[i]);
+                    row.insertCell(6).textContent = (data.reprobados[i] / data.matriculados[i] * 100).toFixed(2) + '%';
+                    row.insertCell(7).textContent = Math.round(data.desertores[i]);
+                    row.insertCell(8).textContent = (data.desertores[i] / data.matriculados[i] * 100).toFixed(2) + '%';
+                    row.insertCell(9).textContent = document.getElementById('ciclo').options[document.getElementById('ciclo').selectedIndex].text;
+                }
+            } else {
+                console.error('Elemento de tabla no encontrado');
+            }
+        }
+
+        function crearTablaPromedios(data, años) {
+            const promediosTable = document.getElementById('promediosTable');
+            const promediosTableBody = document.getElementById('promediosDataTable')?.getElementsByTagName('tbody')[0];
+            if (promediosTable && promediosTableBody) {
+                promediosTable.style.display = 'block';
+                promediosTableBody.innerHTML = '';
+                for (let i = 0; i < años.length; i++) {
+                    let row = promediosTableBody.insertRow();
+                    row.insertCell(0).textContent = años[i];
+                    row.insertCell(1).textContent = data.modalidad[i].toFixed(2) + '%';
+                    row.insertCell(2).textContent = data.tipo_educacion[i].toFixed(2) + '%';
+                    row.insertCell(3).textContent = data.origen[i].toFixed(2) + '%';
+                    row.insertCell(4).textContent = data.trabajo[i].toFixed(2) + '%';
+                    row.insertCell(5).textContent = data.discapacidad[i].toFixed(2) + '%';
+                    row.insertCell(6).textContent = data.hijos[i].toFixed(2) + '%';
+                }
+            } else {
+                console.error('Elemento de tabla no encontrado');
+            }
+        }
+
+        function mostrarDatosHistoricos(datosHistoricos) {
+            const tabla = document.getElementById('datosHistoricosTable')?.getElementsByTagName('tbody')[0];
+            if (tabla) {
+                tabla.innerHTML = '';
+                if (datosHistoricos && datosHistoricos.length > 0) {
+                    datosHistoricos.forEach(dato => {
+                        let fila = tabla.insertRow();
+                        fila.insertCell(0).textContent = dato.periodo_academico__fecha_inicio__year;
+                        fila.insertCell(1).textContent = dato.periodo_academico__codigo_periodo_academico;
+                        fila.insertCell(2).textContent = dato.materia__nombre_materia;
+                        fila.insertCell(3).textContent = dato.materia__ciclo__nombre_ciclo;
+                        fila.insertCell(4).textContent = dato.cantidad_matriculados;
+                        fila.insertCell(5).textContent = dato.cantidad_aprobados;
+                        fila.insertCell(6).textContent = dato.cantidad_reprobados;
+                        fila.insertCell(7).textContent = dato.cantidad_desertores;
+                    });
+                    document.getElementById('datosHistoricos').style.display = 'block';
+                } else {
+                    let fila = tabla.insertRow();
+                    let celda = fila.insertCell(0);
+                    celda.colSpan = 8;
+                    celda.textContent = "No hay datos históricos disponibles";
+                    document.getElementById('datosHistoricos').style.display = 'block';
+                }
+            } else {
+                console.error('Tabla de datos históricos no encontrada');
+            }
+        }
+
+
+        document.getElementById('btnDescargarInforme').addEventListener('click', function () {
+            generarInformePDF();
         });
     </script>
 </body>

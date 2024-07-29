@@ -7,6 +7,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
 
     <title>Predicción de Materia</title>
 
@@ -18,37 +19,81 @@
             height: 100%;
             margin: 0;
             padding: 0;
-        }
-
-        body {
-            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
-            background-size: cover;
-            font-family: Arial, sans-serif;
-            display: flex;
             justify-content: center;
             align-items: center;
+            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Open Sans', sans-serif;
+            position: relative;
+        }
+
+        html::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.500);
+            z-index: 1;
         }
 
         .caja {
+            position: relative;
+            z-index: 2;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            min-height: 750px;
-            width: 100%;
             max-width: 1550px;
-            padding: 20px;
-            margin: auto;
+            margin: 30px auto;
+            padding: 30px;
         }
 
-        .form-wrapper {
-            padding: 20px;
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
         }
 
-        .t {
+        .header-logo {
+            position: absolute;
+        }
+
+        .header-logo img {
+            width: 220px;
+            height: auto;
+        }
+
+        .title-and-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .title {
             font-family: 'Lobster', cursive;
-            text-align: center;
-            margin-bottom: 30px;
             color: #333;
+            margin: 0;
+            font-size: 2.5rem;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb-item a {
+            color: #298eb6;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #1c4066;
         }
 
         .form-row {
@@ -71,11 +116,17 @@
             color: #555;
             font-weight: bold;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        label i {
+            margin-right: 5px;
         }
 
         select,
         input[type="number"] {
-            padding: 5px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 14px;
@@ -92,28 +143,32 @@
         }
 
         .button-group button {
-            padding: 10px;
+            padding: 10px 15px;
             border: none;
             border-radius: 5px;
-            margin: 0 10px;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
         }
 
         #btnRegresar {
-            background-color: #f0ad4e;
-            color: white;
+            background-color: #e74c3c;
+            color: #ffffff !important;
         }
 
         #btnRegresar:hover {
-            background-color: #eea236;
+            background-color: #af3a2d;
         }
 
         #submitBtn {
-            background-color: #3fc582;
-            color: white;
+            background-color: #28a745;
+            color: #ffffff !important;
         }
 
         #submitBtn:hover {
-            background-color: #177039;
+            background-color: #218838;
         }
 
         .chart-container {
@@ -124,7 +179,7 @@
 
         .section-title {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 20px;
             margin-bottom: 20px;
             font-weight: bold;
             color: #333;
@@ -138,74 +193,85 @@
             display: none;
         }
 
-        .info-section,
+        .info-section {
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 800px;
+        }
+
         .data-section {
-            border-radius: 5px;
-            margin: 10px auto;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 1200px;
         }
 
         table {
-            width: 80%;
-            margin: 10px auto;
+            width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
 
         th,
         td {
-            border: 1px solid #2b2929;
+            border: 1px solid #ccc;
             padding: 8px;
             text-align: center;
         }
 
         th {
             background-color: #f2f2f2;
+            font-weight: bold;
         }
 
-        .breadcrumb {
-            padding: 10px;
-            list-style: none;
-            background-color: #f2f2f2;
-        }
-
-        .breadcrumb li {
-            display: inline;
-            font-size: 14px;
-        }
-
-        .breadcrumb li+li:before {
-            padding: 6px;
-            color: black;
-            content: "/\00a0";
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
 
 <body>
     <div class="caja">
+        <div class="header">
+            <div class="header-logo">
+                <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo de la Universidad">
+            </div>
+            <div class="title-and-logo">
+                <h1 class="title">Predicción de desercion por materia</h1>
+            </div>
+        </div>
+
         <ul class="breadcrumb">
-            <li><a href="#">Inicio</a></li>
-            <li><a href="{% url 'Pagina_Secretaria' %}">Pagina-Secretaria</a></li>
-            <li>Predicción de Materia</li>
+            <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
+                    Inicio de sesión</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'Pagina_Secretaria' %}"><i class="fas fa-building"></i>
+                    Página-Secretaria</a></li>
+            <li class="breadcrumb-item active"><i class="fas fa-book"></i> Predicción de Materia</li>
         </ul>
-        <h1 class="t">Predicción de Materia</h1>
+
         <form id="predictionForm" method="post">
             {% csrf_token %}
             <div class="form-row">
                 <div class="form-group">
-                    <button type="button" id="btnRegresar" class="btn"
-                        onclick="window.history.back();">Regresar</button>
+                    <button type="button" id="btnRegresar" class="btn" onclick="window.history.back();"><i
+                            class="fas fa-arrow-left"></i>Regresar</button>
                 </div>
                 <div class="form-group">
-                    <label for="facultad">Facultad:</label>
+                    <label for="facultad"><i class="fas fa-building"></i> Facultad:</label>
                     <select name="facultad" id="facultad" required>
                         <option value="">Seleccione una facultad</option>
                         {% for facultad in facultades %}
-                        <option value="{{ facultad.id }}">{{ facultad.abreviacion }}</option>
+                        <!-- <option value="{{ facultad.id }}">{{ facultad.abreviacion }}</option> -->
+                        <option value="{{ facultad.id }}" data-nombre-completo="{{ facultad.nombre_facultad }}">
+                            {{ facultad.abreviacion }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="carrera">Carrera:</label>
+                    <label for="carrera"><i class="fas fa-graduation-cap"></i>Carrera:</label>
                     <select name="carrera" id="carrera" required>
                         <option value="">Seleccione una carrera</option>
                         {% for carrera in carreras %}
@@ -214,7 +280,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="ciclo">Ciclo:</label>
+                    <label for="ciclo"><i class="fas fa-calendar-week"></i>Ciclo:</label>
                     <select name="ciclo" id="ciclo" required>
                         <option value="">Seleccione un ciclo</option>
                         {% for ciclo in ciclos %}
@@ -223,7 +289,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="materia">Materia:</label>
+                    <label for="materia"><i class="fas fa-book"></i>Materia:</label>
                     <select name="materia" id="materia" required>
                         <option value="">Seleccione una materia</option>
                         {% for materia in materias %}
@@ -232,35 +298,20 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="anio_inicio">Año de inicio:</label>
+                    <label for="anio_inicio"><i class="fas fa-calendar-alt"></i>Año de inicio:</label>
                     <input type="number" name="anio_inicio" id="anio_inicio" required min="2000" max="2100">
                 </div>
                 <div class="form-group">
-                    <label for="anio_fin">Año de fin:</label>
+                    <label for="anio_fin"><i class="fas fa-calendar-year"></i>Año de fin:</label>
                     <input type="number" name="anio_fin" id="anio_fin" required min="2000" max="2100">
                 </div>
                 <div class="form-group">
-                    <button type="submit" id="submitBtn" class="btn">Predecir</button>
+                    <button type="submit" id="submitBtn" class="btn"><i class="fas fa-chart-line"></i> Predecir</button>
                 </div>
             </div>
         </form>
 
-        <h3 class="chart-title" id="matriculaChartTitle" style="display: none;">Predicción de Matrículados, Aprobados,
-            Reprobados y Desertores</h3>
-        <div class="chart-container">
-            <canvas id="matriculaChart"></canvas>
-        </div>
-
-        <!-- <hr class="section-divider" style="display: none;"> -->
-
-        <h3 class="chart-title" id="porcentajesChartTitle" style="display: none;">Predicción de Porcentajes</h3>
-        <div class="chart-container">
-            <canvas id="porcentajesChart"></canvas>
-        </div>
-
-        <hr class="section-divider" style="display: none;">
-
-        <div id="infoSection" class="info-section" style="display: none; padding: 130px;">
+        <div id="infoSection" class="info-section" style="display: none;">
             <h3 class="section-title">Información de la predicción</h3>
             <p><strong>Universidad:</strong> <span id="universidad"></span></p>
             <p><strong>Facultad:</strong> <span id="facultadInfo"></span></p>
@@ -271,16 +322,32 @@
             <p><strong>Periodo de predicción:</strong> <span id="periodo"></span></p>
         </div>
 
+        <h3 class="chart-title" id="matriculaChartTitle" style="display: none;">Predicción de Matrículados, Aprobados,
+            Reprobados y Desertores</h3>
+        <div class="chart-container">
+            <canvas id="matriculaChart"></canvas>
+        </div>
+
+
+        <h3 class="chart-title" id="porcentajesChartTitle" style="display: none;">Predicción de Porcentajes</h3>
+        <div class="chart-container">
+            <canvas id="porcentajesChart"></canvas>
+        </div>
+
         <div id="matriculaTable" class="data-section" style="display: none;">
-            <h3 class="section-title">Datos de estudiantes por año</h3>
+            <h3 class="section-title">Datos y Porcentajes de Estudiantes por Año</h3>
             <table id="matriculaDataTable">
                 <thead>
                     <tr>
                         <th>Año</th>
                         <th>Matriculados</th>
+                        <th>% Matriculados</th>
                         <th>Aprobados</th>
+                        <th>% Aprobados</th>
                         <th>Reprobados</th>
+                        <th>% Reprobados</th>
                         <th>Desertores</th>
+                        <th>% Desertores</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -288,7 +355,7 @@
             </table>
         </div>
 
-        <div id="porcentajesTable" class="data-section" style="display: none;">
+        <!-- <div id="porcentajesTable" class="data-section" style="display: none;">
             <h3 class="section-title">Porcentajes estudiantes por año</h3>
             <table id="porcentajesDataTable">
                 <thead>
@@ -303,7 +370,7 @@
                 <tbody>
                 </tbody>
             </table>
-        </div>
+        </div> -->
 
         <div id="promediosTable" class="data-section" style="display: none;">
             <h3 class="section-title">Promedios de porcentajes de factores de estudiantes</h3>
@@ -549,7 +616,7 @@
                 datosHistoricos.forEach(dato => {
                     let fila = tabla.insertRow();
                     fila.insertCell(0).textContent = dato.periodo_academico__fecha_inicio__year;
-                    fila.insertCell(1).textContent = dato.periodo_academico__fecha_inicio__day;
+                    fila.insertCell(1).textContent = dato.periodo_academico__codigo_periodo_academico;
                     fila.insertCell(2).textContent = dato.cantidad_matriculados;
                     fila.insertCell(3).textContent = dato.cantidad_aprobados;
                     fila.insertCell(4).textContent = dato.cantidad_reprobados;
@@ -636,6 +703,10 @@
             const doc = new jsPDF();
             const imgPath = '../Static/Imagen/';
 
+            const colorPrimario = [0, 51, 102]; // Azul oscuro
+            const colorSecundario = [255, 102, 102]; // Rojo claro
+            const colorTexto = [33, 33, 33]; // Gris oscuro
+
             doc.setProperties({
                 title: "Informe de Predicción de Materia",
                 subject: "Análisis de rendimiento estudiantil",
@@ -646,14 +717,14 @@
 
             const addHeader = () => {
                 doc.setFontSize(12);
-                doc.setTextColor(150, 150, 150);
-                doc.setFont('times', 'bold');
+                doc.setTextColor(...colorPrimario);
+                doc.setFont('helvetica', 'bold');
                 doc.addImage(`${imgPath}Iconos/Logo-UNL-mediano.png`, 'PNG', 10, 5, 45, 20);
                 doc.text("Universidad Nacional de Loja", 105, 10, { align: 'center' });
                 doc.setFontSize(10);
                 doc.text(`${data.facultad}`, 105, 16, { align: 'center' });
                 doc.text(`${data.carrera}`, 105, 22, { align: 'center' });
-                doc.setTextColor(0, 0, 0);
+                doc.setTextColor(...colorTexto);
             };
 
             const addFooter = () => {
@@ -661,36 +732,38 @@
                 for (let i = 1; i <= pageCount; i++) {
                     doc.setPage(i);
                     doc.setFontSize(10);
-                    doc.setTextColor(150, 150, 150);
+                    doc.setTextColor(...colorSecundario);
                     doc.text(`Página ${i} de ${pageCount}`, 200, 290, { align: 'right' });
-                    doc.setTextColor(0, 0, 0);
+                    doc.setTextColor(...colorTexto);
                 }
             };
 
-            // Portada
-            doc.setFontSize(24);
-            doc.setFont('times', 'bold');
+            doc.setFontSize(28);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...colorPrimario);
             doc.text("Universidad Nacional de Loja", 105, 50, { align: 'center' });
 
-            doc.setFontSize(20);
-            doc.setFont('times', 'normal');
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...colorSecundario);
             doc.text("Informe de Predicción de Materia", 105, 70, { align: 'center' });
 
             doc.addImage(`${imgPath}Iconos/LogoUnl.png`, 'PNG', 80, 90, 50, 40);
 
             doc.setFontSize(14);
+            doc.setTextColor(...colorTexto);
             doc.text("Fecha: " + new Date().toLocaleDateString(), 105, 145, { align: 'center' });
 
-            // Información general
             doc.addPage();
             addHeader();
 
-            doc.setFontSize(16);
-            doc.setFont('times', 'bold');
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...colorPrimario);
             doc.text("Información General", 105, 35, { align: 'center' });
 
             doc.autoTable({
-                startY: 40,
+                startY: 45,
                 head: [['Campo', 'Información']],
                 body: [
                     ['Universidad', 'Universidad Nacional de Loja'],
@@ -702,92 +775,121 @@
                     ['Periodo de predicción', `${data.anio_inicio} - ${data.anio_fin}`]
                 ],
                 theme: 'grid',
-                headStyles: { fillColor: [100, 100, 100] },
-                styles: { font: 'times' }
+                headStyles: {
+                    fillColor: colorPrimario,
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold'
+                },
+                bodyStyles: {
+                    textColor: colorTexto
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                styles: { font: 'helvetica', fontSize: 11 }
             });
 
-            // Tabla de Matrícula
             doc.addPage();
             addHeader();
 
-            doc.setFontSize(16);
-            doc.setFont('times', 'bold');
-            doc.text("Datos de Matrícula por Año", 105, 30, { align: 'center' });
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...colorPrimario);
+            doc.text("Datos de Matrícula por Año", 105, 35, { align: 'center' });
 
             doc.autoTable({
-                startY: 40,
+                startY: 45,
                 html: '#matriculaDataTable',
                 theme: 'grid',
-                headStyles: { fillColor: [100, 100, 100] },
-                styles: { font: 'times' }
+                headStyles: {
+                    fillColor: colorPrimario,
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold'
+                },
+                bodyStyles: {
+                    textColor: colorTexto
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                styles: { font: 'helvetica', fontSize: 10 }
             });
 
             doc.addPage();
             addHeader();
 
-            doc.setFontSize(16);
-            doc.setFont('times', 'bold');
-            doc.text("Porcentajes por Año", 105, 30, { align: 'center' });
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...colorPrimario);
+            doc.text("Promedios de Porcentajes", 105, 35, { align: 'center' });
 
             doc.autoTable({
-                startY: 40,
-                html: '#porcentajesDataTable',
-                theme: 'grid',
-                headStyles: { fillColor: [100, 100, 100] },
-                styles: { font: 'times' }
-            });
-
-            // Tabla de Promedios
-            doc.setFontSize(16);
-            doc.setFont('times', 'bold');
-            doc.text("Promedios de Porcentajes", 105, doc.lastAutoTable.finalY + 20, { align: 'center' });
-
-            doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 30,
+                startY: 45,
                 html: '#promediosDataTable',
                 theme: 'grid',
-                headStyles: { fillColor: [100, 100, 100] },
-                styles: { font: 'times' }
+                headStyles: {
+                    fillColor: colorPrimario,
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold'
+                },
+                bodyStyles: {
+                    textColor: colorTexto
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                styles: { font: 'helvetica', fontSize: 10 }
             });
 
-            // Gráficas
             doc.addPage();
             addHeader();
 
-            doc.setFontSize(16);
-            doc.setFont('times', 'bold');
-            doc.text("Gráfica de Predicción de Matrícula", 105, 30, { align: 'center' });
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...colorPrimario);
+            doc.text("Gráfica de Predicción de Matrícula", 105, 35, { align: 'center' });
 
-            html2canvas(document.getElementById('matriculaChart')).then(function (canvas) {
+            html2canvas(document.getElementById('matriculaChart')).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
-                doc.addImage(imgData, 'PNG', 10, 40, 190, 100);
+                doc.addImage(imgData, 'PNG', 10, 45, 190, 100);
 
                 doc.addPage();
                 addHeader();
 
-                doc.setFontSize(16);
-                doc.setFont('times', 'bold');
-                doc.text("Gráfica de Predicción de Porcentajes", 105, 30, { align: 'center' });
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...colorPrimario);
+                doc.text("Gráfica de Predicción de Porcentajes", 105, 35, { align: 'center' });
 
                 return html2canvas(document.getElementById('porcentajesChart'));
-            }).then(function (canvas) {
+            }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
-                doc.addImage(imgData, 'PNG', 10, 40, 190, 100);
+                doc.addImage(imgData, 'PNG', 10, 45, 190, 100);
 
-                // Datos históricos
                 if (document.getElementById('datosHistoricos').style.display !== 'none') {
                     doc.addPage();
                     addHeader();
-                    doc.setFontSize(16);
-                    doc.setFont('times', 'bold');
-                    doc.text("Datos Históricos", 105, 30, { align: 'center' });
+                    doc.setFontSize(18);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(...colorPrimario);
+                    doc.text("Datos Históricos", 105, 35, { align: 'center' });
 
                     doc.autoTable({
-                        startY: 40,
+                        startY: 45,
                         html: '#datosHistoricosTable',
                         theme: 'grid',
-                        headStyles: { fillColor: [100, 100, 100] },
-                        styles: { font: 'times' }
+                        headStyles: {
+                            fillColor: colorPrimario,
+                            textColor: [255, 255, 255],
+                            fontStyle: 'bold'
+                        },
+                        bodyStyles: {
+                            textColor: colorTexto
+                        },
+                        alternateRowStyles: {
+                            fillColor: [245, 245, 245]
+                        },
+                        styles: { font: 'helvetica', fontSize: 10 }
                     });
                 }
 
@@ -799,6 +901,7 @@
                 console.error("Error al generar las gráficas:", error);
             });
         }
+
 
         function crearGraficoPorcentajes(data, años) {
             const ctx = document.getElementById('porcentajesChart').getContext('2d');
@@ -885,7 +988,11 @@
             if (infoSection) {
                 infoSection.style.display = 'block';
                 document.getElementById('universidad').textContent = 'Universidad Nacional de Loja';
-                document.getElementById('facultadInfo').textContent = document.getElementById('facultad').options[document.getElementById('facultad').selectedIndex].text;
+                const facultadSelect = document.getElementById('facultad');
+                const facultadOption = facultadSelect.options[facultadSelect.selectedIndex];
+                const facultadNombreCompleto = facultadOption.getAttribute('data-nombre-completo');
+                document.getElementById('facultadInfo').textContent = facultadNombreCompleto;
+                // document.getElementById('facultadInfo').textContent = document.getElementById('facultad').options[document.getElementById('facultad').selectedIndex].text;
                 document.getElementById('carreraInfo').textContent = document.getElementById('carrera').options[document.getElementById('carrera').selectedIndex].text;
                 document.getElementById('cicloInfo').textContent = document.getElementById('ciclo').options[document.getElementById('ciclo').selectedIndex].text;
                 document.getElementById('materiaInfo').textContent = document.getElementById('materia').options[document.getElementById('materia').selectedIndex].text;
@@ -904,9 +1011,13 @@
                     let row = matriculaTableBody.insertRow();
                     row.insertCell(0).textContent = años[i];
                     row.insertCell(1).textContent = Math.round(data.matriculados[i]);
-                    row.insertCell(2).textContent = Math.round(data.aprobados[i]);
-                    row.insertCell(3).textContent = Math.round(data.reprobados[i]);
-                    row.insertCell(4).textContent = Math.round(data.desertores[i]);
+                    row.insertCell(2).textContent = '100%';
+                    row.insertCell(3).textContent = Math.round(data.aprobados[i]);
+                    row.insertCell(4).textContent = Math.round(data.aprobados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(5).textContent = Math.round(data.reprobados[i]);
+                    row.insertCell(6).textContent = Math.round(data.reprobados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(7).textContent = Math.round(data.desertores[i]);
+                    row.insertCell(8).textContent = Math.round(data.desertores[i] / data.matriculados[i] * 100) + '%';
                 }
             }
         }

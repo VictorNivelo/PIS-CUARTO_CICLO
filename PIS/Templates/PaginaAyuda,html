@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Guía de Uso del Sistema</title>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: url('../Static/Imagen/e.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+        }
+
+        .container {
+            margin-top: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 900px;
+        }
+
+        .title {
+            font-family: 'Lobster', cursive;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #4CAF50;
+        }
+
+        .section p {
+            margin-bottom: 10px;
+        }
+
+        .btn-back {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            background-color: #f0ad4e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            font-size: 16px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-back:hover {
+            background-color: #eea236;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="title">Guía de Uso del Sistema</h1>
+
+        <div class="section">
+            <h2>Primeros Pasos</h2>
+            <p>Bienvenido al sistema para crear datos históricos. Para comenzar a utilizar el programa, sigue estos pasos:</p>
+            <ol>
+                <li><strong>Accede al Formulario:</strong> Dirígete a la página donde se encuentra el formulario para ingresar datos históricos.</li>
+                <li><strong>Completa los Campos del Formulario:</strong> Llena cada campo con la información requerida. Asegúrate de ingresar datos válidos y seguir las instrucciones proporcionadas para cada campo.</li>
+                <li><strong>Revisa los Mensajes de Error:</strong> Si alguno de los campos tiene un error (como un valor no entero o un porcentaje fuera de rango), se mostrará un mensaje de advertencia debajo del campo correspondiente.</li>
+                <li><strong>Envía el Formulario:</strong> Cuando todos los datos estén correctos, haz clic en el botón "Crear datos" para enviar el formulario.</li>
+                <li><strong>Verifica el Mensaje de Éxito:</strong> Después de enviar el formulario, se mostrará un mensaje de éxito si los datos se han guardado correctamente.</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>Botones y Funciones del Formulario</h2>
+            <p>A continuación se detallan los botones disponibles en el formulario y sus respectivas funciones:</p>
+            <ul>
+                <li><strong>Regresar:</strong> Este botón permite volver a la página anterior. Al hacer clic, se te redirigirá a la última página visitada. Si no hay una página anterior registrada, serás redirigido a la página principal.</li>
+                <li><strong>Crear datos:</strong> Este botón envía el formulario con los datos ingresados. Antes de enviar, se validan los datos para asegurar que sean correctos. Si hay algún error, se mostrarán mensajes de advertencia específicos para cada campo.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Validaciones y Mensajes de Error</h2>
+            <p>El sistema realiza varias validaciones para garantizar que los datos ingresados sean correctos:</p>
+            <ul>
+                <li><strong>Validación de Números Enteros:</strong> Los campos relacionados con cantidades (como 'Cantidad de matriculados', 'Cantidad de aprobados', etc.) solo aceptan números enteros. Si se ingresa un valor con decimales, el sistema mostrará una advertencia.</li>
+                <li><strong>Validación de Porcentajes:</strong> Los campos de porcentaje (como 'Porcentaje con modalidad presencial') deben estar entre 0 y 100. Si se ingresa un valor fuera de este rango, se mostrará una advertencia.</li>
+                <li><strong>Validación de Suma de Cantidades:</strong> El sistema verifica que la suma de 'Cantidad de aprobados', 'Cantidad de reprobados' y 'Cantidad de desertores' coincida con la 'Cantidad de matriculados'. Si no coinciden, se mostrará un mensaje de error.</li>
+            </ul>
+        </div>
+
+        <a href="{% url 'Index' %}" class="btn-back">Regresar</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

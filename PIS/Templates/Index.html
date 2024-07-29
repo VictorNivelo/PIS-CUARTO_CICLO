@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 {% load static %}
 
 <head>
@@ -10,6 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link href="../Static/styles/layout.css" rel="stylesheet" type="text/css" media="all">
   <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
+  <style>
+    .small-logo {
+      width: 360px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
 </head>
 
 <body id="top">
@@ -18,42 +24,30 @@
       <div class="flexslider basicslider">
         <ul class="slides">
           <li>
+            <img src="../Static/Imagen/Iconos/UNL-mediano-blanco.png" class="small-logo" alt="Logo">
+            <br>
             <article>
-              <h3 class="heading">Prediccion</h3>
-              <p>La prediccion se realiza por medio de un modelo matematico</p>
-              <p class="font-x1 uppercase bold">El modelo es la base del programa</p>
-              <!-- <footer>
-                <ul class="nospace inline pushright">
-                  <li><a class="btn" href="#">Iniciar sesion0</a></li>
-                  <li><a class="btn inverse" href="#">Registrarse0</a></li>
-                </ul>
-              </footer> -->
+              <h3 class="heading">Predicción</h3>
+              <p>La predicción se realiza por medio de un modelo matemático.</p>
+              <p class="font-x1 uppercase bold">El modelo es la base del programa.</p>
             </article>
           </li>
           <li>
+            <img src="../Static/Imagen/Iconos/UNL-mediano-blanco.png" class="small-logo" alt="Logo">
+            <br>
             <article>
-              <h3 class="heading">Graficas</h3>
-              <p>Cuenta con varios tipos de graficas</p>
-              <p class="font-x1 uppercase bold">Graficas de barras y de pastel</p>
-              <!-- <footer>
-                <ul class="nospace inline pushright">
-                  <li><a class="btn" href="#">is</a></li>
-                  <li><a class="btn inverse" href="#">r</a></li>
-                </ul>
-              </footer> -->
+              <h3 class="heading">Gráficas</h3>
+              <p>Cuenta con varios tipos de gráficas.</p>
+              <p class="font-x1 uppercase bold">Gráficas de barras y de pastel.</p>
             </article>
           </li>
           <li>
+            <img src="../Static/Imagen/Iconos/UNL-mediano-blanco.png" class="small-logo" alt="Logo">
+            <br>
             <article>
               <h3 class="heading">Privacidad</h3>
-              <p>p3</p>
-              <p class="font-x1 uppercase bold">e3</p>
-              <!-- <footer>
-                  <ul class="nospace inline pushright">
-                  <li><a class="btn" href="#">is</a></li>
-                  <li><a class="btn inverse" href="#">r</a></li>
-                </ul> 
-              </footer> -->
+              <p>Información sobre la privacidad.</p>
+              <p class="font-x1 uppercase bold">Política de privacidad.</p>
             </article>
           </li>
         </ul>
@@ -70,7 +64,7 @@
         <div class="fl_right">
           <ul>
             <li><a href="{% url 'Index' %}"><i class="fa fa-lg fa-home"></i></a></li>
-            <li><a href="{% url 'Iniciar_Sesion' %}">Iniciar sesion</a></li>
+            <li><a href="{% url 'Iniciar_Sesion' %}">Iniciar sesión</a></li>
             <li><a href="{% url 'Registrar_Usuario' %}">Registrarse</a></li>
           </ul>
         </div>
@@ -81,124 +75,125 @@
   <div class="wrapper row1">
     <header id="header" class="hoc clear">
       <div id="logo" class="fl_left">
-        <h1><a href="{% url 'Index' %}">PIS</a></h1>
+        <h1><a href="{% url 'Index' %}">Universidad Nacional de Loja</a></h1>
       </div>
       <nav id="mainav" class="fl_right">
         <ul class="clear">
-          <li class="active"><a href="{% url 'Index' %}">Inicio</a></li>
-          <li><a class="drop" href="#">Informacion</a>
+          <li><a class="drop" href="#">Ayuda</a>
             <ul>
-              <li><a href="{% url 'Gestion_Usuario' %}">Gestion Usuario</a></li>
-              <!-- <li><a href="{% url 'Gestion_Estudiante' %}">Gestion estudiante</a></li> -->
-              <li><a href="{% url 'Gestion_Genero' %}">Gestion genero</a></li>
-              <li><a href="{% url 'Gestion_TipoDNI' %}">Gestion tipo DNI</a></li>
-              <li><a href="{% url 'Gestion_Universidad' %}">Gestion Univerisdad</a></li>
-              <li><a href="{% url 'Gestion_Facultad' %}">Gestion facultad</a></li>
-              <li><a href="{% url 'Gestion_Carrera' %}">Gestion carrera</a></li>
-              <li><a href="{% url 'Gestion_Ciclo' %}">Gestion ciclo</a></li>
-              <li><a href="{% url 'Gestion_Materia' %}">Gestion materia</a></li>
-              <li><a href="{% url 'Gestion_PeriodoAcademico' %}">Gestion periodo academico</a></li>
-              <li><a href="{% url 'Gestion_DatosHistorico' %}">Gestion datos historicos</a></li>
-              <li><a href="{% url 'Importar_Datos' %}">Importar</a>/a></li>
+              <li><a href="{% url 'Gestion_Usuario' %}">Gestión de Usuario</a></li>
+              <li><a href="{% url 'Gestion_Genero' %}">Gestión de género</a></li>
+              <li><a href="{% url 'Gestion_TipoDNI' %}">Gestión de tipo DNI</a></li>
+              <li><a href="{% url 'Gestion_Universidad' %}">Gestión de universidad</a></li>
+              <li><a href="{% url 'Gestion_Facultad' %}">Gestión de facultad</a></li>
+              <li><a href="{% url 'Gestion_Carrera' %}">Gestión de carrera</a></li>
+              <li><a href="{% url 'Gestion_Ciclo' %}">Gestión de ciclo</a></li>
+              <li><a href="{% url 'Gestion_Materia' %}">Gestión de materia</a></li>
+              <li><a href="{% url 'Gestion_PeriodoAcademico' %}">Gestión de período académico</a></li>
+              <li><a href="{% url 'Gestion_DatosHistorico' %}">Gestión de datos históricos</a></li>
+              <li><a href="{% url 'Importar_Datos' %}">Importar datos</a></li>
             </ul>
           </li>
-          <!-- <li><a class="drop" href="#">Informes</a>
-            <ul>
-              <li><a href="#">Level 1</a></li>
-            <li><a class="drop" href="#">Level 2</a>
-              <ul>
-                <li><a href="#">Level a</a></li>
-                <li><a href="#">Level b</a></li>
-                <li><a href="#">Level c</a></li>
-              </ul>
-            </li>
-            <li><a href="#">Level 3</a></li> 
-            </ul>
-          </li> -->
-          <!-- <li><a href="{% url 'Importar_Datos' %}">Realizar prediccion</a></li> -->
         </ul>
       </nav>
     </header>
   </div>
+
   <div class="wrapper row3">
     <main class="hoc container clear">
       <!-- main body -->
       <div class="two_third first">
-        <h6 class="heading">Walter xd</h6>
-        <p class="heading font-x3">Funciones del sistema</p>
-        <p class="btmspace-50">Informacion del proyecto</p>
+        <p class="heading font-x3">Funciones Principales del Sistema</p>
+        <p class="btmspace-50">Descubre cómo nuestro sistema puede ayudarte a mejorar la retención estudiantil y
+          optimizar los recursos académicos.</p>
         <ul class="nospace group">
           <li class="one_third first">
-            <article><a href="#"><i class="icon btmspace-30 fa fa-language"></i></a>
-              <h6 class="heading font-x1">Prediccion</h6>
-              <p>descripcion 1</p>
+            <article style="text-align: center;">
+              <a href="#"><i class="icon btmspace-30 fa fa-line-chart"></i></a>
+              <h6 class="heading font-x1">Predicción de Deserción</h6>
+              <p style="text-align: justify;">Utilizamos modelos avanzados de aprendizaje automático para identificar a
+                estudiantes con alto riesgo de deserción. Analizamos datos históricos, rendimiento académico y
+                comportamiento para hacer predicciones precisas.</p>
             </article>
           </li>
           <li class="one_third">
-            <article><a href="#"><i class="icon btmspace-30 fa fa-leaf"></i></a>
-              <h6 class="heading font-x1">Representacio</h6>
-              <p>descripcion 2</p>
+            <article style="text-align: center;">
+              <a href="#"><i class="icon btmspace-30 fa fa-bar-chart"></i></a>
+              <h6 class="heading font-x1">Visualización de Datos</h6>
+              <p style="text-align: justify;">Ofrecemos gráficos interactivos y dashboards para una comprensión clara de
+                las tendencias y patrones. Permite a los administradores y académicos tomar decisiones informadas
+                basadas en datos visuales.</p>
             </article>
           </li>
           <li class="one_third">
-            <article><a href="#"><i class="icon btmspace-30 fa fa-ioxhost"></i></a>
-              <h6 class="heading font-x1">Seguridad</h6>
-              <p>descripcion 3</p>
+            <article style="text-align: center;">
+              <a href="#"><i class="icon btmspace-30 fa fa-lock"></i></a>
+              <h6 class="heading font-x1">Seguridad de Datos</h6>
+              <p style="text-align: justify;">Garantizamos la protección de la privacidad de los estudiantes mediante
+                medidas robustas de seguridad. Todos los datos se manejan conforme a las normativas de protección de
+                datos vigentes.</p>
             </article>
           </li>
         </ul>
       </div>
-      <div class="one_third"><a href="#"><img src="../Static/Imagen/W.png" alt=""></a></div>
+      <div class="one_third">
+        <a href="{% url 'Pagina_Ayuda' %}"><img src="../Static/Imagen/walter.png" alt="Sistema de Predicción"></a>
+      </div>
       <!-- / main body -->
       <div class="clear"></div>
     </main>
   </div>
-  <div class="wrapper bgded overlay" style="background-image:url('../Static/Imagen/demo/backgrounds/02.png');">
+
+  <div class="wrapper bgded overlay" style="background-image:url('../Static/Imagen/c.png');">
     <article class="hoc cta clear">
       <div class="three_quarter first">
-        <h6 class="header nospace">Mas informacion</h6>
-        <p class="nospace">Queso</p>
+        <br>
+        <h6 class="header nospace">¿Necesitas ayuda?</h6>
+        <br>
+        <p class="nospace">Si tienes preguntas sobre cómo usar el sistema o necesitas asistencia técnica, no dudes en
+          ponerte en contacto con nosotros.</p>
       </div>
-      <footer class="one_quarter"><a class="btn" href="#">Si? &raquo;</a></footer>
+      <br>
+      <br>
+      <footer class="one_quarter"><a class="btn" href="#">Contáctanos</a></footer>
     </article>
   </div>
+
   <div class="wrapper row3">
     <section class="hoc container clear">
       <div class="sectiontitle center">
         <h6 class="heading" style="font-size: 3em;">Desarrolladores del proyecto</h6>
-        <br>
-        <p style="font-size: 1.5em;">Ingeniero encargado: Walter Yaguana</p>
       </div>
       <div class="group team element btmspace-80">
-        <article class="one_fifth"><img src="../Static/Imagen/demo/320x320.png" alt="">
+        <article class="one_fifth"><img src="../Static/Imagen/emilio.png" alt="Victor">
           <div class="txtwrap">
-            <h6 class="heading">Victor</h6>
+            <h6 class="heading">Víctor</h6>
             <em>Prosaa</em>
             <footer><a href="#">Visitar perfil</a></footer>
           </div>
         </article>
-        <article class="one_fifth"><img src="../Static/Imagen/emilio.png" alt="">
+        <article class="one_fifth"><img src="../Static/Imagen/emilio.png" alt="Emilio">
           <div class="txtwrap">
             <h6 class="heading">Emilio</h6>
             <em>Apostador</em>
             <footer><a href="#">Visitar perfil</a></footer>
           </div>
         </article>
-        <article class="one_fifth"><img src="../Static/Imagen/demo/320x320.png" alt="">
+        <article class="one_fifth"><img src="../Static/Imagen/emilio.png" alt="Santiago">
           <div class="txtwrap">
             <h6 class="heading">Santiago</h6>
             <em>Prosaa</em>
             <footer><a href="#">Visitar perfil</a></footer>
           </div>
         </article>
-        <article class="one_fifth first"><img src="../Static/Imagen/demo/320x320.png" alt="">
+        <article class="one_fifth first"><img src="../Static/Imagen/emilio.png" alt="Elías">
           <div class="txtwrap">
-            <h6 class="heading">Elias</h6>
-            <em>Secretaria</em>
+            <h6 class="heading">Elías</h6>
+            <em>Secretario</em>
             <footer><a href="#">Visitar perfil</a></footer>
           </div>
         </article>
-        <article class="one_fifth"><img src="../Static/Imagen/walter.png" alt="">
+        <article class="one_fifth"><img src="../Static/Imagen/walter.png" alt="Walter">
           <div class="txtwrap">
             <h6 class="heading">Walter</h6>
             <em>Prosaa</em>
@@ -213,25 +208,18 @@
 
   <div class="wrapper row4">
     <footer id="footer" class="hoc clear">
-      <h3 class="heading">Conocenos</h3>
+      <h3 class="heading">Conócenos</h3>
       <ul class="nospace inline pushright uppercase">
-        <!-- <li><a href="{% url 'Index' %}"><i class="fa fa-lg fa-home"></i></a></li> -->
         <li><a href="#">Acerca de nosotros</a></li>
-        <li><a href="#">Contactanos</a></li>
-        <!-- <li><a href="#">Privacidad</a></li>
-        <li><a href="#">callmebaby</a></li>
-        <li><a href="#">Otros temas</a></li> -->
+        <li><a href="#">Contáctanos</a></li>
       </ul>
       <ul class="faico clear">
         <li><a class="faicon-facebook" href="#"><i class="fa fa-facebook"></i></a></li>
         <li><a class="faicon-twitter" href="#"><i class="fa fa-twitter"></i></a></li>
         <li><a class="faicon-linkedin" href="#"><i class="fa fa-linkedin"></i></a></li>
-        <!-- <li><a class="faicon-google-plus" href="#"><i class="fa fa-google-plus"></i></a></li>
-        <li><a class="faicon-vk" href="#"><i class="fa fa-vk"></i></a></li>
-        <li><a class="faicon-dribble" href="#"><i class="fa fa-dribbble"></i></a></li> -->
       </ul>
       <div id="copyright">
-        <p>Copyright &copy; 2024 - All Rights Reserved - <a href="#">Domain Name</a></p>
+        <p>Copyright &copy; 2024 - Todos los derechos reservados - <a href="#">Universidad nacional de loja</a></p>
       </div>
     </footer>
   </div>

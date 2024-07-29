@@ -116,7 +116,7 @@ class Facultad(models.Model):
     )
 
     def __str__(self):
-        return self.abreviacion
+        return self.nombre_facultad
 
 
 class Carrera(models.Model):

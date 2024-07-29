@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from .vistas import (
     PaginaPrincipal,
+    PaginaAyuda,
     PaginaAdministrador,
     PaginaDocente,
     PaginaSecretaria,
@@ -58,6 +59,7 @@ from .vistas import (
     ObtenerDocentes,
 
     PrediccionMateria,
+    PrediccionCiclo,
     RealizarPrediccion,
 
     PRI,
@@ -66,6 +68,7 @@ from .vistas import (
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", PaginaPrincipal, name="Index"),
+    path("Pagina-Ayuda", PaginaAyuda, name="Pagina_Ayuda"),
     path("Pagina-Administrador/", PaginaAdministrador, name="Pagina_Administrador"),
     path("Pagina-Secretaria/", PaginaSecretaria, name="Pagina_Secretaria"),
     path("Pagina-Docente/", PaginaDocente, name="Pagina_Docente"),
@@ -123,6 +126,7 @@ urlpatterns = [
 
 
     path('Prediccion-Materia/', PrediccionMateria, name='Prediccion_Materia'),
+    path('Prediccion-Ciclo/', PrediccionCiclo, name='Prediccion_Ciclo'),
     path('Realizar-Prediccion/',RealizarPrediccion, name='Realizar_Prediccion'),
     # path('Prediccion-Desercion/', Predecir_Desercion, name='Predecir_Desercion'),
 

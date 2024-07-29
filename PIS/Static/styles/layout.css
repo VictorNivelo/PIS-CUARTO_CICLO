@@ -816,8 +816,8 @@ textarea:focus,
 a .icon.fa,
 a.inverse:hover .icon.fa {
 	color: #FFFFFF;
-	background-color: #03BDD2;
-	border-color: #03BDD2;
+	background-color: #2015c0;
+	border-color: #451763;
 }
 
 .btn:hover,
@@ -916,7 +916,7 @@ a.inverse .icon.fa {
 #mainav .active a,
 #mainav a:hover,
 #mainav li:hover>a {
-	color: #03BDD2;
+	color: #5c23e0;
 	background-color: inherit;
 }
 
@@ -1068,8 +1068,6 @@ table a,
 	}
 
 	#footer {}
-
-	#copyright {}
 
 	#copyright p:first-of-type {
 		margin-bottom: 10px;

@@ -71,6 +71,10 @@ from .forms import (
 )
 
 
+def PaginaAyuda(request):
+    return render(request, "PaginaAyuda,html")
+
+
 def PaginaPrincipal(request):
     return render(request, "Index.html")
 
@@ -2022,7 +2026,7 @@ def PredecirMetricas(request):
             Avg("cantidad_reprobados"),
             Avg("cantidad_desertores"),
             Avg("promedio_modalidad"),
-            Avg("periodo_academico"),
+            Avg("promedio_tipo_educacion"),
             Avg("promedio_tipo_educacion"),
             Avg("promedio_origen"),
             Avg("promedio_trabajo"),
@@ -2124,6 +2128,7 @@ def RealizarPrediccion(request):
             datos_historicos_lista = list(
                 datos_historicos.values(
                     "periodo_academico__fecha_inicio__year",
+                    "periodo_academico__codigo_periodo_academico",
                     "cantidad_matriculados",
                     "cantidad_aprobados",
                     "cantidad_reprobados",
@@ -2240,6 +2245,187 @@ def PrediccionMateria(request):
     }
 
     return render(request, "PrediccionMateria.html", context)
+
+
+def PrediccionCiclo(request):
+    if request.method == "POST":
+        ciclo_id = request.POST.get("ciclo")
+        anio_inicio = int(request.POST.get("anio_inicio"))
+        anio_fin = int(request.POST.get("anio_fin"))
+
+        try:
+            ciclo = Ciclo.objects.get(id=ciclo_id)
+            materias = Materia.objects.filter(ciclo=ciclo)
+
+            predicciones_ciclo = {
+                "años": list(range(anio_inicio, anio_fin + 1)),
+                "matriculados": [0] * (anio_fin - anio_inicio + 1),
+                "aprobados": [0] * (anio_fin - anio_inicio + 1),
+                "reprobados": [0] * (anio_fin - anio_inicio + 1),
+                "desertores": [0] * (anio_fin - anio_inicio + 1),
+                "modalidad": [0] * (anio_fin - anio_inicio + 1),
+                "tipo_educacion": [0] * (anio_fin - anio_inicio + 1),
+                "origen": [0] * (anio_fin - anio_inicio + 1),
+                "trabajo": [0] * (anio_fin - anio_inicio + 1),
+                "discapacidad": [0] * (anio_fin - anio_inicio + 1),
+                "hijos": [0] * (anio_fin - anio_inicio + 1),
+                "datosHistoricos": [],
+                "materias": [materia.nombre_materia for materia in materias],
+            }
+
+            for materia in materias:
+                datos_historicos = DatosHistorico.objects.filter(
+                    materia=materia,
+                    periodo_academico__fecha_inicio__year__lt=anio_inicio,
+                ).order_by("periodo_academico__fecha_inicio")
+
+                stats = datos_historicos.aggregate(
+                    Avg("cantidad_matriculados"),
+                    Avg("cantidad_aprobados"),
+                    Avg("cantidad_reprobados"),
+                    Avg("cantidad_desertores"),
+                    Avg("promedio_modalidad"),
+                    Avg("promedio_tipo_educacion"),
+                    Avg("promedio_origen"),
+                    Avg("promedio_trabajo"),
+                    Avg("promedio_discapacidad"),
+                    Avg("promedio_hijos"),
+                    StdDev("cantidad_matriculados"),
+                    StdDev("cantidad_aprobados"),
+                    StdDev("cantidad_reprobados"),
+                    StdDev("cantidad_desertores"),
+                    StdDev("promedio_modalidad"),
+                    StdDev("promedio_tipo_educacion"),
+                    StdDev("promedio_origen"),
+                    StdDev("promedio_trabajo"),
+                    StdDev("promedio_discapacidad"),
+                    StdDev("promedio_hijos"),
+                )
+
+                y0 = [
+                    stats["cantidad_matriculados__avg"] or 0,
+                    stats["cantidad_aprobados__avg"] or 0,
+                    stats["cantidad_reprobados__avg"] or 0,
+                    stats["cantidad_desertores__avg"] or 0,
+                    stats["promedio_modalidad__avg"] or 0,
+                    stats["promedio_tipo_educacion__avg"] or 0,
+                    stats["promedio_origen__avg"] or 0,
+                    stats["promedio_trabajo__avg"] or 0,
+                    stats["promedio_discapacidad__avg"] or 0,
+                    stats["promedio_hijos__avg"] or 0,
+                ]
+
+                t = np.linspace(
+                    0, anio_fin - anio_inicio + 1, (anio_fin - anio_inicio + 1) * 12
+                )
+
+                def sistema_ecuaciones(y, t, params):
+                    M, A, R, D, Mo, Te, O, Tr, Di, H = y
+                    a, b, c, d, e, f, g, h, i, j = params
+                    dMdt = a * M * (1 - M / 100) - b * M
+                    dAdt = c * M - d * A
+                    dRdt = e * M - f * R
+                    dDdt = g * M - h * D
+                    dModt = i * (Mo - Mo**2 / 100)
+                    dTedt = j * (Te - Te**2 / 100)
+                    dOdt = i * (O - O**2 / 100)
+                    dTrdt = j * (Tr - Tr**2 / 100)
+                    dDidt = i * (Di - Di**2 / 100)
+                    dHdt = j * (H - H**2 / 100)
+                    return [
+                        dMdt,
+                        dAdt,
+                        dRdt,
+                        dDdt,
+                        dModt,
+                        dTedt,
+                        dOdt,
+                        dTrdt,
+                        dDidt,
+                        dHdt,
+                    ]
+
+                params = [0.2, 0.1, 0.6, 0.2, 0.3, 0.1, 0.2, 0.1, 0.05, 0.05]
+                sol = odeint(sistema_ecuaciones, y0, t, args=(params,))
+
+                ruido = np.random.normal(0, 0.02, sol.shape)
+                sol_con_ruido = sol + ruido * sol
+                sol_con_ruido = np.clip(sol_con_ruido, 0, 100)
+
+                for i in range(len(sol_con_ruido)):
+                    total = (
+                        sol_con_ruido[i, 1] + sol_con_ruido[i, 2] + sol_con_ruido[i, 3]
+                    )
+                    if total > sol_con_ruido[i, 0]:
+                        factor = sol_con_ruido[i, 0] / total
+                        sol_con_ruido[i, 1:4] *= factor
+
+                for i, año in enumerate(predicciones_ciclo["años"]):
+                    predicciones_ciclo["matriculados"][i] += sol_con_ruido[i * 12, 0]
+                    predicciones_ciclo["aprobados"][i] += sol_con_ruido[i * 12, 1]
+                    predicciones_ciclo["reprobados"][i] += sol_con_ruido[i * 12, 2]
+                    predicciones_ciclo["desertores"][i] += sol_con_ruido[i * 12, 3]
+                    predicciones_ciclo["modalidad"][i] += sol_con_ruido[i * 12, 4]
+                    predicciones_ciclo["tipo_educacion"][i] += sol_con_ruido[i * 12, 5]
+                    predicciones_ciclo["origen"][i] += sol_con_ruido[i * 12, 6]
+                    predicciones_ciclo["trabajo"][i] += sol_con_ruido[i * 12, 7]
+                    predicciones_ciclo["discapacidad"][i] += sol_con_ruido[i * 12, 8]
+                    predicciones_ciclo["hijos"][i] += sol_con_ruido[i * 12, 9]
+
+                predicciones_ciclo["datosHistoricos"].extend(
+                    datos_historicos.values(
+                        "periodo_academico__fecha_inicio__year",
+                        "periodo_academico__codigo_periodo_academico",
+                        "materia__nombre_materia",
+                        "materia__ciclo__nombre_ciclo",
+                        "cantidad_matriculados",
+                        "cantidad_aprobados",
+                        "cantidad_reprobados",
+                        "cantidad_desertores",
+                    )
+                )
+
+                # predicciones_ciclo["datosHistoricos"].extend(
+                #     datos_historicos.values(
+                #         "periodo_academico__fecha_inicio__year",
+                #         "periodo_academico__codigo_periodo_academico",
+                #         "cantidad_matriculados",
+                #         "cantidad_aprobados",
+                #         "cantidad_reprobados",
+                #         "cantidad_desertores",
+                #     )
+                # )
+
+            num_materias = len(materias)
+            for key in [
+                "modalidad",
+                "tipo_educacion",
+                "origen",
+                "trabajo",
+                "discapacidad",
+                "hijos",
+            ]:
+                predicciones_ciclo[key] = [
+                    value / num_materias for value in predicciones_ciclo[key]
+                ]
+
+            return JsonResponse(predicciones_ciclo)
+
+        except Exception as e:
+            logger.error(f"Error en PrediccionCiclo: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    facultades = Facultad.objects.all()
+    carreras = Carrera.objects.all()
+    ciclos = Ciclo.objects.all()
+
+    context = {
+        "facultades": facultades,
+        "carreras": carreras,
+        "ciclos": ciclos,
+    }
+
+    return render(request, "PrediccionCiclo.html", context)
 
 
 # def RealizarPrediccion(request):

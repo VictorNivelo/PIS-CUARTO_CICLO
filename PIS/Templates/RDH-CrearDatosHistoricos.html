@@ -7,7 +7,10 @@
     <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <title>Crear datos históricos</title>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
 
@@ -16,24 +19,35 @@
             height: 100%;
             margin: 0;
             padding: 0;
-        }
-
-        body {
-            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
-            background-size: cover;
-            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
+            background: url('../Static/Imagen/e.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Open Sans', sans-serif;
+            position: relative;
+        }
+
+        html::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.500);
+            z-index: 1;
         }
 
         .caja {
+            position: relative;
+            z-index: 2;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 800px;
-            padding: 30px;
+            max-width: 900px;
+            /* Ajustar el ancho máximo */
+            padding: 25px;
             margin: auto;
         }
 
@@ -44,27 +58,38 @@
         .t {
             font-family: 'Lobster', cursive;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             color: #333;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         label {
-            color: #555;
+            color: #333;
+            /* Cambiado a negro */
             font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        label i {
+            margin-right: 10px;
+            /* Espacio entre el ícono y el texto del label */
+            color: #333;
+            /* Color del ícono negro */
+            font-size: 18px;
+            /* Tamaño del ícono */
         }
 
         input[type="text"],
         input[type="email"],
         input[type="password"],
+        input[type="number"],
         input[type="date"],
         input[type="tel"],
-        input[type="number"],
-        select,
-        textarea {
+        select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -75,8 +100,13 @@
             box-sizing: border-box;
         }
 
-        select option:first-child {
-            color: #aaa;
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="date"],
+        input[type="tel"],
+        select {
+            height: 40px;
         }
 
         select option {
@@ -88,6 +118,7 @@
             color: #aaa;
         }
 
+        input.has-value,
         select.has-value {
             color: #333;
         }
@@ -125,7 +156,7 @@
         .button-group {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         .button-group button {
@@ -165,14 +196,13 @@
             color: #999;
         }
 
-        .col-md-6 {
-            width: 50%;
-            float: left;
+        .col-md-4 {
+            width: 33.333%;
             padding-right: 15px;
             box-sizing: border-box;
         }
 
-        .col-md-6:nth-child(even) {
+        .col-md-4:nth-child(3n) {
             padding-right: 0;
         }
 
@@ -181,74 +211,95 @@
             display: table;
             clear: both;
         }
+
+        .logo {
+            display: block;
+            margin: 0 auto;
+            max-width: 250px;
+        }
     </style>
 </head>
 
 <body onload="recordarPaginaAnterior(); checkSuccess();">
     <div class="caja">
+        <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo" class="logo">
         <div class="form-wrapper">
             <form method="POST" id="historicalDataForm" onsubmit="return validateForm(event)">
                 <h1 class="t">Crear datos históricos</h1>
                 {% csrf_token %}
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <label for="{{ form.materia.id_for_label }}">Materia:</label>
+                            <label for="{{ form.materia.id_for_label }}"><i class="fas fa-book"></i>Materia:</label>
                             {{ form.materia }}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.periodo_academico.id_for_label }}">Período académico:</label>
+                            <label for="{{ form.periodo_academico.id_for_label }}"><i
+                                    class="fas fa-calendar-alt"></i>Período académico:</label>
                             {{ form.periodo_academico }}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.cantidad_matriculados.id_for_label }}">Cantidad de matriculados:</label>
+                            <label for="{{ form.cantidad_matriculados.id_for_label }}"><i
+                                    class="fas fa-users"></i>Cantidad de matriculados:</label>
                             {{ form.cantidad_matriculados }}
                             <span class="error-message" id="error_matriculados"></span>
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.cantidad_aprobados.id_for_label }}">Cantidad de aprobados:</label>
+                            <label for="{{ form.cantidad_aprobados.id_for_label }}"><i class="fas fa-check"></i>Cantidad
+                                de aprobados:</label>
                             {{ form.cantidad_aprobados }}
                             <span class="error-message" id="error_aprobados"></span>
                         </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <label for="{{ form.cantidad_reprobados.id_for_label }}">Cantidad de reprobados:</label>
+                            <label for="{{ form.cantidad_reprobados.id_for_label }}"><i
+                                    class="fas fa-times"></i>Cantidad de reprobados:</label>
                             {{ form.cantidad_reprobados }}
                             <span class="error-message" id="error_reprobados"></span>
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.cantidad_desertores.id_for_label }}">Cantidad de desertores:</label>
+                            <label for="{{ form.cantidad_desertores.id_for_label }}"><i
+                                    class="fas fa-user-times"></i>Cantidad de desertores:</label>
                             {{ form.cantidad_desertores }}
                             <span class="error-message" id="error_desertores"></span>
                         </div>
-                    </div>
-                    <div class="col-md-6">
                         <div class="form-group">
-                            <label for="{{ form.promedio_modalidad.id_for_label }}">Porcentaje con modalidad pesencial (%):</label>
+                            <label for="{{ form.promedio_modalidad.id_for_label }}"><i
+                                    class="fas fa-chalkboard-teacher"></i>Porcentaje con modalidad presencial
+                                (%):</label>
                             {{ form.promedio_modalidad }}
                             <span class="error-message" id="error_modalidad"></span>
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.promedio_tipo_educacion.id_for_label }}">Porcentaje con educacion publica (%):</label>
+                            <label for="{{ form.promedio_tipo_educacion.id_for_label }}"><i
+                                    class="fas fa-school"></i>Porcentaje con educación pública (%):</label>
                             {{ form.promedio_tipo_educacion }}
                             <span class="error-message" id="error_tipo_educacion"></span>
                         </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <label for="{{ form.promedio_origen.id_for_label }}">Porcentaje de Foráneos (%):</label>
+                            <label for="{{ form.promedio_origen.id_for_label }}"><i
+                                    class="fas fa-globe-americas"></i>Porcentaje de Foráneos (%):</label>
                             {{ form.promedio_origen }}
                             <span class="error-message" id="error_origen"></span>
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.promedio_trabajo.id_for_label }}">Porcentaje que Trabajan (%):</label>
+                            <label for="{{ form.promedio_trabajo.id_for_label }}"><i
+                                    class="fas fa-briefcase"></i>Porcentaje que Trabajan (%):</label>
                             {{ form.promedio_trabajo }}
                             <span class="error-message" id="error_trabajo"></span>
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.promedio_discapacidad.id_for_label }}">Porcentaje con Discapacidad (%):</label>
+                            <label for="{{ form.promedio_discapacidad.id_for_label }}"><i
+                                    class="fas fa-wheelchair"></i>Porcentaje con Discapacidad (%):</label>
                             {{ form.promedio_discapacidad }}
                             <span class="error-message" id="error_discapacidad"></span>
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.promedio_hijos.id_for_label }}">Porcentaje con Hijos (%):</label>
+                            <label for="{{ form.promedio_hijos.id_for_label }}"><i class="fas fa-baby"></i>Porcentaje
+                                con Hijos (%):</label>
                             {{ form.promedio_hijos }}
                             <span class="error-message" id="error_hijos"></span>
                         </div>
