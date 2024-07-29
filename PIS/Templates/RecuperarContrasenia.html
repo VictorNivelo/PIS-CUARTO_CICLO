@@ -11,34 +11,58 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
         crossorigin="anonymous"></script>
+
     <title>Recuperar Contraseña</title>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lobster&family=Open+Sans:wght@400;600&display=swap');
 
         html,
         body {
             height: 100%;
             margin: 0;
             padding: 0;
-        }
-
-        body {
-            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
-            background-size: cover;
-            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
+            background: url('../Static/Imagen/e.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Open Sans', sans-serif;
+            position: relative;
+        }
+
+        html::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.500);
+            z-index: 1;
         }
 
         .caja {
+            position: relative;
+            z-index: 2;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             width: 100%;
             max-width: 425px;
             padding: 30px;
             margin: auto;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .form-wrapper {
@@ -48,12 +72,16 @@
         .t {
             font-family: 'Lobster', cursive;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             color: #333;
         }
 
         .form-group {
             margin-bottom: 20px;
+        }
+
+        .form-icon {
+            margin-right: 10px;
         }
 
         label {
@@ -73,20 +101,6 @@
             border-radius: 5px;
             font-size: 16px;
             margin-top: 5px;
-            color: #333;
-        }
-
-        select option {
-            color: initial;
-        }
-
-        input::placeholder,
-        select::placeholder {
-            color: #aaa;
-        }
-
-        input.has-value,
-        select.has-value {
             color: #333;
         }
 
@@ -113,7 +127,6 @@
         .btn-regresar {
             background-color: #f0ad4e;
             color: white;
-            /* Alineación de texto y eliminación del subrayado de los enlaces */
             text-decoration: none;
             display: inline-block;
             text-align: center;
@@ -130,54 +143,54 @@
             margin-top: 20px;
         }
 
-        ::placeholder,
-        select:invalid,
-        input[type="date"]:invalid {
-            color: #999 !important;
+        .text-center a {
+            color: #007bff;
         }
 
-        input,
-        select,
-        input[type="date"] {
-            color: #999;
+        .text-center a:hover {
+            text-decoration: underline;
         }
 
-        input:focus,
-        select:focus,
-        input[type="date"]:focus,
-        input:not(:placeholder-shown),
-        select:not(:invalid),
-        input[type="date"]:not(:invalid) {
-            color: #000 !important;
+        .breadcrumb {
+            background: none;
+            padding-left: 0;
+            margin-bottom: 20px;
         }
 
-        select option {
-            color: #000;
+        .breadcrumb-item a {
+            color: #007bff;
         }
 
-        select option:first-child {
-            color: #999;
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
         }
 
-        input[type="date"]:not(:valid):not(:focus) {
-            color: #999;
+        .alert {
+            display: none;
+        }
+
+        .logo {
+            display: block;
+            margin: 0 auto;
+            max-width: 250px;
         }
     </style>
 </head>
 
 <body>
     <div class="caja">
+        <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo" class="logo">
         <div class="form-wrapper">
             <form action="{% url 'Recuperar_Contrasenia' %}" method="post">
                 {% csrf_token %}
                 <h1 class="t">Recuperar Contraseña</h1>
                 <div class="form-group">
-                    <label for="{{ form.username.id_for_label }}">Nombre de usuario o Correo Electrónico</label>
+                    <label for="{{ form.username.id_for_label }}">Nombre de usuario o Correo Electrónico:</label>
                     {{ form.username }}
                 </div>
                 <div class="button-group">
-                    <a href="{% url 'Iniciar_Sesion' %}" class="btn-custom btn-regresar">Regresar</a>
-                    <button type="submit" class="btn-custom btn-enviar">Enviar Enlace</button>
+                    <a href="{% url 'Iniciar_Sesion' %}" class="btn-regresar">Regresar</a>
+                    <button type="submit">Enviar Enlace</button>
                 </div>
             </form>
         </div>

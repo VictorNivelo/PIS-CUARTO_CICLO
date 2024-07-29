@@ -7,33 +7,86 @@
     <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+
     <title>Gestión de genero</title>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
 
+        html,
         body {
-            font-family: Arial, sans-serif;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            justify-content: center;
+            align-items: center;
             background: url('../Static/Imagen/b.png') no-repeat center center fixed;
             background-size: cover;
-            padding: 10px;
-            margin: 0;
-            font-size: 14px;
+            font-family: 'Open Sans', sans-serif;
+            position: relative;
+        }
+
+        html::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.500);
+            z-index: 1;
         }
 
         .container {
+            position: relative;
+            z-index: 2;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            max-width: 1600px;
-            margin: auto;
-            padding: 20px;
+            max-width: 1550px;
+            margin: 30px auto;
+            padding: 30px;
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 15px;
+        .header-logo {
+            position: absolute;
+            left: 25px;
+        }
+
+        .header-logo img {
+            width: 220px;
+            height: auto;
+        }
+
+        .title-and-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .title-and-logo h1 {
+            margin: 0;
             font-family: 'Lobster', cursive;
             color: #333;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb-item a {
+            color: #298eb6;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #1c4066;
         }
 
         .actions {
@@ -47,6 +100,7 @@
             display: flex;
             gap: 8px;
             align-items: center;
+            flex: 1;
             margin-right: 8px;
         }
 
@@ -80,30 +134,9 @@
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            width: 120px;
-            display: inline-block;
-            text-align: center;
-            margin-right: 8px;
-        }
-
-        .actions button[type="submit"],
-        .btn-registrar,
-        .btn-regresar,
-        .btn-crear,
-        .btn-buscar,
-        .btn-eliminar,
-        .btn-guardar,
-        .btn-importar {
-            padding: 8px 12px;
-            font-size: 14px;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            width: 120px;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-right: 8px;
         }
 
@@ -156,6 +189,15 @@
             background-color: #13805f !important;
         }
 
+        .btn-regresar i,
+        .btn-crear i,
+        .btn-buscar i,
+        .btn-eliminar i,
+        .btn-guardar i,
+        .btn-importar i {
+            margin-right: 5px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -166,7 +208,7 @@
         th,
         td {
             border: 1px solid #ccc;
-            padding: 6px;
+            padding: 8px;
             text-align: center;
         }
 
@@ -180,30 +222,14 @@
         }
 
         td.actions-column {
-            width: 100px;
+            width: 150px;
         }
 
         td.actions-column form {
             display: flex;
             justify-content: center;
-        }
-
-        td.actions-column10 {
-            width: 135px;
-        }
-
-        td.actions-column10 form {
-            display: flex;
-            justify-content: center;
-        }
-
-        td.actions-columnD {
-            width: 120px;
-        }
-
-        td.actions-columnD form {
-            display: flex;
-            justify-content: center;
+            align-items: center;
+            gap: 5px;
         }
 
         .form-group {
@@ -222,7 +248,7 @@
         .form-group input[type="email"],
         .form-group select,
         .form-group input[type="number"] {
-            width: 100%;
+            width: calc(100% - 16px);
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -249,17 +275,32 @@
 </head>
 
 <body>
-
     <div class="container">
-        <h1>Gestión de genero</h1>
+        <div class="title-and-logo">
+            <div class="header-logo">
+                <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo">
+            </div>
+            <h1>Gestión de género</h1>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
+                        Inicio de sesión</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'Pagina_Administrador' %}"><i class="fas fa-user"></i>
+                        Página del administrador</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-cogs"></i> Gestión de género
+                </li>
+            </ol>
+        </nav>
         <div class="actions">
-            <a href="#" class="btn-regresar">Regresar</a>
+            <a href="#" class="btn-regresar"><i class="fas fa-arrow-left"></i> Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
                 <input type="text" name="search_query" placeholder="Buscar por nombre" value="{{ search_query }}">
-                <button type="submit" class="btn-buscar">Buscar</button>
+                <button type="submit" class="btn-buscar"><i class="fas fa-search"></i> Buscar</button>
             </form>
-            <a href="{% url 'Registrar_Genero' %}" class="btn-crear">Crear genero</a>
-            <a href="#" class="btn-importar" id="importButton">Importar generos</a>
+            <a href="{% url 'Registrar_Genero' %}" class="btn-crear"><i class="fas fa-plus"></i> Crear género</a>
+            <a href="#" class="btn-importar" id="importButton"><i class="fas fa-file-import"></i> Importar géneros</a>
             <input type="file" id="fileInput" name="document" style="display: none;" accept=".csv">
         </div>
 
@@ -268,7 +309,8 @@
                 <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>Descripcion</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -281,12 +323,16 @@
                             <td><input type="text" name="descripcion_genero" value="{{ genero.descripcion_genero }}">
                             </td>
                             <td class="actions-column">
-                                <button type="submit" name="modify" class="btn-guardar">Guardar</button>
-                                <form method="POST" style="display: inline-block; margin-left: 5px;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="genero_id" value="{{ genero.id }}">
-                                    <button type="submit" name="delete" class="btn-eliminar">Eliminar</button>
-                                </form>
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <button type="submit" name="modify" class="btn-guardar"><i class="fas fa-save"></i>
+                                        Guardar</button>
+                                    <form method="POST" style="margin: 0;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="genero_id" value="{{ genero.id }}">
+                                        <button type="submit" name="delete" class="btn-eliminar"><i
+                                                class="fas fa-trash"></i> Eliminar</button>
+                                    </form>
+                                </div>
                             </td>
                         </form>
                     </tr>
