@@ -72,7 +72,7 @@ from .forms import (
 
 
 def PaginaAyuda(request):
-    return render(request, "PaginaAyuda,html")
+    return render(request, "PaginaAyuda.html")
 
 
 def PaginaPrincipal(request):
