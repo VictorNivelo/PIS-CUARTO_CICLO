@@ -60,10 +60,15 @@ from .vistas import (
 
     PrediccionMateria,
     PrediccionCiclo,
+    PrediccionCarrera,
     RealizarPrediccion,
+    RealizarPrediccionCiclo,
+    RealizarPrediccionCarrera,
 
     PRI,
+    sin_acceso,
 )
+from .decorators import require_role
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -124,13 +129,16 @@ urlpatterns = [
     path('Obtener-materia/', ObtenerMaterias, name='Obtener_Materias'),
     path('Obtener-Docente/', ObtenerDocentes, name='Obtener_Docentes'),
 
-
+    path('Prediccion-Carrera/',PrediccionCarrera, name='Prediccion_Carrera'),
+    path('Realizar-Prediccion-Carrera/',RealizarPrediccionCarrera, name='Realizar_Prediccion_Carrera'),
     path('Prediccion-Materia/', PrediccionMateria, name='Prediccion_Materia'),
     path('Prediccion-Ciclo/', PrediccionCiclo, name='Prediccion_Ciclo'),
     path('Realizar-Prediccion/',RealizarPrediccion, name='Realizar_Prediccion'),
+    path('Realizar-Prediccion-Ciclo/',RealizarPrediccionCiclo, name='Realizar_Prediccion_Ciclo'),
+    
     # path('Prediccion-Desercion/', Predecir_Desercion, name='Predecir_Desercion'),
 
     # path('Predecir/', PredecirDesercion, name='Predecir_Desercion'),
     path('1/',PRI, name='PI'),
-
+    path('Sin-Acceso/',sin_acceso, name='Sin_Acceso'),
 ]
