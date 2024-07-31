@@ -63,7 +63,9 @@ from .vistas import (
     RealizarPrediccion,
 
     PRI,
+    sin_acceso,
 )
+from .decorators import require_role
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -132,5 +134,5 @@ urlpatterns = [
 
     # path('Predecir/', PredecirDesercion, name='Predecir_Desercion'),
     path('1/',PRI, name='PI'),
-
+    path('Sin-Acceso/',sin_acceso, name='Sin_Acceso'),
 ]

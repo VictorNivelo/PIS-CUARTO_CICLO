@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/LogoUnl.png">
+    <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/Icono-UNL.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
@@ -134,6 +134,18 @@
             width: 100%;
         }
 
+        input::placeholder,
+        select::placeholder {
+            color: #aaa;
+        }
+
+        input:focus::placeholder,
+        select:focus::placeholder,
+        input:not(:placeholder-shown),
+        select:not(:invalid) {
+            color: #333;
+        }
+
         .button-group {
             display: flex;
             justify-content: space-between;
@@ -244,7 +256,7 @@
         </div>
 
         <ul class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'Index' %}"><i class="fas fa-home"></i> Inicio</a></li>
             <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
                     Inicio de sesión</a></li>
             <li class="breadcrumb-item"><a href="{% url 'Pagina_Secretaria' %}"><i class="fas fa-building"></i>
@@ -257,7 +269,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <button type="button" id="btnRegresar" class="btn" onclick="window.history.back();"><i
-                            class="fas fa-arrow-left"></i>Regresar</button>
+                            class="fas fa-arrow-left"></i> Regresar</button>
                 </div>
                 <div class="form-group">
                     <label for="facultad"><i class="fas fa-building"></i> Facultad:</label>
@@ -299,11 +311,11 @@
                 </div>
                 <div class="form-group">
                     <label for="anio_inicio"><i class="fas fa-calendar-alt"></i>Año de inicio:</label>
-                    <input type="number" name="anio_inicio" id="anio_inicio" required min="2000" max="2100">
+                    <input type="number" name="anio_inicio" id="anio_inicio" placeholder="Ingrese el año" min="2000" max="2500" required>
                 </div>
                 <div class="form-group">
                     <label for="anio_fin"><i class="fas fa-calendar-year"></i>Año de fin:</label>
-                    <input type="number" name="anio_fin" id="anio_fin" required min="2000" max="2100">
+                    <input type="number" name="anio_fin" id="anio_fin" placeholder="Ingrese el año" min="2000" max="2500" required>
                 </div>
                 <div class="form-group">
                     <button type="submit" id="submitBtn" class="btn"><i class="fas fa-chart-line"></i> Predecir</button>
@@ -355,23 +367,6 @@
             </table>
         </div>
 
-        <!-- <div id="porcentajesTable" class="data-section" style="display: none;">
-            <h3 class="section-title">Porcentajes estudiantes por año</h3>
-            <table id="porcentajesDataTable">
-                <thead>
-                    <tr>
-                        <th>Año</th>
-                        <th>Porcentaje de matriculados</th>
-                        <th>Porcentaje de aprobados</th>
-                        <th>Porcentaje de reprobados</th>
-                        <th>Porcentaje de desertores</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div> -->
-
         <div id="promediosTable" class="data-section" style="display: none;">
             <h3 class="section-title">Promedios de porcentajes de factores de estudiantes</h3>
             <table id="promediosDataTable">
@@ -411,7 +406,7 @@
 
         <div class="button-container" style="text-align: center; margin-top: 20px; display: none;"
             id="descargarInformeContainer">
-            <button id="btnDescargarInforme" class="btn btn-primary">Descargar Informe</button>
+            <button id="btnDescargarInforme" class="btn btn-primary"><i class="fas fa-save"></i> Descargar Informe</button>
         </div>
     </div>
 
@@ -598,9 +593,7 @@
                     actualizarInformacion(data);
 
                     document.getElementById('descargarInformeContainer').style.display = 'block';
-
                     document.querySelectorAll('.chart-title, .section-divider').forEach(el => el.style.display = 'block');
-
                     console.log("Gráficos y tablas creados exitosamente");
                 })
                 .catch(error => {
@@ -640,50 +633,112 @@
             if (matriculaChartInstance) {
                 matriculaChartInstance.destroy();
             }
-            // new Chart(ctx, {
+
+            const labels = [];
+            const datosHistoricos = data.datosHistoricos;
+            const añoInicio = Math.min(...años);
+            const ultimoPeriodoHistorico = datosHistoricos[datosHistoricos.length - 1].periodo_academico__codigo_periodo_academico;
+
+            // Filtrar datos históricos a partir del año de inicio
+            const datosHistoricosFiltrados = datosHistoricos.filter(dato => {
+                const añoDato = parseInt(dato.periodo_academico__codigo_periodo_academico.split('_')[1]);
+                return añoDato >= añoInicio;
+            });
+
+            datosHistoricosFiltrados.forEach(dato => {
+                labels.push(dato.periodo_academico__codigo_periodo_academico);
+            });
+
+            const añoInicioPrediction = parseInt(labels[labels.length - 1]?.split('_')[1]) || añoInicio;
+            const añoFinPrediction = Math.max(...años);
+            for (let año = añoInicioPrediction + 1; año <= añoFinPrediction; año++) {
+                labels.push(`Marzo_${año}`, `Septiembre_${año}`);
+            }
+
+            const indicePrediction = datosHistoricosFiltrados.length;
+
+            function createDataset(label, datosHistoricos, datosPrediction, color) {
+                const datos = [
+                    ...datosHistoricos.map(d => d[`cantidad_${label.toLowerCase()}`]),
+                    ...datosPrediction.slice(indicePrediction)
+                ];
+                return {
+                    label: label,
+                    data: datos,
+                    borderColor: color,
+                    backgroundColor: color,
+                    fill: false,
+                    tension: 0.3,
+                    segment: {
+                        borderDash: ctx => ctx.p0DataIndex < indicePrediction ? [] : [5, 5]
+                    }
+                };
+            }
+
             matriculaChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: años,
+                    labels: labels,
                     datasets: [
-                        {
-                            label: 'Matriculados',
-                            data: data.matriculados,
-                            borderColor: 'blue',
-                            fill: false
-                        },
-                        {
-                            label: 'Aprobados',
-                            data: data.aprobados,
-                            borderColor: 'green',
-                            fill: false
-                        },
-                        {
-                            label: 'Reprobados',
-                            data: data.reprobados,
-                            borderColor: 'orange',
-                            fill: false
-                        },
-                        {
-                            label: 'Desertores',
-                            data: data.desertores,
-                            borderColor: 'red',
-                            fill: false
-                        }
+                        createDataset('Matriculados', datosHistoricosFiltrados, data.matriculados, 'blue'),
+                        createDataset('Aprobados', datosHistoricosFiltrados, data.aprobados, 'green'),
+                        createDataset('Reprobados', datosHistoricosFiltrados, data.reprobados, 'orange'),
+                        createDataset('Desertores', datosHistoricosFiltrados, data.desertores, 'red')
                     ]
                 },
                 options: {
                     responsive: true,
-                    title: {
-                        display: true,
-                        text: 'Predicción de Matrícula, Aprobados, Reprobados y Desertores'
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function (context) {
+                                    return context[0].label;
+                                },
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (context.parsed.y !== null) {
+                                        label += ': ' + Math.round(context.parsed.y);
+                                    }
+                                    if (context.dataIndex >= indicePrediction) {
+                                        label += ' (Predicción)';
+                                    } else {
+                                        label += ' (Histórico)';
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    xMin: indicePrediction - 0.5,
+                                    xMax: indicePrediction - 0.5,
+                                    borderColor: 'rgba(255, 0, 0, 0.7)',
+                                    borderWidth: 2,
+                                    label: {
+                                        content: 'Inicio Predicción',
+                                        enabled: true,
+                                        position: 'top'
+                                    }
+                                }
+                            }
+                        }
                     },
                     scales: {
                         x: {
                             display: true,
                             title: {
                                 display: true,
-                                text: 'Año (s)'
+                                text: 'Período Académico'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                autoSkip: false
                             }
                         },
                         y: {
@@ -696,6 +751,221 @@
                     }
                 }
             });
+        }
+
+        function crearGraficoPorcentajes(data, años) {
+            const ctx = document.getElementById('porcentajesChart').getContext('2d');
+            if (porcentajesChartInstance) {
+                porcentajesChartInstance.destroy();
+            }
+
+            const labels = [];
+            const datosHistoricos = data.datosHistoricos;
+            const añoInicio = Math.min(...años);
+            const ultimoPeriodoHistorico = datosHistoricos[datosHistoricos.length - 1].periodo_academico__codigo_periodo_academico;
+
+            const datosHistoricosFiltrados = datosHistoricos.filter(dato => {
+                const añoDato = parseInt(dato.periodo_academico__codigo_periodo_academico.split('_')[1]);
+                return añoDato >= añoInicio;
+            });
+
+            datosHistoricosFiltrados.forEach(dato => {
+                labels.push(dato.periodo_academico__codigo_periodo_academico);
+            });
+
+            const añoInicioPrediction = parseInt(labels[labels.length - 1]?.split('_')[1]) || añoInicio;
+            const añoFinPrediction = Math.max(...años);
+            for (let año = añoInicioPrediction + 1; año <= añoFinPrediction; año++) {
+                labels.push(`Marzo_${año}`, `Septiembre_${año}`);
+            }
+
+            const indicePrediction = datosHistoricosFiltrados.length;
+
+            function createDataset(label, datosHistoricos, datosPrediction, color) {
+                const keyMap = {
+                    'Tipo de Educación': 'tipo_educacion',
+                    'Modalidad': 'modalidad',
+                    'Origen': 'origen',
+                    'Trabajo': 'trabajo',
+                    'Discapacidad': 'discapacidad',
+                    'Hijos': 'hijos'
+                };
+                const key = keyMap[label] || label.toLowerCase().replace(/ /g, '_');
+                const datos = [
+                    ...datosHistoricos.map(d => d[`promedio_${key}`]),
+                    ...datosPrediction.slice(indicePrediction)
+                ];
+                return {
+                    label: label,
+                    data: datos,
+                    borderColor: color,
+                    backgroundColor: color,
+                    fill: false,
+                    tension: 0.3,
+                    segment: {
+                        borderDash: ctx => ctx.p0DataIndex < indicePrediction ? [] : [5, 5]
+                    }
+                };
+            }
+
+            porcentajesChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        createDataset('Modalidad', datosHistoricosFiltrados, data.modalidad, 'purple'),
+                        createDataset('Tipo de Educación', datosHistoricosFiltrados, data.tipo_educacion, 'brown'),
+                        createDataset('Origen', datosHistoricosFiltrados, data.origen, 'pink'),
+                        createDataset('Trabajo', datosHistoricosFiltrados, data.trabajo, 'cyan'),
+                        createDataset('Discapacidad', datosHistoricosFiltrados, data.discapacidad, 'magenta'),
+                        createDataset('Hijos', datosHistoricosFiltrados, data.hijos, 'yellow')
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function (context) {
+                                    return context[0].label;
+                                },
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (context.parsed.y !== null) {
+                                        label += ': ' + context.parsed.y.toFixed(2) + '%';
+                                    }
+                                    if (context.dataIndex >= indicePrediction) {
+                                        label += ' (Predicción)';
+                                    } else {
+                                        label += ' (Histórico)';
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    xMin: indicePrediction - 0.5,
+                                    xMax: indicePrediction - 0.5,
+                                    borderColor: 'rgba(255, 0, 0, 0.7)',
+                                    borderWidth: 2,
+                                    label: {
+                                        content: 'Inicio Predicción',
+                                        enabled: true,
+                                        position: 'top'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Período Académico'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                autoSkip: false
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Porcentaje'
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function actualizarInformacion(data) {
+            const infoSection = document.getElementById('infoSection');
+            if (infoSection) {
+                infoSection.style.display = 'block';
+                document.getElementById('universidad').textContent = 'Universidad Nacional de Loja';
+                const facultadSelect = document.getElementById('facultad');
+                const facultadOption = facultadSelect.options[facultadSelect.selectedIndex];
+                const facultadNombreCompleto = facultadOption.getAttribute('data-nombre-completo');
+                document.getElementById('facultadInfo').textContent = facultadNombreCompleto;
+                // document.getElementById('facultadInfo').textContent = document.getElementById('facultad').options[document.getElementById('facultad').selectedIndex].text;
+                document.getElementById('carreraInfo').textContent = document.getElementById('carrera').options[document.getElementById('carrera').selectedIndex].text;
+                document.getElementById('cicloInfo').textContent = document.getElementById('ciclo').options[document.getElementById('ciclo').selectedIndex].text;
+                document.getElementById('materiaInfo').textContent = document.getElementById('materia').options[document.getElementById('materia').selectedIndex].text;
+                document.getElementById('docente').textContent = data.docente;
+                document.getElementById('periodo').textContent = `${document.getElementById('anio_inicio').value} - ${document.getElementById('anio_fin').value}`;
+            }
+        }
+
+        function crearTablaMatricula(data, años) {
+            const matriculaTable = document.getElementById('matriculaTable');
+            if (matriculaTable) {
+                matriculaTable.style.display = 'block';
+                const matriculaTableBody = document.getElementById('matriculaDataTable').getElementsByTagName('tbody')[0];
+                matriculaTableBody.innerHTML = '';
+                for (let i = 0; i < años.length; i++) {
+                    let row = matriculaTableBody.insertRow();
+                    row.insertCell(0).textContent = años[i];
+                    row.insertCell(1).textContent = Math.round(data.matriculados[i]);
+                    row.insertCell(2).textContent = '100%';
+                    row.insertCell(3).textContent = Math.round(data.aprobados[i]);
+                    row.insertCell(4).textContent = Math.round(data.aprobados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(5).textContent = Math.round(data.reprobados[i]);
+                    row.insertCell(6).textContent = Math.round(data.reprobados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(7).textContent = Math.round(data.desertores[i]);
+                    row.insertCell(8).textContent = Math.round(data.desertores[i] / data.matriculados[i] * 100) + '%';
+                }
+            }
+        }
+
+        function crearTablaPorcentajes(data, años) {
+            const porcentajesTable = document.getElementById('porcentajesTable');
+            if (porcentajesTable) {
+                porcentajesTable.style.display = 'block';
+                const porcentajesTableBody = document.getElementById('porcentajesDataTable').getElementsByTagName('tbody')[0];
+                porcentajesTableBody.innerHTML = '';
+                for (let i = 0; i < años.length; i++) {
+                    let row = porcentajesTableBody.insertRow();
+                    row.insertCell(0).textContent = años[i];
+                    row.insertCell(1).textContent = Math.round(data.matriculados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(2).textContent = Math.round(data.aprobados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(3).textContent = Math.round(data.reprobados[i] / data.matriculados[i] * 100) + '%';
+                    row.insertCell(4).textContent = Math.round(data.desertores[i] / data.matriculados[i] * 100) + '%';
+                }
+            }
+        }
+
+        function crearTablaPromedios(data, años) {
+            const promediosTable = document.getElementById('promediosTable');
+            if (promediosTable) {
+                promediosTable.style.display = 'block';
+                const promediosTableBody = document.getElementById('promediosDataTable').getElementsByTagName('tbody')[0];
+                promediosTableBody.innerHTML = '';
+                for (let i = 0; i < años.length; i++) {
+                    let row = promediosTableBody.insertRow();
+                    row.insertCell(0).textContent = años[i];
+                    row.insertCell(1).textContent = Math.round(data.modalidad[i]) + '%';
+                    row.insertCell(2).textContent = Math.round(data.tipo_educacion[i]) + '%';
+                    row.insertCell(3).textContent = Math.round(data.origen[i]) + '%';
+                    row.insertCell(4).textContent = Math.round(data.trabajo[i]) + '%';
+                    row.insertCell(5).textContent = Math.round(data.discapacidad[i]) + '%';
+                    row.insertCell(6).textContent = Math.round(data.hijos[i]) + '%';
+                }
+            }
         }
 
         function generarPDF(data) {
@@ -900,162 +1170,6 @@
             }).catch(error => {
                 console.error("Error al generar las gráficas:", error);
             });
-        }
-
-
-        function crearGraficoPorcentajes(data, años) {
-            const ctx = document.getElementById('porcentajesChart').getContext('2d');
-            if (porcentajesChartInstance) {
-                porcentajesChartInstance.destroy();
-            }
-            porcentajesChartInstance = new Chart(ctx, {
-                // new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: años,
-                    datasets: [
-                        {
-                            label: 'Modalidad',
-                            data: data.modalidad,
-                            borderColor: 'purple',
-                            fill: false
-                        },
-                        {
-                            label: 'Tipo de Educación',
-                            data: data.tipo_educacion,
-                            borderColor: 'brown',
-                            fill: false
-                        },
-                        {
-                            label: 'Origen',
-                            data: data.origen,
-                            borderColor: 'pink',
-                            fill: false
-                        },
-                        {
-                            label: 'Trabajo',
-                            data: data.trabajo,
-                            borderColor: 'cyan',
-                            fill: false
-                        },
-                        {
-                            label: 'Discapacidad',
-                            data: data.discapacidad,
-                            borderColor: 'magenta',
-                            fill: false
-                        },
-                        {
-                            label: 'Hijos',
-                            data: data.hijos,
-                            borderColor: 'yellow',
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    title: {
-                        display: true,
-                        text: 'Predicción de Porcentajes'
-                    },
-                    scales: {
-                        x: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Año'
-                            }
-                        },
-                        y: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Porcentaje'
-                            },
-                            ticks: {
-                                callback: function (value) {
-                                    return value + '%';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function actualizarInformacion(data) {
-            const infoSection = document.getElementById('infoSection');
-            if (infoSection) {
-                infoSection.style.display = 'block';
-                document.getElementById('universidad').textContent = 'Universidad Nacional de Loja';
-                const facultadSelect = document.getElementById('facultad');
-                const facultadOption = facultadSelect.options[facultadSelect.selectedIndex];
-                const facultadNombreCompleto = facultadOption.getAttribute('data-nombre-completo');
-                document.getElementById('facultadInfo').textContent = facultadNombreCompleto;
-                // document.getElementById('facultadInfo').textContent = document.getElementById('facultad').options[document.getElementById('facultad').selectedIndex].text;
-                document.getElementById('carreraInfo').textContent = document.getElementById('carrera').options[document.getElementById('carrera').selectedIndex].text;
-                document.getElementById('cicloInfo').textContent = document.getElementById('ciclo').options[document.getElementById('ciclo').selectedIndex].text;
-                document.getElementById('materiaInfo').textContent = document.getElementById('materia').options[document.getElementById('materia').selectedIndex].text;
-                document.getElementById('docente').textContent = data.docente;
-                document.getElementById('periodo').textContent = `${document.getElementById('anio_inicio').value} - ${document.getElementById('anio_fin').value}`;
-            }
-        }
-
-        function crearTablaMatricula(data, años) {
-            const matriculaTable = document.getElementById('matriculaTable');
-            if (matriculaTable) {
-                matriculaTable.style.display = 'block';
-                const matriculaTableBody = document.getElementById('matriculaDataTable').getElementsByTagName('tbody')[0];
-                matriculaTableBody.innerHTML = '';
-                for (let i = 0; i < años.length; i++) {
-                    let row = matriculaTableBody.insertRow();
-                    row.insertCell(0).textContent = años[i];
-                    row.insertCell(1).textContent = Math.round(data.matriculados[i]);
-                    row.insertCell(2).textContent = '100%';
-                    row.insertCell(3).textContent = Math.round(data.aprobados[i]);
-                    row.insertCell(4).textContent = Math.round(data.aprobados[i] / data.matriculados[i] * 100) + '%';
-                    row.insertCell(5).textContent = Math.round(data.reprobados[i]);
-                    row.insertCell(6).textContent = Math.round(data.reprobados[i] / data.matriculados[i] * 100) + '%';
-                    row.insertCell(7).textContent = Math.round(data.desertores[i]);
-                    row.insertCell(8).textContent = Math.round(data.desertores[i] / data.matriculados[i] * 100) + '%';
-                }
-            }
-        }
-
-        function crearTablaPorcentajes(data, años) {
-            const porcentajesTable = document.getElementById('porcentajesTable');
-            if (porcentajesTable) {
-                porcentajesTable.style.display = 'block';
-                const porcentajesTableBody = document.getElementById('porcentajesDataTable').getElementsByTagName('tbody')[0];
-                porcentajesTableBody.innerHTML = '';
-                for (let i = 0; i < años.length; i++) {
-                    let row = porcentajesTableBody.insertRow();
-                    row.insertCell(0).textContent = años[i];
-                    row.insertCell(1).textContent = Math.round(data.matriculados[i] / data.matriculados[i] * 100) + '%';
-                    row.insertCell(2).textContent = Math.round(data.aprobados[i] / data.matriculados[i] * 100) + '%';
-                    row.insertCell(3).textContent = Math.round(data.reprobados[i] / data.matriculados[i] * 100) + '%';
-                    row.insertCell(4).textContent = Math.round(data.desertores[i] / data.matriculados[i] * 100) + '%';
-                }
-            }
-        }
-
-        function crearTablaPromedios(data, años) {
-            const promediosTable = document.getElementById('promediosTable');
-            if (promediosTable) {
-                promediosTable.style.display = 'block';
-                const promediosTableBody = document.getElementById('promediosDataTable').getElementsByTagName('tbody')[0];
-                promediosTableBody.innerHTML = '';
-                for (let i = 0; i < años.length; i++) {
-                    let row = promediosTableBody.insertRow();
-                    row.insertCell(0).textContent = años[i];
-                    row.insertCell(1).textContent = Math.round(data.modalidad[i]) + '%';
-                    row.insertCell(2).textContent = Math.round(data.tipo_educacion[i]) + '%';
-                    row.insertCell(3).textContent = Math.round(data.origen[i]) + '%';
-                    row.insertCell(4).textContent = Math.round(data.trabajo[i]) + '%';
-                    row.insertCell(5).textContent = Math.round(data.discapacidad[i]) + '%';
-                    row.insertCell(6).textContent = Math.round(data.hijos[i]) + '%';
-                }
-            }
         }
 
         document.getElementById('btnDescargarInforme').addEventListener('click', function () {

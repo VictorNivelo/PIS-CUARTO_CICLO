@@ -10,17 +10,7 @@ class Usuario(AbstractUser):
         ("Secretaria", "Secretaria"),
         ("Docente", "Docente"),
     ]
-
-    GENERO_OPCIONES = [
-        ("Masculino", "Masculino"),
-        ("Femenino", "Femenino"),
-    ]
-
-    TIPO_DNI_OPCIONES = [
-        ("Cedula", "Cédula"),
-        ("Pasaporte", "Pasaporte"),
-    ]
-
+    
     genero = models.ForeignKey(
         "Genero", on_delete=models.CASCADE, verbose_name="Género"
     )
@@ -211,10 +201,10 @@ class DatosHistorico(models.Model):
         "PeriodoAcademico", on_delete=models.CASCADE, verbose_name="Período Académico"
     )
 
-    cantidad_matriculados = models.IntegerField(verbose_name="Cantidad de Matriculados")
-    cantidad_aprobados = models.IntegerField(verbose_name="Cantidad de Aprobados")
-    cantidad_reprobados = models.IntegerField(verbose_name="Cantidad de Reprobados")
-    cantidad_desertores = models.IntegerField(verbose_name="Cantidad de Desertores")
+    cantidad_matriculados = models.PositiveIntegerField(verbose_name="Cantidad de Matriculados")
+    cantidad_aprobados = models.PositiveIntegerField(verbose_name="Cantidad de Aprobados")
+    cantidad_reprobados = models.PositiveIntegerField(verbose_name="Cantidad de Reprobados")
+    cantidad_desertores = models.PositiveIntegerField(verbose_name="Cantidad de Desertores")
 
     promedio_modalidad = models.FloatField(verbose_name="Promedio Modalidad")
     promedio_tipo_educacion = models.FloatField(
