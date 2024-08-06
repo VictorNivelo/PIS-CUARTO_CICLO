@@ -82,7 +82,7 @@ STATIC_URL = "/Static/"
 
 STATIC_ROOT = BASE_DIR / "Static"
 
-MEDIA_URL = "/Fotos/"
+MEDIA_URL = "Fotos/"
 
 MEDIA_ROOT = BASE_DIR / "Fotos"
 
@@ -102,6 +102,6 @@ EMAIL_HOST_USER = "pis.cuarto.ciclo@gmail.com"
 
 EMAIL_HOST_PASSWORD = "yfgu cizf mmld zxsl"
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

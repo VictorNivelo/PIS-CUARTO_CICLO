@@ -38,15 +38,19 @@
             z-index: 1;
         }
 
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
         .container {
             position: relative;
             z-index: 2;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            max-width: 1550px;
-            margin: 30px auto;
-            padding: 30px;
+            max-width: 98%;
+            margin: 20px auto;
+            padding: 20px;
         }
 
         .header-logo {
@@ -98,8 +102,7 @@
 
         .actions form {
             display: flex;
-            gap: 8px;
-            align-items: center;
+            gap: 6px;
             flex: 1;
             margin-right: 8px;
         }
@@ -108,12 +111,19 @@
         .actions input[type="date"],
         .actions input[type="number"],
         .actions input[type="email"],
-        .actions select {
+        .actions input[type="float"],
+        .actions select,
+        input[type="text"],
+        input[type="date"],
+        input[type="email"],
+        input[type="number"],
+        input[type="float"],
+        select {
             width: 100%;
-            padding: 8px;
+            padding: 6px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 0.9em;
             box-sizing: border-box;
         }
 
@@ -125,8 +135,8 @@
         .btn-eliminar,
         .btn-guardar,
         .btn-importar {
-            padding: 8px 12px;
-            font-size: 14px;
+            padding: 6px 10px;
+            font-size: 0.9em;
             background-color: #f0ad4e;
             color: white;
             border: none;
@@ -202,19 +212,21 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            font-size: 0.92em;
         }
 
         table,
         th,
         td {
             border: 1px solid #ccc;
-            padding: 8px;
+            padding: 6px;
             text-align: center;
         }
 
         th {
             background-color: #f2f2f2;
             font-weight: bold;
+            font-size: 0.90em;
         }
 
         td {
@@ -222,7 +234,7 @@
         }
 
         td.actions-column {
-            width: 150px;
+            width: 120px;
         }
 
         td.actions-column form {
@@ -233,10 +245,19 @@
         }
 
         td.actions-column10 {
-            width: 80px;
+            width: 60px;
         }
 
         td.actions-column10 form {
+            display: flex;
+            justify-content: center;
+        }
+
+        td.actions-columnD {
+            width: 80px;
+        }
+
+        td.actions-columnD form {
             display: flex;
             justify-content: center;
         }
@@ -256,30 +277,112 @@
         .form-group input[type="date"],
         .form-group input[type="email"],
         .form-group input[type="number"],
-        .form-group input[type="float"],
         .form-group select {
-            width: calc(100% - 16px);
-            padding: 8px;
+            width: 100%;
+            padding: 6px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 0.9em;
             box-sizing: border-box;
         }
 
-        .form-group button[type="submit"] {
+        .form-group button[type="submit"],
+        .form-group button[type="button"] {
             background-color: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
             padding: 8px;
-            font-size: 14px;
             cursor: pointer;
             width: 100%;
-            margin-top: 8px;
         }
 
         .form-group button[type="submit"]:hover {
             background-color: #0056b3;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgb(16, 207, 134);
+        }
+
+        .btn-guardar,
+        .btn-eliminar {
+            padding: 4px 8px;
+            font-size: 0.8em;
+        }
+
+        .btn-guardar i,
+        .btn-eliminar i {
+            margin-right: 3px;
+        }
+
+        input[type="date"] {
+            padding: 4px;
+            font-size: 0.8em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        td.actions-columnD input[type="date"] {
+            width: 120px;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            margin-left: -10px;
+        }
+
+        .user-menu {
+            position: absolute;
+            right: 20px;
+            top: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-menu .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 10px;
+            border: 2px solid #007BFF;
+        }
+
+        .user-menu .username {
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-options {
+            display: none;
+            position: absolute;
+            top: 45px;
+            right: -50px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px 0;
+            border-radius: 5px;
+            z-index: 1000;
+            width: 180px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-options a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .user-options a:hover {
+            color: #007BFF;
         }
     </style>
 </head>
@@ -289,10 +392,25 @@
     <div class="container">
         <div class="title-and-logo">
             <div class="header-logo">
-                <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo">
+                <img id="logo-img" src="../Static/Imagen/Iconos/Logo-UNL-mediano.png" alt="Logo">
             </div>
             <h1>Gestión de datos historicos</h1>
+            <div class="user-menu">
+                <div class="username" onclick="toggleUserOptions()">{{ user.first_name }} {{ user.last_name }}
+                    <div class="user-options" id="user-options">
+                        <a href="{% url 'Perfil_Usuario' %}"><i class="fas fa-cog"></i> Configuración</a>
+                        <a href="#" id="theme-toggle"><i class="fas fa-adjust"></i> Modo Oscuro</a>
+                        <a href="#" onclick="confirmLogout(event)"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                    </div>
+                </div>
+                {% if user.foto %}
+                <img class="avatar" src="{{ user.foto.url }}" alt="Avatar">
+                {% else %}
+                <img class="avatar" src="../Static/Imagen/Perfil-Predeterminado.png" alt="Avatar predeterminado">
+                {% endif %}
+            </div>
         </div>
+
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'Index' %}"><i class="fas fa-home"></i> Inicio</a></li>
@@ -326,7 +444,7 @@
                         <th>Periodo academico</th>
                         <th>Matriculados</th>
                         <th>Aprobados</th>
-                        <th>Reprovados</th>
+                        <th>Reprobados</th>
                         <th>Desertores</th>
                         <th>Modalidad</th>
                         <th>Tipo de educacion</th>
@@ -363,19 +481,38 @@
                                     {% endfor %}
                                 </select>
                             </td>
-                            <td><input type="number" name="cantidad_matriculados" value="{{ datosHistoricos.cantidad_matriculados }}" min="0"></td>
-                            <td><input type="number" name="cantidad_aprobados" value="{{ datosHistoricos.cantidad_aprobados }}" min="0"></td>
-                            <td><input type="number" name="cantidad_reprobados" value="{{ datosHistoricos.cantidad_reprobados }}" min="0"></td>
-                            <td><input type="number" name="cantidad_desertores" value="{{ datosHistoricos.cantidad_desertores }}" min="0"></td>
-                            <td><input type="number" step="0.01" name="promedio_modalidad" value="{{ datosHistoricos.promedio_modalidad }}"></td>
-                            <td><input type="number" step="0.01" name="promedio_tipo_educacion" value="{{ datosHistoricos.promedio_tipo_educacion }}"></td>
-                            <td><input type="number" step="0.01" name="promedio_origen" value="{{ datosHistoricos.promedio_origen }}"></td>
-                            <td><input type="number" step="0.01" name="promedio_trabajo" value="{{ datosHistoricos.promedio_trabajo }}"></td>
-                            <td><input type="number" step="0.01" name="promedio_discapacidad" value="{{ datosHistoricos.promedio_discapacidad }}"></td>
-                            <td><input type="number" step="0.01" name="promedio_hijos" value="{{ datosHistoricos.promedio_hijos }}"></td>
-                            <td>
-                                <button type="submit" name="modify" class="btn-guardar"><i class="fas fa-save"></i> Guardar</button>
-                                <button type="submit" name="delete" class="btn-eliminar"><i class="fas fa-trash"></i> Eliminar</button>
+                            <td class="actions-column10"><input type="number" name="cantidad_matriculados"
+                                    value="{{ datosHistoricos.cantidad_matriculados }}" min="0"></td>
+                            <td class="actions-column10"><input type="number" name="cantidad_aprobados"
+                                    value="{{ datosHistoricos.cantidad_aprobados }}" min="0"></td>
+                            <td class="actions-column10"><input type="number" name="cantidad_reprobados"
+                                    value="{{ datosHistoricos.cantidad_reprobados }}" min="0"></td>
+                            <td class="actions-column10"><input type="number" name="cantidad_desertores"
+                                    value="{{ datosHistoricos.cantidad_desertores }}" min="0"></td>
+                            <td class="actions-column10"><input type="float" step="0.01" name="promedio_modalidad"
+                                    value="{{ datosHistoricos.promedio_modalidad }}"></td>
+                            <td class="actions-column10"><input type="float" step="0.01" name="promedio_tipo_educacion"
+                                    value="{{ datosHistoricos.promedio_tipo_educacion }}"></td>
+                            <td class="actions-column10"><input type="float" step="0.01" name="promedio_origen"
+                                    value="{{ datosHistoricos.promedio_origen }}"></td>
+                            <td class="actions-column10"><input type="float" step="0.01" name="promedio_trabajo"
+                                    value="{{ datosHistoricos.promedio_trabajo }}"></td>
+                            <td class="actions-column10"><input type="float" step="0.01" name="promedio_discapacidad"
+                                    value="{{ datosHistoricos.promedio_discapacidad }}"></td>
+                            <td class="actions-column10"><input type="float" step="0.01" name="promedio_hijos"
+                                    value="{{ datosHistoricos.promedio_hijos }}"></td>
+
+                            <td class="actions-column">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <button type="button" class="btn-guardar" name="modify"
+                                        onclick="confirmarModificacion('{{ datosHistoricos.id }}', '{{ datosHistoricos.periodo_academico }}', this.form)">
+                                        <i class="fas fa-edit"></i> Actualizar
+                                    </button>
+                                    <button type="button" class="btn-eliminar"
+                                        onclick="confirmarEliminacion('{{ datosHistoricos.id }}', '{{ datosHistoricos.periodo_academico }}')">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </div>
                             </td>
                         </form>
                     </tr>
@@ -386,6 +523,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../Static/scripts/TemaSeleccionado.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -447,6 +585,85 @@
                         });
                 }
             });
+        });
+
+        function confirmarModificacion(datoHistoricoId, nombredatoHistorico, form) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `¿Deseas modificar el dato historico de "${nombredatoHistorico}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, modificar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'modify';
+                    hiddenInput.value = 'true';
+                    form.appendChild(hiddenInput);
+
+                    form.submit();
+                }
+            });
+        }
+
+        function confirmarEliminacion(datoHistoricoId, nombredatoHistorico) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `¿Deseas eliminar el dato historico de "${nombredatoHistorico}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.innerHTML = `
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <input type="hidden" name="datosHistoricos_id" value="${datoHistoricoId}">
+                    <input type="hidden" name="delete" value="true">
+            `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function toggleUserOptions() {
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
+        }
+
+        function confirmLogout(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¿Deseas cerrar la sesión?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{% url 'Cerrar_Sesion' %}";
+                }
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            var userMenu = document.querySelector('.user-menu');
+            var userOptions = document.getElementById('user-options');
+            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
+                userOptions.style.display = 'none';
+            }
         });
     </script>
 

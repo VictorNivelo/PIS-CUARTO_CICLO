@@ -185,7 +185,7 @@ class PeriodoAcademico(models.Model):
             ]
             mes_inicio = meses[self.fecha_inicio.month - 1]
             mes_fin = meses[self.fecha_fin.month - 1]
-            self.codigo_periodo_academico = f"{mes_inicio}_{self.fecha_inicio.year} - {mes_fin}_{self.fecha_fin.year}"
+            self.codigo_periodo_academico = f"{mes_inicio}-{self.fecha_inicio.year} - {mes_fin}-{self.fecha_fin.year}"
         super().save(*args, **kwargs)
 
     def __str__(self):
