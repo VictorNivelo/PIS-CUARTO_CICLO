@@ -38,6 +38,10 @@
             z-index: 1;
         }
 
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
         .caja {
             position: relative;
             z-index: 2;
@@ -134,6 +138,18 @@
             width: 100%;
         }
 
+        input::placeholder,
+        select::placeholder {
+            color: #aaa;
+        }
+
+        input:focus::placeholder,
+        select:focus::placeholder,
+        input:not(:placeholder-shown),
+        select:not(:invalid) {
+            color: #333;
+        }
+
         .button-group {
             display: flex;
             justify-content: space-between;
@@ -173,7 +189,7 @@
 
         .chart-container {
             width: 100%;
-            max-width: 950px;
+            max-width: 1000px;
             margin: 20px auto;
         }
 
@@ -229,6 +245,58 @@
             text-align: center;
             margin-top: 20px;
         }
+
+        .user-menu {
+            position: absolute;
+            right: 20px;
+            top: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-menu .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 10px;
+            border: 2px solid #007BFF;
+        }
+
+        .user-menu .username {
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-options {
+            display: none;
+            position: absolute;
+            top: 45px;
+            right: -50px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px 0;
+            border-radius: 5px;
+            z-index: 1000;
+            width: 180px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-options a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .user-options a:hover {
+            color: #007BFF;
+        }
     </style>
 </head>
 
@@ -239,7 +307,20 @@
                 <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo de la Universidad">
             </div>
             <div class="title-and-logo">
-                <h1 class="title">Predicción de desercion por ciclo</h1>
+                <h1 class="title">Predicción de deserción por ciclo</h1>
+            </div>
+            <div class="user-menu">
+                <div class="username" onclick="toggleUserOptions()">{{ user.first_name }} {{ user.last_name }}
+                    <div class="user-options" id="user-options">
+                        <a href="{% url 'Perfil_Usuario' %}"><i class="fas fa-cog"></i> Configuración</a>
+                        <a href="#" onclick="confirmLogout(event)"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                    </div>
+                </div>
+                {% if user.foto %}
+                <img class="avatar" src="{{ user.foto.url }}" alt="Avatar">
+                {% else %}
+                <img class="avatar" src="../Static/Imagen/Perfil-Predeterminado.png" alt="Avatar predeterminado">
+                {% endif %}
             </div>
         </div>
 
@@ -256,7 +337,8 @@
             <div class="form-row">
                 <div class="form-group">
                     <button type="button" id="btnRegresar" class="btn"
-                        onclick="window.history.back();">Regresar</button>
+                        onclick="window.history.back();"><i
+                        class="fas fa-arrow-left"></i> Regresar</button>
                 </div>
                 <div class="form-group">
                     <label for="facultad">Facultad:</label>
@@ -289,14 +371,16 @@
                 </div>
                 <div class="form-group">
                     <label for="anio_inicio">Año de inicio:</label>
-                    <input type="number" name="anio_inicio" id="anio_inicio" required min="2000" max="2100">
+                    <input type="number" name="anio_inicio" id="anio_inicio" placeholder="Ingrese el año" min="2015"
+                        max="3000" required>
                 </div>
                 <div class="form-group">
                     <label for="anio_fin">Año de fin:</label>
-                    <input type="number" name="anio_fin" id="anio_fin" required min="2000" max="2100">
+                    <input type="number" name="anio_fin" id="anio_fin" placeholder="Ingrese el año" min="2015"
+                        max="3000" required>
                 </div>
                 <div class="form-group">
-                    <button type="submit" id="submitBtn" class="btn">Predecir</button>
+                    <button type="submit" id="submitBtn" class="btn"><i class="fas fa-chart-line"></i> Predecir</button>
                 </div>
             </div>
         </form>
@@ -800,200 +884,88 @@
         }
 
         function generarPDF(data) {
-    console.log("Iniciando generación de PDF");
+            console.log("Iniciando generación de PDF");
 
-    if (typeof jspdf === 'undefined') {
-        console.error("jsPDF no está definido");
-        mostrarError("La biblioteca jsPDF no está cargada correctamente");
-        return;
-    }
-
-    const { jsPDF } = jspdf;
-    if (!jsPDF) {
-        console.error("jsPDF no está disponible en el objeto jspdf");
-        mostrarError("No se pudo inicializar jsPDF");
-        return;
-    }
-
-    if (!document.getElementById('matriculaChart')) {
-        console.error("No se encontró el gráfico de matrícula");
-        mostrarError("El gráfico de matrícula no está disponible");
-        return;
-    }
-
-    if (!document.getElementById('porcentajesChart')) {
-        console.error("No se encontró el gráfico de porcentajes");
-        mostrarError("El gráfico de porcentajes no está disponible");
-        return;
-    }
-
-    try {
-        const doc = new jsPDF();
-        const imgPath = '../Static/Imagen/';
-
-        const colorPrimario = [0, 51, 102];
-        const colorSecundario = [255, 102, 102];
-        const colorTexto = [33, 33, 33];
-
-        doc.setProperties({
-            title: "Informe de Predicción de Materia",
-            subject: "Análisis de rendimiento estudiantil",
-            author: "Universidad Nacional de Loja",
-            keywords: "predicción, informe, universidad",
-            creator: "Sistema de Predicción"
-        });
-
-        const addHeader = () => {
-            doc.setFontSize(12);
-            doc.setTextColor(...colorPrimario);
-            doc.setFont('helvetica', 'bold');
-            doc.addImage(`${imgPath}Iconos/Logo-UNL-mediano.png`, 'PNG', 10, 5, 45, 20);
-            doc.text("Universidad Nacional de Loja", 105, 10, { align: 'center' });
-            doc.setFontSize(10);
-            doc.text(`${data.facultad}`, 105, 16, { align: 'center' });
-            doc.text(`${data.carrera}`, 105, 22, { align: 'center' });
-            doc.text(`${data.ciclo}`, 105, 28, { align: 'center' });
-            doc.setTextColor(...colorTexto);
-        };
-
-        const addFooter = () => {
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(10);
-                doc.setTextColor(...colorSecundario);
-                doc.text(`Página ${i} de ${pageCount}`, 200, 290, { align: 'right' });
-                doc.setTextColor(...colorTexto);
+            if (typeof jspdf === 'undefined') {
+                console.error("jsPDF no está definido");
+                mostrarError("La biblioteca jsPDF no está cargada correctamente");
+                return;
             }
-        };
 
-        doc.setFontSize(28);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...colorPrimario);
-        doc.text("Universidad Nacional de Loja", 105, 50, { align: 'center' });
+            const { jsPDF } = jspdf;
+            if (!jsPDF) {
+                console.error("jsPDF no está disponible en el objeto jspdf");
+                mostrarError("No se pudo inicializar jsPDF");
+                return;
+            }
 
-        doc.setFontSize(24);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...colorSecundario);
-        doc.text("Informe de Predicción de Materia", 105, 70, { align: 'center' });
+            if (!document.getElementById('matriculaChart')) {
+                console.error("No se encontró el gráfico de matrícula");
+                mostrarError("El gráfico de matrícula no está disponible");
+                return;
+            }
 
-        doc.addImage(`${imgPath}Iconos/LogoUnl.png`, 'PNG', 80, 90, 50, 40);
+            if (!document.getElementById('porcentajesChart')) {
+                console.error("No se encontró el gráfico de porcentajes");
+                mostrarError("El gráfico de porcentajes no está disponible");
+                return;
+            }
 
-        doc.setFontSize(14);
-        doc.setTextColor(...colorTexto);
-        doc.text("Fecha: " + new Date().toLocaleDateString(), 105, 145, { align: 'center' });
+            try {
+                const doc = new jsPDF();
+                const imgPath = '../Static/Imagen/';
 
-        doc.addPage();
-        addHeader();
+                const colorPrimario = [0, 51, 102];
+                const colorSecundario = [255, 102, 102];
+                const colorTexto = [33, 33, 33];
 
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...colorPrimario);
-        doc.text("Información General", 105, 35, { align: 'center' });
+                doc.setProperties({
+                    title: "Informe de Predicción de Materia",
+                    subject: "Análisis de rendimiento estudiantil",
+                    author: "Universidad Nacional de Loja",
+                    keywords: "predicción, informe, universidad",
+                    creator: "Sistema de Predicción"
+                });
 
-        doc.autoTable({
-            startY: 45,
-            head: [['Campo', 'Información']],
-            body: [
-                ['Universidad', 'Universidad Nacional de Loja'],
-                ['Facultad', data.facultad],
-                ['Carrera', data.carrera],
-                ['Ciclo', data.ciclo],
-                ['Materia', data.materia],
-                ['Docente', data.docente],
-                ['Periodo de predicción', `${data.anio_inicio} - ${data.anio_fin}`]
-            ],
-            theme: 'grid',
-            headStyles: {
-                fillColor: colorPrimario,
-                textColor: [255, 255, 255],
-                fontStyle: 'bold'
-            },
-            bodyStyles: {
-                textColor: colorTexto
-            },
-            alternateRowStyles: {
-                fillColor: [245, 245, 245]
-            },
-            styles: { font: 'helvetica', fontSize: 11 }
-        });
+                const addHeader = () => {
+                    doc.setFontSize(12);
+                    doc.setTextColor(...colorPrimario);
+                    doc.setFont('helvetica', 'bold');
+                    doc.addImage(`${imgPath}Iconos/Logo-UNL-mediano.png`, 'PNG', 10, 5, 45, 20);
+                    doc.text("Universidad Nacional de Loja", 105, 10, { align: 'center' });
+                    doc.setFontSize(10);
+                    doc.text(`${data.facultad}`, 105, 16, { align: 'center' });
+                    doc.text(`${data.carrera}`, 105, 22, { align: 'center' });
+                    doc.text(`${data.ciclo}`, 105, 28, { align: 'center' });
+                    doc.setTextColor(...colorTexto);
+                };
 
-        doc.addPage();
-        addHeader();
+                const addFooter = () => {
+                    const pageCount = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= pageCount; i++) {
+                        doc.setPage(i);
+                        doc.setFontSize(10);
+                        doc.setTextColor(...colorSecundario);
+                        doc.text(`Página ${i} de ${pageCount}`, 200, 290, { align: 'right' });
+                        doc.setTextColor(...colorTexto);
+                    }
+                };
 
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...colorPrimario);
-        doc.text("Datos de Matrícula por Año", 105, 35, { align: 'center' });
+                doc.setFontSize(28);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...colorPrimario);
+                doc.text("Universidad Nacional de Loja", 105, 50, { align: 'center' });
 
-        const matriculaDataTable = document.getElementById('matriculaDataTable');
-        if (matriculaDataTable) {
-            doc.autoTable({
-                startY: 45,
-                html: '#matriculaDataTable',
-                theme: 'grid',
-                headStyles: {
-                    fillColor: colorPrimario,
-                    textColor: [255, 255, 255],
-                    fontStyle: 'bold'
-                },
-                bodyStyles: {
-                    textColor: colorTexto
-                },
-                alternateRowStyles: {
-                    fillColor: [245, 245, 245]
-                },
-                styles: { font: 'helvetica', fontSize: 10 }
-            });
-        } else {
-            console.error("No se encontró la tabla de datos de matrícula");
-        }
+                doc.setFontSize(24);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(...colorSecundario);
+                doc.text("Informe de Predicción de Materia", 105, 70, { align: 'center' });
 
-        doc.addPage();
-        addHeader();
+                doc.addImage(`${imgPath}Iconos/LogoUnl.png`, 'PNG', 80, 90, 50, 40);
 
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...colorPrimario);
-        doc.text("Promedios de Porcentajes", 105, 35, { align: 'center' });
-
-        const promediosDataTable = document.getElementById('promediosDataTable');
-        if (promediosDataTable) {
-            doc.autoTable({
-                startY: 45,
-                html: '#promediosDataTable',
-                theme: 'grid',
-                headStyles: {
-                    fillColor: colorPrimario,
-                    textColor: [255, 255, 255],
-                    fontStyle: 'bold'
-                },
-                bodyStyles: {
-                    textColor: colorTexto
-                },
-                alternateRowStyles: {
-                    fillColor: [245, 245, 245]
-                },
-                styles: { font: 'helvetica', fontSize: 10 }
-            });
-        } else {
-            console.error("No se encontró la tabla de promedios");
-        }
-
-        doc.addPage();
-        addHeader();
-
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...colorPrimario);
-        doc.text("Gráfica de Predicción de Matrícula", 105, 35, { align: 'center' });
-
-        console.log("Comenzando a generar gráficos");
-        return html2canvas(document.getElementById('matriculaChart'))
-            .then(canvas => {
-                console.log("Gráfico de matrícula generado");
-                const imgData = canvas.toDataURL('image/png');
-                doc.addImage(imgData, 'PNG', 10, 45, 190, 100);
+                doc.setFontSize(14);
+                doc.setTextColor(...colorTexto);
+                doc.text("Fecha: " + new Date().toLocaleDateString(), 105, 145, { align: 'center' });
 
                 doc.addPage();
                 addHeader();
@@ -1001,97 +973,209 @@
                 doc.setFontSize(18);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(...colorPrimario);
-                doc.text("Gráfica de Predicción de Porcentajes", 105, 35, { align: 'center' });
+                doc.text("Información General", 105, 35, { align: 'center' });
 
-                return html2canvas(document.getElementById('porcentajesChart'));
-            })
-            .then(canvas => {
-                console.log("Gráfico de porcentajes generado");
-                const imgData = canvas.toDataURL('image/png');
-                doc.addImage(imgData, 'PNG', 10, 45, 190, 100);
+                doc.autoTable({
+                    startY: 45,
+                    head: [['Campo', 'Información']],
+                    body: [
+                        ['Universidad', 'Universidad Nacional de Loja'],
+                        ['Facultad', data.facultad],
+                        ['Carrera', data.carrera],
+                        ['Ciclo', data.ciclo],
+                        ['Materia', data.materia],
+                        ['Docente', data.docente],
+                        ['Periodo de predicción', `${data.anio_inicio} - ${data.anio_fin}`]
+                    ],
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: colorPrimario,
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold'
+                    },
+                    bodyStyles: {
+                        textColor: colorTexto
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 245, 245]
+                    },
+                    styles: { font: 'helvetica', fontSize: 11 }
+                });
 
-                if (document.getElementById('datosHistoricos').style.display !== 'none') {
-                    doc.addPage();
-                    addHeader();
-                    doc.setFontSize(18);
-                    doc.setFont('helvetica', 'bold');
-                    doc.setTextColor(...colorPrimario);
-                    doc.text("Datos Históricos", 105, 35, { align: 'center' });
+                doc.addPage();
+                addHeader();
 
-                    const datosHistoricos = document.getElementById('datosHistoricos');
-                    if (datosHistoricos) {
-                        doc.autoTable({
-                            startY: 45,
-                            html: '#datosHistoricos',
-                            theme: 'grid',
-                            headStyles: {
-                                fillColor: colorPrimario,
-                                textColor: [255, 255, 255],
-                                fontStyle: 'bold'
-                            },
-                            bodyStyles: {
-                                textColor: colorTexto
-                            },
-                            alternateRowStyles: {
-                                fillColor: [245, 245, 245]
-                            },
-                            styles: { font: 'helvetica', fontSize: 10 }
-                        });
-                    } else {
-                        console.error("No se encontraron datos históricos");
-                    }
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...colorPrimario);
+                doc.text("Datos de Matrícula por Año", 105, 35, { align: 'center' });
+
+                const matriculaDataTable = document.getElementById('matriculaDataTable');
+                if (matriculaDataTable) {
+                    doc.autoTable({
+                        startY: 45,
+                        html: '#matriculaDataTable',
+                        theme: 'grid',
+                        headStyles: {
+                            fillColor: colorPrimario,
+                            textColor: [255, 255, 255],
+                            fontStyle: 'bold'
+                        },
+                        bodyStyles: {
+                            textColor: colorTexto
+                        },
+                        alternateRowStyles: {
+                            fillColor: [245, 245, 245]
+                        },
+                        styles: { font: 'helvetica', fontSize: 10 }
+                    });
+                } else {
+                    console.error("No se encontró la tabla de datos de matrícula");
                 }
 
-                addFooter();
-                console.log("Guardando PDF");
-                doc.save('informe.pdf');
-                console.log("PDF generado y guardado exitosamente");
-            })
-            .catch(err => {
-                console.error("Error específico al generar el PDF: ", err);
-                mostrarError("Error al generar el PDF: " + err.message);
+                doc.addPage();
+                addHeader();
+
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...colorPrimario);
+                doc.text("Promedios de Porcentajes", 105, 35, { align: 'center' });
+
+                const promediosDataTable = document.getElementById('promediosDataTable');
+                if (promediosDataTable) {
+                    doc.autoTable({
+                        startY: 45,
+                        html: '#promediosDataTable',
+                        theme: 'grid',
+                        headStyles: {
+                            fillColor: colorPrimario,
+                            textColor: [255, 255, 255],
+                            fontStyle: 'bold'
+                        },
+                        bodyStyles: {
+                            textColor: colorTexto
+                        },
+                        alternateRowStyles: {
+                            fillColor: [245, 245, 245]
+                        },
+                        styles: { font: 'helvetica', fontSize: 10 }
+                    });
+                } else {
+                    console.error("No se encontró la tabla de promedios");
+                }
+
+                doc.addPage();
+                addHeader();
+
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...colorPrimario);
+                doc.text("Gráfica de Predicción de Matrícula", 105, 35, { align: 'center' });
+
+                console.log("Comenzando a generar gráficos");
+                return html2canvas(document.getElementById('matriculaChart'))
+                    .then(canvas => {
+                        console.log("Gráfico de matrícula generado");
+                        const imgData = canvas.toDataURL('image/png');
+                        doc.addImage(imgData, 'PNG', 10, 45, 190, 100);
+
+                        doc.addPage();
+                        addHeader();
+
+                        doc.setFontSize(18);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(...colorPrimario);
+                        doc.text("Gráfica de Predicción de Porcentajes", 105, 35, { align: 'center' });
+
+                        return html2canvas(document.getElementById('porcentajesChart'));
+                    })
+                    .then(canvas => {
+                        console.log("Gráfico de porcentajes generado");
+                        const imgData = canvas.toDataURL('image/png');
+                        doc.addImage(imgData, 'PNG', 10, 45, 190, 100);
+
+                        if (document.getElementById('datosHistoricos').style.display !== 'none') {
+                            doc.addPage();
+                            addHeader();
+                            doc.setFontSize(18);
+                            doc.setFont('helvetica', 'bold');
+                            doc.setTextColor(...colorPrimario);
+                            doc.text("Datos Históricos", 105, 35, { align: 'center' });
+
+                            const datosHistoricos = document.getElementById('datosHistoricos');
+                            if (datosHistoricos) {
+                                doc.autoTable({
+                                    startY: 45,
+                                    html: '#datosHistoricos',
+                                    theme: 'grid',
+                                    headStyles: {
+                                        fillColor: colorPrimario,
+                                        textColor: [255, 255, 255],
+                                        fontStyle: 'bold'
+                                    },
+                                    bodyStyles: {
+                                        textColor: colorTexto
+                                    },
+                                    alternateRowStyles: {
+                                        fillColor: [245, 245, 245]
+                                    },
+                                    styles: { font: 'helvetica', fontSize: 10 }
+                                });
+                            } else {
+                                console.error("No se encontraron datos históricos");
+                            }
+                        }
+
+                        addFooter();
+                        console.log("Guardando PDF");
+                        doc.save('informe.pdf');
+                        console.log("PDF generado y guardado exitosamente");
+                    })
+                    .catch(err => {
+                        console.error("Error específico al generar el PDF: ", err);
+                        mostrarError("Error al generar el PDF: " + err.message);
+                    });
+            } catch (error) {
+                console.error("Error general en la generación del PDF: ", error);
+                mostrarError("Error general: " + error.message);
+            }
+        }
+
+        document.getElementById('btnDescargarInforme').addEventListener('click', function () {
+            try {
+                console.log("Iniciando proceso de descarga del informe");
+
+                const getSelectedText = (id) => {
+                    const element = document.getElementById(id);
+                    return element && element.options ? element.options[element.selectedIndex].text : '';
+                };
+
+                const data = {
+                    facultad: getSelectedText('facultad'),
+                    carrera: getSelectedText('carrera'),
+                    ciclo: getSelectedText('ciclo'),
+                    materia: getSelectedText('materia'),
+                    docente: document.getElementById('docente') ? document.getElementById('docente').textContent : '',
+                    anio_inicio: document.getElementById('anio_inicio') ? document.getElementById('anio_inicio').value : '',
+                    anio_fin: document.getElementById('anio_fin') ? document.getElementById('anio_fin').value : ''
+                };
+
+                console.log("Datos preparados para generar el PDF:", data);
+                generarPDF(data);
+            } catch (error) {
+                console.error("Error al preparar datos para el PDF:", error);
+                mostrarError("Error al preparar datos: " + error.message);
+            }
+        });
+
+        function mostrarError(mensaje) {
+            console.error("Error mostrado al usuario:", mensaje);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: mensaje
             });
-    } catch (error) {
-        console.error("Error general en la generación del PDF: ", error);
-        mostrarError("Error general: " + error.message);
-    }
-}
-
-document.getElementById('btnDescargarInforme').addEventListener('click', function () {
-    try {
-        console.log("Iniciando proceso de descarga del informe");
-
-        const getSelectedText = (id) => {
-            const element = document.getElementById(id);
-            return element && element.options ? element.options[element.selectedIndex].text : '';
-        };
-
-        const data = {
-            facultad: getSelectedText('facultad'),
-            carrera: getSelectedText('carrera'),
-            ciclo: getSelectedText('ciclo'),
-            materia: getSelectedText('materia'),
-            docente: document.getElementById('docente') ? document.getElementById('docente').textContent : '',
-            anio_inicio: document.getElementById('anio_inicio') ? document.getElementById('anio_inicio').value : '',
-            anio_fin: document.getElementById('anio_fin') ? document.getElementById('anio_fin').value : ''
-        };
-
-        console.log("Datos preparados para generar el PDF:", data);
-        generarPDF(data);
-    } catch (error) {
-        console.error("Error al preparar datos para el PDF:", error);
-        mostrarError("Error al preparar datos: " + error.message);
-    }
-});
-
-function mostrarError(mensaje) {
-    console.error("Error mostrado al usuario:", mensaje);
-    Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: mensaje
-    });
-}
+        }
 
 
 
@@ -1192,6 +1276,36 @@ function mostrarError(mensaje) {
             }
         });
 
+        function toggleUserOptions() {
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
+        }
+
+        function confirmLogout(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¿Deseas cerrar la sesión?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{% url 'Cerrar_Sesion' %}";
+                }
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            var userMenu = document.querySelector('.user-menu');
+            var userOptions = document.getElementById('user-options');
+            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
+                userOptions.style.display = 'none';
+            }
+        });
     </script>
 </body>
 

@@ -4,8 +4,8 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
-from .Modelo.ModeloMatematico import model, params_list
 from django.core.files.storage import default_storage
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.http import urlsafe_base64_decode
 from django.utils.http import urlsafe_base64_encode
@@ -15,7 +15,7 @@ from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
 from datetime import datetime, timedelta
 from django.db.models import Avg, StdDev
-from PIS.decorators import require_role
+from PIS.decorators import role_required
 from django.core.mail import send_mail
 from scipy.integrate import solve_ivp
 from scipy.optimize import curve_fit
@@ -81,11 +81,13 @@ def PaginaPrincipal(request):
 
 
 @login_required
+@role_required(["Personal Administrativo"])
 def PaginaAdministrador(request):
     return render(request, "PaginaAdministrador.html")
 
 
 @login_required
+@role_required(["Docente"])
 def PaginaDocente(request):
     user = request.user
     materias = Materia.objects.filter(docente_encargado=user)
@@ -99,38 +101,32 @@ def PaginaDocente(request):
 
 
 @login_required
+@role_required(["Secretaria"])
 def PaginaSecretaria(request):
     return render(request, "PaginaSecretaria.html")
 
 
-def sin_acceso(request):
-    return render(request, "sin_acceso.html")
-
-
-# Informacion del programa
-
-
-def Galeria(request):
-    return render(request, "Galeria.html")
-
-
-def Informacion1(request):
-    return render(request, "Informacion1.html")
-
-
-def Informacion2(request):
-    return render(request, "Informacion2.html")
-
-
-def Informacion3(request):
-    return render(request, "Informacion3.html")
-
-
-def Informacion4(request):
-    return render(request, "Informacion4.html")
+def SinAcceso(request):
+    return render(request, "SinAcceso.html")
 
 
 # funciones de usuario
+
+
+@login_required
+def PerfilUsuario(request):
+    if request.method == "POST":
+        if request.FILES.get("foto"):
+            request.user.foto = request.FILES["foto"]
+            request.user.save()
+            messages.success(request, "Imagen de perfil actualizada exitosamente.")
+        return redirect("Perfil_Usuario")
+
+    context = {"user": request.user}
+    if not request.user.foto:
+        context["default_image"] = "/Static/Imagen/Perfil-Predeterminado.png"
+
+    return render(request, "PerfilUsuario.html", context)
 
 
 def SubirImagenPerfil(request):
@@ -146,26 +142,61 @@ def SubirImagenPerfil(request):
     return redirect("Perfil_Usuario")
 
 
+@require_POST
+def EliminarFotoPerfil(request):
+    if request.user.foto:
+        request.user.foto.delete()
+        request.user.foto = None
+        request.user.save()
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False})
+
+
+@require_http_methods(["GET", "POST"])
 def IniciarSesion(request):
     if request.method == "POST":
-        form = AuthenticationForm(request, request.POST)
+        form = InicioSesionForm(request, data=request.POST)
+        email = request.POST.get("username")
+
+        user_exists = Usuario.objects.filter(email=email).exists()
+        if not user_exists:
+            return JsonResponse(
+                {
+                    "status": "not_registered",
+                    "message": "El correo electrónico no está registrado. ¿Desea registrarse?",
+                }
+            )
+
         if form.is_valid():
             username = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                if user.rol == "Personal Administrativo":
-                    return redirect("Pagina_Administrador")
-                elif user.rol == "Docente":
-                    return redirect("Pagina_Docente")
-                elif user.rol == "Secretaria":
-                    return redirect("Pagina_Secretaria")
-                else:
-                    messages.error(request, "Rol de usuario no reconocido.")
-                # return redirect("Pagina_Usuario")
+                redirect_url = {
+                    "Personal Administrativo": "Pagina_Administrador",
+                    "Secretaria": "Pagina_Secretaria",
+                    "Docente": "Pagina_Docente",
+                }.get(user.rol, "Index")
+                return JsonResponse(
+                    {"status": "success", "redirect_url": redirect(redirect_url).url}
+                )
+            else:
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": "Contraseña incorrecta. Por favor, inténtelo de nuevo.",
+                    }
+                )
+        else:
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": "Por favor, revise las credenciales ingresadas.",
+                }
+            )
     else:
-        form = AuthenticationForm()
+        form = InicioSesionForm()
 
     return render(request, "IniciarSesion.html", {"form": form})
 
@@ -176,28 +207,33 @@ def CerrarSesion(request):
     return redirect("Iniciar_Sesion")
 
 
-def CorreoEnviado(request, uidb64, token):
-    return render(request, "CorreoRecuperacionEnviado.html")
-
-
 User = get_user_model()
+
+
+def CorreoEnviado(request, uidb64, token):
+    return render(
+        request, "CorreoRecuperacionEnviado.html", {"uidb64": uidb64, "token": token}
+    )
+
+
+logger = logging.getLogger(__name__)
 
 
 def RecuperarContrasenia(request):
     if request.method == "POST":
         form = RecuperarContraseniaForm(request.POST)
         if form.is_valid():
-            username_or_email = form.cleaned_data["username"]
+            email = form.cleaned_data["email"]
             try:
-                user = Usuario.objects.get(username=username_or_email)
+                user = User.objects.get(email=email)
             except User.DoesNotExist:
-                try:
-                    user = Usuario.objects.get(email=username_or_email)
-                except User.DoesNotExist:
-                    messages.error(
-                        request, "El usuario o correo electrónico no existe."
-                    )
-                    return render(request, "RecuperarContrasenia.html", {"form": form})
+                logger.error(f"Usuario no encontrado para el email: {email}")
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": "No se encontró un usuario con ese correo electrónico.",
+                    }
+                )
 
             token = default_token_generator.make_token(user)
             uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
@@ -210,9 +246,10 @@ def RecuperarContrasenia(request):
 
             subject = "Recuperación de contraseña"
             message = f"""
-            Hola {user.username},
+            Hola {user.first_name + " " + user.last_name + " " + user.username},
 
-            Has solicitado restablecer tu contraseña. Sigue estos pasos:
+            Has solicitado restablecer tu contraseña.
+            Sigue estos pasos:
 
             1. Haz clic en el siguiente enlace: {reset_url}
             2. Se te dirigirá a una página donde podrás ingresar tu nueva contraseña.
@@ -225,22 +262,32 @@ def RecuperarContrasenia(request):
             El equipo de soporte
             """
 
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
-            )
-
-            messages.success(
-                request,
-                "Se ha enviado un correo con instrucciones para recuperar tu contraseña.",
-            )
-            return redirect("Correo_Enviado", uidb64=uidb64, token=token)
-            # return redirect("Correo_Enviado")
-        else:
-            messages.error(request, "Error al enviar el enlace de recuperación.")
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+                logger.info(f"Correo enviado con éxito a {user.email}")
+                return JsonResponse(
+                    {
+                        "status": "success",
+                        "message": "Se ha enviado un correo con instrucciones para recuperar tu contraseña.",
+                        "redirect": reverse(
+                            "Correo_Enviado", kwargs={"uidb64": uidb64, "token": token}
+                        ),
+                    }
+                )
+            except Exception as e:
+                logger.error(f"Error al enviar el correo: {str(e)}")
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": "Hubo un problema al enviar el correo. Por favor, intenta más tarde.",
+                    }
+                )
     else:
         form = RecuperarContraseniaForm()
     return render(request, "RecuperarContrasenia.html", {"form": form})
@@ -261,6 +308,9 @@ def CambiarContrasenia(request, uidb64, token):
                 user.save()
                 messages.success(request, "Contraseña cambiada con éxito.")
                 return redirect("Iniciar_Sesion")
+            else:
+                for error in form.errors.values():
+                    messages.error(request, error)
         else:
             form = CambiarContraseniaForm()
         return render(request, "CambiarContrasenia.html", {"form": form})
@@ -838,6 +888,9 @@ def GestionCiclo(request):
             carrera_id = request.POST.get("carrera")
             carrera = Carrera.objects.get(id=carrera_id)
             ciclo.carrera = carrera
+            periodosAcademicos_id = request.POST.get("periodo_academico")
+            periodo_academico = PeriodoAcademico.objects.get(id=periodosAcademicos_id)
+            ciclo.periodo_academico = periodo_academico
             ciclo.save()
             messages.success(request, "Ciclo actualizado exitosamente.")
         elif "delete" in request.POST:

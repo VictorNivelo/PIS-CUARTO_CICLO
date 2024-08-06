@@ -1,4 +1,6 @@
+from django.conf.urls.static import static
 from django.contrib import admin
+from django.conf import settings
 from django.urls import path
 from .vistas import (
     PaginaPrincipal,
@@ -12,6 +14,8 @@ from .vistas import (
     RecuperarContrasenia,
     CambiarContrasenia,
     CorreoEnviado,
+    PerfilUsuario,
+    EliminarFotoPerfil,
     
     RegistrarUniversidad,
     RegistrarTipoDNI,
@@ -66,9 +70,8 @@ from .vistas import (
     RealizarPrediccionCarrera,
 
     PRI,
-    sin_acceso,
+    SinAcceso,
 )
-from .decorators import require_role
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -120,7 +123,9 @@ urlpatterns = [
     path("Cerrar-Sesion/", CerrarSesion, name="Cerrar_Sesion"),
     path("Recuperar-Contrasenia/", RecuperarContrasenia, name="Recuperar_Contrasenia"),
     path("Cambiar-Contrasenia/<uidb64>/<token>/", CambiarContrasenia, name="Cambiar_Contrasenia"),
-    path("Correo-Enviado/<str:uidb64>/<str:token>/", CorreoEnviado, name="Correo_Enviado"),
+    path('Correo-Enviado/<uidb64>/<token>/', CorreoEnviado, name='Correo_Enviado'),
+    path('Perfil-Usuario/', PerfilUsuario, name='Perfil_Usuario'),
+    path('Eliminar-Foto/', EliminarFotoPerfil, name='Eliminar_Foto'),
 
     path('Obtener-Universidad/', ObtenerUniversidades, name='Obtener_Universidad'),
     path('Obtener-Facultad', ObtenerFacultades, name='Obtener_Facultades'),
@@ -140,5 +145,8 @@ urlpatterns = [
 
     # path('Predecir/', PredecirDesercion, name='Predecir_Desercion'),
     path('1/',PRI, name='PI'),
-    path('Sin-Acceso/',sin_acceso, name='Sin_Acceso'),
+    path('Sin-Acceso/',SinAcceso, name='Sin_Acceso'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="../Static/Imagen/Iconos/Icono-UNL.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+
+    <title>Perfil de Usuario</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        :root {
+            --bg-color: #fff;
+            --text-color: #333;
+            --menu-bg: #f8f9fa;
+            --menu-text: #fff;
+            --menu-bg-hover: #1c4066;
+            --card-bg: #fff;
+            --breadcrumb-color: #6c757d;
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --button-gradient: linear-gradient(135deg, #1c4066, #1c4066);
+            --button-hover-gradient: linear-gradient(135deg, #2980b9, #3498db);
+            --breadcrumb-hover-color: #1c9be4;
+            --button-primary: #007bff;
+            --button-primary-hover: #0056b3;
+            --button-danger: #dc3545;
+            --button-danger-hover: #bd2130;
+        }
+
+        .dark-mode {
+            --bg-color: #222;
+            --text-color: #f0f0f0;
+            --menu-bg: #333;
+            --menu-text: #f0f0f0;
+            --menu-bg-hover: #444;
+            --card-bg: #333;
+            --breadcrumb-color: #bbb;
+            --card-shadow: rgba(255, 255, 255, 0.1);
+            --button-gradient: linear-gradient(135deg, #444, #444);
+            --button-hover-gradient: linear-gradient(135deg, #34495e, #2c3e50);
+            --breadcrumb-hover-color: #1c9be4;
+            --button-primary: #0056b3;
+            --button-primary-hover: #003d80;
+            --button-danger: #bd2130;
+            --button-danger-hover: #921925;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            justify-content: center;
+            align-items: center;
+            background: url('../Static/Imagen/b.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Roboto', sans-serif;
+            position: relative;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        html::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.500);
+            z-index: 1;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        .container {
+            position: relative;
+            align-items: center;
+            z-index: 2;
+            background: var(--bg-color);
+            border-radius: 10px;
+            box-shadow: 0 0 20px var(--card-shadow);
+            max-width: 96%;
+            height: 93%;
+            margin: 30px auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            width: 100%;
+        }
+
+        .header-logo {
+            position: absolute;
+            left: 20px;
+        }
+
+        .header-logo img {
+            width: 220px;
+            height: auto;
+        }
+
+        .title-and-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .title {
+            font-family: 'Lobster', cursive;
+            color: var(--text-color);
+            margin: 0;
+            font-size: 2.5rem;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .user-menu {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-menu .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 10px;
+            border: 2px solid var(--text-color);
+            object-fit: cover;
+        }
+
+        .user-menu .username {
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-options {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: -50px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--text-color);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 1;
+            width: 200px;
+            box-shadow: 0 4px 8px var(--card-shadow);
+        }
+
+        .user-options a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: background-color 0.3s, color 0.3s;
+            border-radius: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            justify-content: space-evenly;
+        }
+
+        .user-options a:hover {
+            background-color: var(--menu-bg-hover);
+            color: var(--menu-text);
+        }
+
+        .user-options a i {
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .profile-container {
+            margin-top: 75px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .profile-image-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 75px;
+        }
+
+        .profile-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background-color: var(--button-primary);
+            border-color: var(--button-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--button-primary-hover);
+            border-color: var(--button-primary-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--button-danger);
+            border-color: var(--button-danger);
+        }
+
+        .btn-danger:hover {
+            background-color: var(--button-danger-hover);
+            border-color: var(--button-danger-hover);
+        }
+
+        .btn-secondary {
+            background: var(--button-gradient);
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background: var(--button-hover-gradient);
+        }
+
+        .btn-return {
+            background-color: #dc3545;
+            color: #ffffff !important;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+        }
+
+        .btn-return:hover {
+            background-color: #9e2b37;
+            color: white;
+        }
+
+        .profile-info {
+            color: var(--text-color);
+        }
+
+        #theme-toggle {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s, color 0.3s;
+            border-radius: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-logo">
+                <img id="logo-img" src="../Static/Imagen/Iconos/Logo-UNL-mediano.png" alt="Logo de la Universidad">
+            </div>
+            <div class="title-and-logo">
+                <h1 class="title">Perfil de Usuario</h1>
+            </div>
+            <div class="user-menu">
+                <div class="username" onclick="toggleUserOptions()">{{ user.first_name }} {{ user.last_name }}
+                    <div class="user-options" id="user-options">
+                        <a href="#" id="theme-toggle"><i class="fas fa-adjust"></i> <span> Modo oscuro</span></a>
+                        <a href="#" onclick="confirmLogout(event)"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                    </div>
+                </div>
+                {% if user.foto %}
+                <img class="avatar" src="{{ user.foto.url }}" alt="Avatar">
+                {% else %}
+                <img class="avatar" src="{{ default_image }}" alt="Avatar predeterminado">
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="profile-container">
+            <div class="profile-image-wrapper">
+                {% if user.foto %}
+                <img src="{{ user.foto.url }}" alt="Foto de perfil" class="profile-image" id="profile-image">
+                {% else %}
+                <img src="{{ default_image }}" alt="Foto de perfil predeterminada" class="profile-image"
+                    id="profile-image">
+                {% endif %}
+                <form method="post" enctype="multipart/form-data" id="profile-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="foto" class="btn btn-primary">
+                            <i class="fas fa-upload"></i>
+                            {% if user.foto %}
+                            Cambiar foto
+                            {% else %}
+                            Subir foto de perfil
+                            {% endif %}
+                        </label>
+                        <input type="file" class="form-control-file d-none" id="foto" name="foto" accept="image/*">
+                        {% if user.foto %}
+                        <button type="button" class="btn btn-danger" onclick="deleteProfilePicture(event)">
+                            <i class="fas fa-trash"></i> Eliminar foto
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <div class="profile-info">
+                <div class="user-info">
+                    <h4>Información del Usuario</h4>
+                    <p><i class="fas fa-user"></i> <strong>Nombre:</strong> {{ user.first_name }} {{ user.last_name }}
+                    </p>
+                    <p><i class="fas fa-envelope"></i> <strong>Email:</strong> {{ user.email }}</p>
+                    <p><i class="fas fa-id-card"></i> <strong>DNI:</strong> {{ user.dni }}</p>
+                    <p><i class="fas fa-id-badge"></i> <strong>Tipo de DNI:</strong> {{ user.tipo_dni }}</p>
+                    <p><i class="fas fa-venus-mars"></i> <strong>Género:</strong> {{ user.genero }}</p>
+                    <p><i class="fas fa-birthday-cake"></i> <strong>Fecha de Nacimiento:</strong>
+                        {{ user.fecha_nacimiento }}</p>
+                    <p><i class="fas fa-phone"></i> <strong>Teléfono:</strong> {{ user.telefono }}</p>
+                    <p><i class="fas fa-user-tag"></i> <strong>Rol:</strong> {{ user.rol }}</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="#" id="btn-return" class="btn btn-return"><i class="fas fa-arrow-left"></i> Regresar</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
+
+    <script>
+        document.getElementById('btn-return').addEventListener('click', function (e) {
+            e.preventDefault();
+            window.history.back();
+        });
+
+        function toggleUserOptions() {
+            var options = document.getElementById('user-options');
+            options.style.display = options.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function confirmLogout(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Está seguro?',
+                text: "¿Desea cerrar sesión?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{% url 'Cerrar_Sesion' %}";
+                }
+            })
+        }
+
+        document.addEventListener('click', function (event) {
+            var userMenu = document.querySelector('.user-menu');
+            var userOptions = document.getElementById('user-options');
+            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
+                userOptions.style.display = 'none';
+            }
+        });
+
+        document.getElementById('foto').addEventListener('change', function () {
+            document.getElementById('profile-form').submit();
+        });
+
+        function deleteProfilePicture(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Está seguro?',
+                text: "Esta acción eliminará su foto de perfil",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('{% url "Eliminar_Foto" %}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Eliminada!',
+                                    text: 'Su foto de perfil ha sido eliminada.',
+                                    icon: 'success',
+                                    confirmButtonText: 'Ok'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        document.getElementById('profile-image').src = '{{ default_image }}';
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    'No se pudo eliminar la foto de perfil.',
+                                    'error'
+                                )
+                            }
+                        });
+                }
+            })
+        }
+
+        "{% if messages %}"
+        "{% for message in messages %}"
+        Swal.fire({
+            title: '{{ message.tags|title }}',
+            text: "{{ message }}",
+            icon: '{{ message.tags }}',
+            confirmButtonText: 'Ok'
+        })
+        "{% endfor %}"
+        "{% endif %}"
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const logoImg = document.getElementById('logo-img');
+        const breadcrumbActive = document.querySelector('.breadcrumb-item.active');
+        const breadcrumbDividers = document.querySelectorAll('.breadcrumb-item + .breadcrumb-item::before');
+
+        function updateThemeToggleText() {
+            const themeToggleText = document.querySelector('#theme-toggle');
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggleText.innerHTML = '<i class="fas fa-sun"></i> Modo Claro';
+            } else {
+                themeToggleText.innerHTML = '<i class="fas fa-moon"></i> Modo Oscuro';
+            }
+        }
+
+        themeToggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                logoImg.src = "../Static/Imagen/Iconos/UNL-mediano-blanco.png";
+            } else {
+                logoImg.src = "../Static/Imagen/Iconos/Logo-UNL-mediano.png";
+            }
+            updateThemeToggleText();
+        });
+
+        function toggleUserOptions() {
+            const userOptions = document.getElementById('user-options');
+            const isExpanded = userOptions.style.display === 'block';
+            userOptions.style.display = isExpanded ? 'none' : 'block';
+            document.querySelector('.username').setAttribute('aria-expanded', !isExpanded);
+            updateThemeToggleText();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateThemeToggleText();
+        });
+    </script>
+</body>
+
+</html>

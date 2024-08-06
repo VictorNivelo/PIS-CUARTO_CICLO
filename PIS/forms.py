@@ -1,4 +1,6 @@
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django import forms
 from .models import (
     Usuario,
@@ -13,6 +15,7 @@ from .models import (
     Genero,
     Ciclo,
 )
+import re
 
 
 class TelefonoInput(forms.TextInput):
@@ -280,7 +283,7 @@ class InicioSesionForm(AuthenticationForm):
         label="Correo Electrónico",
     )
 
-    password1 = forms.CharField(
+    password = forms.CharField(
         widget=forms.PasswordInput(attrs={"placeholder": "Ingrese su contraseña"}),
         required=True,
         label="Contraseña",
@@ -291,16 +294,21 @@ class InicioSesionForm(AuthenticationForm):
         fields = ["username", "password"]
 
 
+User = get_user_model()
+
+
 class RecuperarContraseniaForm(forms.Form):
-    username = forms.EmailField(
+    email = forms.EmailField(
         widget=forms.EmailInput(attrs={"placeholder": "Ingrese su correo electrónico"}),
         required=True,
         label="Correo Electrónico",
     )
 
-    class Meta:
-        model = Usuario
-        fields = ["username"]
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if not User.objects.filter(email=email).exists():
+            raise forms.ValidationError("No existe ningún usuario con este correo electrónico.")
+        return email
 
 
 class CambiarContraseniaForm(forms.ModelForm):
@@ -324,6 +332,14 @@ class CambiarContraseniaForm(forms.ModelForm):
         model = Usuario
         fields = ["Contrasenia", "Confirmar_contrasenia"]
 
+    def clean_Contrasenia(self):
+        password = self.cleaned_data.get("Contrasenia")
+        if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$", password):
+            raise ValidationError(
+                "La contraseña debe contener al menos una minúscula, una mayúscula y un número."
+            )
+        return password
+
     def clean(self):
         cleaned_data = super().clean()
         Contrasenia = cleaned_data.get("Contrasenia")
@@ -334,7 +350,7 @@ class CambiarContraseniaForm(forms.ModelForm):
             and Confirmar_contrasenia
             and Contrasenia != Confirmar_contrasenia
         ):
-            raise forms.ValidationError("Las contraseñas no coinciden.")
+            raise ValidationError("Las contraseñas no coinciden.")
 
         return cleaned_data
 
@@ -434,9 +450,7 @@ class FacultadForm(forms.ModelForm):
     )
 
     abreviacion = forms.CharField(
-        widget=forms.TextInput(
-            attrs={"placeholder": "Ingrese la abreviación"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "Ingrese la abreviación"}),
         max_length=100,
         required=True,
         label="Abreviación de la Facultad",

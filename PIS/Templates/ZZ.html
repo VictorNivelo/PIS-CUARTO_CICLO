@@ -29,6 +29,10 @@
             z-index: 1;
         }
 
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
         .nav-link:hover>.submenu {
             display: block;
         }
@@ -254,7 +258,7 @@
                 </span>
 
                 <div class="text logo-text">
-                    <span class="name">PaginaDocente</span>
+                    <span class="name">Pagina Docente</span>
                     <span class="profession">Docente</span>
                 </div>
             </div>
@@ -269,12 +273,12 @@
                         <i class='bx bx-search icon'></i>
                         <input type="text" placeholder="Buscar...">
                     </li>
-                    <li class="nav-link">
+                    <!-- <li class="nav-link">
                         <a href="{% url 'Importar_Datos' %}">
                             <i class='bx bxs-graduation icon'></i>
                             <span class="text nav-text">Importar de datos</span>
                         </a>
-                    </li>
+                    </li> -->
                     <li class="nav-link">
                         <a href="{% url 'Gestion_Usuario' %}">
                             <i class='bx bxs-graduation icon'></i>
