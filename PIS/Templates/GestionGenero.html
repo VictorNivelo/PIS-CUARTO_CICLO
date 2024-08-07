@@ -19,7 +19,6 @@
         <div class="title-and-logo">
             <div class="header-logo">
                 <img id="logo-img" src="../Static/Imagen/Iconos/Logo-UNL-mediano.png" alt="Logo">
-                <!-- <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo"> -->
             </div>
             <h1>Gestión de genero</h1>
             <div class="user-menu">
@@ -49,6 +48,7 @@
                 </li>
             </ol>
         </nav>
+
         <div class="actions">
             <a href="#" class="btn-regresar"><i class="fas fa-arrow-left"></i> Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
@@ -79,7 +79,7 @@
                             <td><input type="text" name="descripcion_genero" value="{{ genero.descripcion_genero }}">
                             </td>
                             <td class="actions-column">
-                                <div class="d-flex justify-content-center align-items-center">
+                                <div class="action-buttons">
                                     <button type="button" class="btn-guardar" name="modify"
                                         onclick="confirmarModificacion('{{ genero.id }}', '{{ genero.nombre_genero }}', this.form)">
                                         <i class="fas fa-edit"></i> Actualizar
@@ -102,65 +102,58 @@
     <script src="../Static/scripts/TemaSeleccionado.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('.btn-regresar').addEventListener('click', function (event) {
-                event.preventDefault();
-                history.back();
-            });
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
 
-            const importButton = document.getElementById('importButton');
-            const fileInput = document.getElementById('fileInput');
+        importButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            fileInput.click();
+        });
 
-            importButton.addEventListener('click', function (e) {
-                e.preventDefault();
-                fileInput.click();
-            });
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('document', file);
 
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const formData = new FormData();
-                    formData.append('document', file);
-
-                    fetch('{% url "Importar_Genero" %}', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Éxito',
-                                    text: data.message,
-                                    icon: 'success'
-                                }).then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                let errorMessage = data.message;
-                                if (data.errors && data.errors.length > 0) {
-                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
-                                }
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: errorMessage,
-                                    icon: 'error'
-                                });
+                fetch('{% url "Importar_Genero" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            let errorMessage = data.message;
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
                             Swal.fire({
                                 title: 'Error',
-                                text: 'Hubo un problema al importar los géneros',
+                                text: errorMessage,
                                 icon: 'error'
                             });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al importar los géneros',
+                            icon: 'error'
                         });
-                }
-            });
+                    });
+            }
         });
 
         function confirmarModificacion(generoId, nombreGenero, form) {
@@ -180,7 +173,6 @@
                     hiddenInput.name = 'modify';
                     hiddenInput.value = 'true';
                     form.appendChild(hiddenInput);
-
                     form.submit();
                 }
             });
@@ -211,11 +203,6 @@
             });
         }
 
-        function toggleUserOptions() {
-            var options = document.getElementById("user-options");
-            options.style.display = options.style.display === "block" ? "none" : "block";
-        }
-
         function confirmLogout(event) {
             event.preventDefault();
             Swal.fire({
@@ -234,64 +221,10 @@
             });
         }
 
-        document.addEventListener('click', function (event) {
-            var userMenu = document.querySelector('.user-menu');
-            var userOptions = document.getElementById('user-options');
-            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
-                userOptions.style.display = 'none';
-            }
-        });
-
-        function showMessage(title, text, icon) {
-            Swal.fire({
-                title: title,
-                text: text,
-                icon: icon,
-                confirmButtonText: 'OK'
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const messages = JSON.parse('{{ messages|escapejs }}');
-            messages.forEach(function (message) {
-                showMessage(message.level_tag.charAt(0).toUpperCase() + message.level_tag.slice(1), message.message, message.level_tag);
-            });
-        });
-
-        const themeToggle = document.getElementById('theme-toggle');
-        const logoImg = document.getElementById('logo-img');
-
-        function updateThemeToggleText() {
-            const themeToggleText = document.querySelector('#theme-toggle');
-            if (document.body.classList.contains('dark-mode')) {
-                themeToggleText.innerHTML = '<i class="fas fa-sun"></i> Modo Claro';
-            } else {
-                themeToggleText.innerHTML = '<i class="fas fa-moon"></i> Modo Oscuro';
-            }
-        }
-
-        themeToggle.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.body.classList.toggle('dark-mode');
-            if (document.body.classList.contains('dark-mode')) {
-                logoImg.src = "../Static/Imagen/Iconos/UNL-mediano-blanco.png";
-            } else {
-                logoImg.src = "../Static/Imagen/Iconos/Logo-UNL-mediano.png";
-            }
-            updateThemeToggleText();
-        });
-
         function toggleUserOptions() {
-            const userOptions = document.getElementById('user-options');
-            const isExpanded = userOptions.style.display === 'block';
-            userOptions.style.display = isExpanded ? 'none' : 'block';
-            document.querySelector('.username').setAttribute('aria-expanded', !isExpanded);
-            updateThemeToggleText();
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
         }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            updateThemeToggleText();
-        });
     </script>
 
 </body>

@@ -65,11 +65,8 @@
                 <thead>
                     <tr>
                         <th>Nombre del ciclo</th>
-                        <th>Numero del ciclo</th>
+                        <th>Nro ciclo</th>
                         <th>Periodo academico</th>
-
-                        <!-- <th>Fecha inicio</th>
-                        <th>Fecha fin</th> -->
                         <th>Carrera</th>
                         <th>Acciones</th>
                     </tr>
@@ -83,10 +80,6 @@
                             <td><input type="text" name="nombre_ciclo" value="{{ ciclo.nombre_ciclo }}"></td>
                             <td class="actions-column10"><input type="number" name="numero_ciclo"
                                     value="{{ ciclo.numero_ciclo}}"></td>
-                            <!-- <td class="actions-column10"><input type="date" name="fecha_inicio"
-                                    value="{{ ciclo.fecha_inicio|date:'Y-m-d' }}"></td>
-                            <td class="actions-column10"><input type="date" name="fecha_fin"
-                                    value="{{ ciclo.fecha_fin|date:'Y-m-d' }}"></td> -->
                             <td>
                                 <select name="periodo_academico">
                                     {% for periodoAcademico in periodosAcademicos %}
@@ -108,7 +101,7 @@
                                 </select>
                             </td>
                             <td class="actions-column">
-                                <div class="d-flex justify-content-center align-items-center">
+                                <div class="action-buttons">
                                     <button type="button" class="btn-guardar" name="modify"
                                         onclick="confirmarModificacion('{{ ciclo.id }}', '{{ ciclo.nombre_ciclo }}', this.form)">
                                         <i class="fas fa-edit"></i> Actualizar
@@ -119,18 +112,6 @@
                                     </button>
                                 </div>
                             </td>
-                            <!-- <td class="actions-column">
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <button type="submit" name="modify" class="btn-guardar"><i class="fas fa-edit"></i>
-                                        Actualizar</button>
-                                    <form method="POST" style="margin: 0;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="ciclo_id" value="{{ ciclo.id }}">
-                                        <button type="submit" name="delete" class="btn-eliminar"><i
-                                                class="fas fa-trash"></i> Eliminar</button>
-                                    </form>
-                                </div>
-                            </td> -->
                         </form>
                     </tr>
                     {% endfor %}
@@ -143,65 +124,58 @@
     <script src="../Static/scripts/TemaSeleccionado.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('.btn-regresar').addEventListener('click', function (event) {
-                event.preventDefault();
-                history.back();
-            });
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
 
-            const importButton = document.getElementById('importButton');
-            const fileInput = document.getElementById('fileInput');
+        importButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            fileInput.click();
+        });
 
-            importButton.addEventListener('click', function (e) {
-                e.preventDefault();
-                fileInput.click();
-            });
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('document', file);
 
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const formData = new FormData();
-                    formData.append('document', file);
-
-                    fetch('{% url "Importar_Ciclos" %}', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Éxito',
-                                    text: data.message,
-                                    icon: 'success'
-                                }).then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                let errorMessage = data.message;
-                                if (data.errors && data.errors.length > 0) {
-                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
-                                }
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: errorMessage,
-                                    icon: 'error'
-                                });
+                fetch('{% url "Importar_Ciclos" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            let errorMessage = data.message;
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
                             Swal.fire({
                                 title: 'Error',
-                                text: 'Hubo un problema al importar los ciclos',
+                                text: errorMessage,
                                 icon: 'error'
                             });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al importar los ciclos',
+                            icon: 'error'
                         });
-                }
-            });
+                    });
+            }
         });
 
         function confirmarModificacion(cicloId, nombreCiclo, form) {
@@ -252,11 +226,6 @@
             });
         }
 
-        function toggleUserOptions() {
-            var options = document.getElementById("user-options");
-            options.style.display = options.style.display === "block" ? "none" : "block";
-        }
-
         function confirmLogout(event) {
             event.preventDefault();
             Swal.fire({
@@ -275,13 +244,10 @@
             });
         }
 
-        document.addEventListener('click', function (event) {
-            var userMenu = document.querySelector('.user-menu');
-            var userOptions = document.getElementById('user-options');
-            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
-                userOptions.style.display = 'none';
-            }
-        });
+        function toggleUserOptions() {
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
+        }
     </script>
 
 </body>

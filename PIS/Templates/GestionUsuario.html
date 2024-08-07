@@ -155,7 +155,7 @@
                                 </select>
                             </td>
                             <td class="actions-column">
-                                <div class="d-flex justify-content-center align-items-center">
+                                <div class="action-buttons">
                                     <button type="button" class="btn-guardar" name="modify"
                                         onclick="confirmarModificacion('{{ user.id }}', '{{ user.username }}', this.form)">
                                         <i class="fas fa-edit"></i> Actualizar
@@ -195,7 +195,6 @@
                     hiddenInput.name = 'modify';
                     hiddenInput.value = 'true';
                     form.appendChild(hiddenInput);
-
                     form.submit();
                 }
             });
@@ -226,150 +225,135 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('.btn-regresar').addEventListener('click', function (event) {
-                event.preventDefault();
-                history.back();
-            });
-
-            document.querySelectorAll('.validate-letters').forEach(input => {
-                input.addEventListener('input', function (e) {
-                    if (/[^a-zA-Z\s]/.test(this.value)) {
-                        e.preventDefault();
-                        this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Este campo solo acepta letras y espacios.',
-                        });
-                    }
-                });
-            });
-
-            document.querySelectorAll('.validate-dni, .validate-phone').forEach(input => {
-                input.addEventListener('input', function (e) {
-                    if (/[^0-9]/.test(this.value)) {
-                        e.preventDefault();
-                        this.value = this.value.replace(/[^0-9]/g, '');
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Este campo solo acepta números.',
-                        });
-                    }
-                    if (this.value.length > 10) {
-                        this.value = this.value.slice(0, 10);
-                    }
-                });
-            });
-
-            document.querySelectorAll('.validate-email').forEach(input => {
-                input.addEventListener('blur', function (e) {
-                    if (!/^\S+@\S+\.\S+$/.test(this.value)) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Por favor, ingrese un correo electrónico válido.',
-                        });
-                    }
-                });
-            });
-
-            document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    let isValid = true;
-                    let dni = this.querySelector('input[name="dni"]').value;
-                    let telefono = this.querySelector('input[name="telefono"]').value;
-
-                    if (dni.length !== 10) {
-                        isValid = false;
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'El DNI debe tener 10 dígitos.',
-                        });
-                    }
-
-                    if (telefono.length !== 10) {
-                        isValid = false;
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'El teléfono debe tener 10 dígitos.',
-                        });
-                    }
-
-                    if (!isValid) {
-                        e.preventDefault();
-                    } else {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Guardado',
-                            text: 'Usuario modificado con éxito.',
-                        });
-                    }
-                });
-            });
-
-            const importButton = document.getElementById('importButton');
-            const fileInput = document.getElementById('fileInput');
-
-            importButton.addEventListener('click', function (e) {
-                e.preventDefault();
-                fileInput.click();
-            });
-
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const formData = new FormData();
-                    formData.append('document', file);
-
-                    fetch('{% url "Importar_Usuario" %}', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Éxito',
-                                    text: data.message,
-                                    icon: 'success'
-                                }).then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                let errorMessage = data.message;
-                                if (data.errors && data.errors.length > 0) {
-                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
-                                }
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: errorMessage,
-                                    icon: 'error'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                title: 'Error',
-                                text: 'Hubo un problema al importar las materias',
-                                icon: 'error'
-                            });
-                        });
+        document.querySelectorAll('.validate-letters').forEach(input => {
+            input.addEventListener('input', function (e) {
+                if (/[^a-zA-Z\s]/.test(this.value)) {
+                    e.preventDefault();
+                    this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Este campo solo acepta letras y espacios.',
+                    });
                 }
             });
         });
 
-        function toggleUserOptions() {
-            var options = document.getElementById("user-options");
-            options.style.display = options.style.display === "block" ? "none" : "block";
-        }
+        document.querySelectorAll('.validate-dni, .validate-phone').forEach(input => {
+            input.addEventListener('input', function (e) {
+                if (/[^0-9]/.test(this.value)) {
+                    e.preventDefault();
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Este campo solo acepta números.',
+                    });
+                }
+                if (this.value.length > 10) {
+                    this.value = this.value.slice(0, 10);
+                }
+            });
+        });
+
+        document.querySelectorAll('.validate-email').forEach(input => {
+            input.addEventListener('blur', function (e) {
+                if (!/^\S+@\S+\.\S+$/.test(this.value)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Por favor, ingrese un correo electrónico válido.',
+                    });
+                }
+            });
+        });
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                let isValid = true;
+                let dni = this.querySelector('input[name="dni"]').value;
+                let telefono = this.querySelector('input[name="telefono"]').value;
+                if (dni.length !== 10) {
+                    isValid = false;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'El DNI debe tener 10 dígitos.',
+                    });
+                }
+                if (telefono.length !== 10) {
+                    isValid = false;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'El teléfono debe tener 10 dígitos.',
+                    });
+                }
+                if (!isValid) {
+                    e.preventDefault();
+                } else {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Guardado',
+                        text: 'Usuario modificado con éxito.',
+                    });
+                }
+            });
+        });
+
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
+
+        importButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('document', file);
+
+                fetch('{% url "Importar_Usuario" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            let errorMessage = data.message;
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
+                            }
+                            Swal.fire({
+                                title: 'Error',
+                                text: errorMessage,
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al importar las materias',
+                            icon: 'error'
+                        });
+                    });
+            }
+        });
 
         function confirmLogout(event) {
             event.preventDefault();
@@ -389,13 +373,10 @@
             });
         }
 
-        document.addEventListener('click', function (event) {
-            var userMenu = document.querySelector('.user-menu');
-            var userOptions = document.getElementById('user-options');
-            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
-                userOptions.style.display = 'none';
-            }
-        });
+        function toggleUserOptions() {
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
+        }
     </script>
 </body>
 

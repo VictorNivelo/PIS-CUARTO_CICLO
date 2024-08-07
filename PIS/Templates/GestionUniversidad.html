@@ -50,6 +50,7 @@
                 </li>
             </ol>
         </nav>
+
         <div class="actions">
             <a href="#" class="btn-regresar"><i class="fas fa-arrow-left"></i>Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
@@ -62,10 +63,8 @@
             <a href="#" class="btn-importar" id="importButton"><i class="fas fa-file-import"></i>Importar
                 Universidades</a>
             <input type="file" id="fileInput" name="document" style="display: none;" accept=".csv">
-            <!-- <a href="#" class="btn-importar" id="importButton">Importar Universidades</a>
-            <input type="file" id="fileInput" style="display: none;" accept=".pdf,.docx,.xlsx"> -->
-
         </div>
+
         <div class="form-group">
             <table>
                 <thead>
@@ -74,7 +73,7 @@
                         <th>Dirección</th>
                         <th>Teléfono</th>
                         <th>Correo Electrónico</th>
-                        <th>Fecha de Fundación</th>
+                        <th>Fundación</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -95,7 +94,7 @@
                             <td class="actions-columnD"><input type="date" name="fecha_fundacion"
                                     value="{{ universidad.fecha_fundacion|date:'Y-m-d' }}"></td>
                             <td class="actions-column">
-                                <div class="d-flex justify-content-center align-items-center">
+                                <div class="action-buttons">
                                     <button type="button" class="btn-guardar" name="modify"
                                         onclick="confirmarModificacion('{{ universidad.id }}', '{{ universidad.nombre_universidad }}', this.form)">
                                         <i class="fas fa-edit"></i> Actualizar
@@ -118,66 +117,61 @@
     <script src="../Static/scripts/TemaSeleccionado.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('.btn-regresar').addEventListener('click', function (event) {
-                event.preventDefault();
-                history.back();
-            });
 
-            const importButton = document.getElementById('importButton');
-            const fileInput = document.getElementById('fileInput');
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
 
-            importButton.addEventListener('click', function (e) {
-                e.preventDefault();
-                fileInput.click();
-            });
+        importButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            fileInput.click();
+        });
 
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const formData = new FormData();
-                    formData.append('document', file);
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('document', file);
 
-                    fetch('{% url "Importar_Universidades" %}', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Éxito',
-                                    text: data.message,
-                                    icon: 'success'
-                                }).then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                let errorMessage = data.message;
-                                if (data.errors && data.errors.length > 0) {
-                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
-                                }
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: errorMessage,
-                                    icon: 'error'
-                                });
+                fetch('{% url "Importar_Universidades" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            let errorMessage = data.message;
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
                             Swal.fire({
                                 title: 'Error',
-                                text: 'Hubo un problema al importar las universidades',
+                                text: errorMessage,
                                 icon: 'error'
                             });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al importar las universidades',
+                            icon: 'error'
                         });
-                }
-            });
+                    });
+            }
         });
+
 
         function confirmarModificacion(universidadId, nombreUniveridad, form) {
             Swal.fire({
@@ -227,11 +221,6 @@
             });
         }
 
-        function toggleUserOptions() {
-            var options = document.getElementById("user-options");
-            options.style.display = options.style.display === "block" ? "none" : "block";
-        }
-
         function confirmLogout(event) {
             event.preventDefault();
             Swal.fire({
@@ -250,13 +239,10 @@
             });
         }
 
-        document.addEventListener('click', function (event) {
-            var userMenu = document.querySelector('.user-menu');
-            var userOptions = document.getElementById('user-options');
-            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
-                userOptions.style.display = 'none';
-            }
-        });
+        function toggleUserOptions() {
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
+        }
     </script>
 </body>
 

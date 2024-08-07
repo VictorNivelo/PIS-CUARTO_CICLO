@@ -13,6 +13,24 @@
     --button-gradient: linear-gradient(135deg, #1c4066, #1c4066);
     --button-hover-gradient: linear-gradient(135deg, #2980b9, #3498db);
     --breadcrumb-hover-color: #1c9be4;
+    --table-header-bg: #f2f2f2;
+    --input-bg: #fff;
+    --input-border: #ccc;
+    --input-text: #333;
+    --btn-registrar-bg: #f0ad4e;
+    --btn-registrar-hover: #ec971f;
+    --btn-regresar-bg: #e74c3c;
+    --btn-regresar-hover: #c0392b;
+    --btn-crear-bg: #28a745;
+    --btn-crear-hover: #218838;
+    --btn-buscar-bg: #17a2b8;
+    --btn-buscar-hover: #138496;
+    --btn-eliminar-bg: #dc3545;
+    --btn-eliminar-hover: #c82333;
+    --btn-guardar-bg: #007bff;
+    --btn-guardar-hover: #0056b3;
+    --btn-importar-bg: #17a2b8;
+    --btn-importar-hover: #258594;
 }
 
 .dark-mode {
@@ -27,6 +45,24 @@
     --button-gradient: linear-gradient(135deg, #444, #444);
     --button-hover-gradient: linear-gradient(135deg, #34495e, #2c3e50);
     --breadcrumb-hover-color: #1c9be4;
+    --table-header-bg: #444;
+    --input-bg: #333;
+    --input-border: #555;
+    --input-text: #f0f0f0;
+    --btn-registrar-bg: #d39e00;
+    --btn-registrar-hover: #b58900;
+    --btn-regresar-bg: #c0392b;
+    --btn-regresar-hover: #a93226;
+    --btn-crear-bg: #218838;
+    --btn-crear-hover: #1e7e34;
+    --btn-buscar-bg: #138496;
+    --btn-buscar-hover: #117a8b;
+    --btn-eliminar-bg: #bd2130;
+    --btn-eliminar-hover: #a71d2a;
+    --btn-guardar-bg: #0056b3;
+    --btn-guardar-hover: #004085;
+    --btn-importar-bg: #1d96a8;
+    --btn-importar-hover: #208291;
 }
 
 html,
@@ -38,7 +74,7 @@ body {
     align-items: center;
     background: url('../Imagen/b.png') no-repeat center center fixed;
     background-size: cover;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Roboto', sans-serif;
     position: relative;
 }
 
@@ -57,7 +93,6 @@ html::before {
     display: none;
 }
 
-
 .container {
     position: relative;
     z-index: 2;
@@ -70,7 +105,6 @@ html::before {
     flex-direction: column;
     box-sizing: border-box;
     overflow: hidden;
-    z-index: 2;
 }
 
 .header-logo {
@@ -149,6 +183,17 @@ html::before {
     margin-right: 8px;
 }
 
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: -8px;
+}
+
+.action-buttons button {
+    flex: 1;
+}
+
 .actions input[type="text"],
 .actions input[type="date"],
 .actions input[type="number"],
@@ -163,12 +208,12 @@ input[type="float"],
 select {
     width: 100%;
     padding: 6px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
     border-radius: 5px;
     font-size: 0.9em;
     box-sizing: border-box;
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    background-color: var(--input-bg);
+    color: var(--input-text);
 }
 
 .actions button[type="submit"],
@@ -181,7 +226,6 @@ select {
 .btn-importar {
     padding: 6px 10px;
     font-size: 0.9em;
-    background: #f0ad4e;
     color: var(--menu-text);
     border: none;
     border-radius: 5px;
@@ -192,55 +236,63 @@ select {
     align-items: center;
     justify-content: center;
     margin-right: 8px;
+    transition: background-color 0.3s;
 }
 
-.btn-eliminar {
-    background-color: #dc3545 !important;
+.btn-registrar {
+    background-color: var(--btn-registrar-bg);
 }
 
-.btn-eliminar:hover {
-    background-color: #c82333 !important;
+.btn-registrar:hover {
+    background-color: var(--btn-registrar-hover);
 }
 
 .btn-regresar {
-    background-color: #e74c3c !important;
-    color: #ffffff !important;
+    background-color: var(--btn-regresar-bg);
 }
 
 .btn-regresar:hover {
-    background-color: #af3a2d !important;
-}
-
-.btn-guardar {
-    background-color: #215894 !important;
-}
-
-.btn-guardar:hover {
-    background-color: #0c325a !important;
+    background-color: var(--btn-regresar-hover);
 }
 
 .btn-crear {
-    background-color: #28a745 !important;
+    background-color: var(--btn-crear-bg);
 }
 
 .btn-crear:hover {
-    background-color: #218838 !important;
-}
-
-.btn-importar {
-    background-color: #17a2b8 !important;
-}
-
-.btn-importar:hover {
-    background-color: #138496 !important;
+    background-color: var(--btn-crear-hover);
 }
 
 .btn-buscar {
-    background-color: #17b888 !important;
+    background-color: var(--btn-buscar-bg);
 }
 
 .btn-buscar:hover {
-    background-color: #13805f !important;
+    background-color: var(--btn-buscar-hover);
+}
+
+.btn-eliminar {
+    background-color: var(--btn-eliminar-bg);
+}
+
+.btn-eliminar:hover {
+    background-color: var(--btn-eliminar-hover);
+}
+
+.btn-guardar {
+    background-color: var(--btn-guardar-bg);
+}
+
+.btn-guardar:hover {
+    background-color: var(--btn-guardar-hover);
+}
+
+.btn-importar {
+    background-color: var(--btn-importar-bg);
+}
+
+.btn-importar:hover {
+    background-color: var(--btn-importar-hover);
 }
 
 .btn-regresar i,
@@ -263,7 +315,7 @@ table,
 th,
 td {
     color: var(--text-color);
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
     padding: 6px;
     text-align: center;
 }
@@ -312,7 +364,7 @@ td.actions-columnD form {
 }
 
 .form-group label {
-    color: #555;
+    color: var(--text-color);
     font-weight: bold;
     display: block;
     margin-bottom: 3px;
@@ -320,7 +372,7 @@ td.actions-columnD form {
 
 .form-group button[type="submit"],
 .form-group button[type="button"] {
-    background-color: #007bff;
+    /* background-color: var(--btn-guardar-bg); */
     color: white;
     border: none;
     border-radius: 5px;
@@ -330,7 +382,7 @@ td.actions-columnD form {
 }
 
 .form-group button[type="submit"]:hover {
-    background-color: #0056b3;
+    background-color: var(--btn-guardar-hover);
 }
 
 input:focus,
@@ -355,14 +407,6 @@ input[type="date"] {
     font-size: 0.8em;
     width: 100%;
     box-sizing: border-box;
-}
-
-td.actions-columnD input[type="date"] {
-    width: 120px;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-    margin-left: -10px;
 }
 
 .user-menu {
@@ -436,5 +480,10 @@ td.actions-columnD input[type="date"] {
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(var(--calendar-icon-invert));
     margin-left: -10px;
+}
+
+.dark-mode input[type="date"]::-webkit-calendar-picker-indicator {
+    --calendar-icon-invert: 1;
 }

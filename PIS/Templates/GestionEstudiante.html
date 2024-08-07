@@ -50,6 +50,7 @@
                 </li>
             </ol>
         </nav>
+
         <div class="actions">
             <a href="#" class="btn-regresar">Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
@@ -220,13 +221,6 @@
     <script src="../Static/scripts/TemaSeleccionado.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('.btn-regresar').addEventListener('click', function (event) {
-                event.preventDefault();
-                history.back();
-            });
-        });
-
         const importButton = document.getElementById('importButton');
         const fileInput = document.getElementById('fileInput');
 
@@ -281,11 +275,6 @@
             }
         });
 
-        function toggleUserOptions() {
-            var options = document.getElementById("user-options");
-            options.style.display = options.style.display === "block" ? "none" : "block";
-        }
-
         function confirmLogout(event) {
             event.preventDefault();
             Swal.fire({
@@ -304,13 +293,10 @@
             });
         }
 
-        document.addEventListener('click', function (event) {
-            var userMenu = document.querySelector('.user-menu');
-            var userOptions = document.getElementById('user-options');
-            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
-                userOptions.style.display = 'none';
-            }
-        });
+        function toggleUserOptions() {
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
+        }
     </script>
 </body>
 

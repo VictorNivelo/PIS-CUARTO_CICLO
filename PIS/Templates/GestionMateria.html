@@ -49,6 +49,7 @@
                 </li>
             </ol>
         </nav>
+
         <div class="actions">
             <a href="#" class="btn-regresar"><i class="fas fa-arrow-left"></i>Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
@@ -65,12 +66,11 @@
                 <thead>
                     <tr>
                         <th>Nombre de la materia</th>
-                        <th>Numero de horas</th>
-                        <th>Numero unidades</th>
+                        <th>Nro horas</th>
+                        <th>Nro unidades</th>
                         <th>Docente encargado</th>
                         <th>Ciclo</th>
                         <th>Acciones</th>
-                        <!-- <th>Periodo academico</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -84,7 +84,6 @@
                                     value="{{ materia.numero_horas }}"></td>
                             <td class="actions-column10"><input type="number" name="unidades"
                                     value="{{ materia.unidades }}"></td>
-
                             <td>
                                 <select name="docente_encargado">
                                     {% for docente in docentes %}
@@ -95,7 +94,6 @@
                                     {% endfor %}
                                 </select>
                             </td>
-
                             <td>
                                 <select name="ciclo">
                                     {% for ciclo in ciclos %}
@@ -106,20 +104,8 @@
                                     {% endfor %}
                                 </select>
                             </td>
-
-                            <!-- <td>
-                                <select name="periodo_academico">
-                                    {% for periodoAcademico in periodosAcademicos %}
-                                    <option value="{{ periodoAcademico.id }}"
-                                        {% if periodoAcademico.id == materia.periodo_academico.id %}selected{% endif %}>
-                                        {{ periodoAcademico.codigo_periodo_academico }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </td> -->
-
                             <td class="actions-column">
-                                <div class="d-flex justify-content-center align-items-center">
+                                <div class="action-buttons">
                                     <button type="button" class="btn-guardar" name="modify"
                                         onclick="confirmarModificacion('{{ materia.id }}', '{{ materia.nombre_materia }}', this.form)">
                                         <i class="fas fa-edit"></i> Actualizar
@@ -142,66 +128,61 @@
     <script src="../Static/scripts/TemaSeleccionado.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('.btn-regresar').addEventListener('click', function (event) {
-                event.preventDefault();
-                history.back();
-            });
 
-            const importButton = document.getElementById('importButton');
-            const fileInput = document.getElementById('fileInput');
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
 
-            importButton.addEventListener('click', function (e) {
-                e.preventDefault();
-                fileInput.click();
-            });
+        importButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            fileInput.click();
+        });
 
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const formData = new FormData();
-                    formData.append('document', file);
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('document', file);
 
-                    fetch('{% url "Importar_Materias" %}', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Éxito',
-                                    text: data.message,
-                                    icon: 'success'
-                                }).then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                let errorMessage = data.message;
-                                if (data.errors && data.errors.length > 0) {
-                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
-                                }
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: errorMessage,
-                                    icon: 'error'
-                                });
+                fetch('{% url "Importar_Materias" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            let errorMessage = data.message;
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
                             Swal.fire({
                                 title: 'Error',
-                                text: 'Hubo un problema al importar las materias',
+                                text: errorMessage,
                                 icon: 'error'
                             });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al importar las materias',
+                            icon: 'error'
                         });
-                }
-            });
+                    });
+            }
         });
+
 
         function confirmarModificacion(materiaId, nombreMateria, form) {
             Swal.fire({
@@ -251,11 +232,6 @@
             });
         }
 
-        function toggleUserOptions() {
-            var options = document.getElementById("user-options");
-            options.style.display = options.style.display === "block" ? "none" : "block";
-        }
-
         function confirmLogout(event) {
             event.preventDefault();
             Swal.fire({
@@ -274,13 +250,10 @@
             });
         }
 
-        document.addEventListener('click', function (event) {
-            var userMenu = document.querySelector('.user-menu');
-            var userOptions = document.getElementById('user-options');
-            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
-                userOptions.style.display = 'none';
-            }
-        });
+        function toggleUserOptions() {
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
+        }
     </script>
 
 </body>
