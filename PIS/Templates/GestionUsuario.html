@@ -22,11 +22,12 @@
                 <img id="logo-img" src="../Static/Imagen/Iconos/Logo-UNL-mediano.png" alt="Logo">
             </div>
             <h1>Gestión de usuarios</h1>
-            <div class="user-menu">
-                <div class="username" onclick="toggleUserOptions()">{{ user.first_name }} {{ user.last_name }}
+            <div class="user-menu" onclick="toggleUserOptions()">
+                <div class="username">{{ user.first_name }} {{ user.last_name }}
                     <div class="user-options" id="user-options">
                         <a href="{% url 'Perfil_Usuario' %}"><i class="fas fa-cog"></i> Configuración</a>
                         <a href="#" id="theme-toggle"><i class="fas fa-adjust"></i> Modo Oscuro</a>
+                        <a href="{% url 'Pagina_Ayuda' %}"><i class="fas fa-question-circle"></i> Ayuda</a>
                         <a href="#" onclick="confirmLogout(event)"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
                     </div>
                 </div>
@@ -43,8 +44,9 @@
                 <li class="breadcrumb-item"><a href="{% url 'Index' %}"><i class="fas fa-home"></i> Inicio</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
                         Inicio de sesión</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'Pagina_Administrador' %}"><i class="fas fa-user"></i>
-                        Página del administrador</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'Pagina_Administrador' %}"><i
+                            class="fas fa-user-shield"></i>
+                        Página-Administrador</a></li>
                 <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-cogs"></i> Gestión de
                     usuarios
                 </li>
@@ -157,11 +159,11 @@
                             <td class="actions-column">
                                 <div class="action-buttons">
                                     <button type="button" class="btn-guardar" name="modify"
-                                        onclick="confirmarModificacion('{{ user.id }}', '{{ user.username }}', this.form)">
+                                        onclick="confirmarModificacion('{{ usuario.id }}', '{{ usuario.username }}', this.form)">
                                         <i class="fas fa-edit"></i> Actualizar
                                     </button>
                                     <button type="button" class="btn-eliminar"
-                                        onclick="confirmarEliminacion('{{ user.id }}', '{{ user.username }}')">
+                                        onclick="confirmarEliminacion('{{ usuario.id }}', '{{ usuario.username }}')">
                                         <i class="fas fa-trash"></i> Eliminar
                                     </button>
                                 </div>
@@ -178,10 +180,10 @@
     <script src="../Static/scripts/TemaSeleccionado.js"></script>
 
     <script>
-        function confirmarModificacion(userId, nombreUser, form) {
+        function confirmarModificacion(userId, username, form) {
             Swal.fire({
                 title: '¿Estás seguro?',
-                text: `¿Deseas modificar el usuario "${nombreUser}"?`,
+                text: `¿Deseas modificar el usuario "${username}"?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -195,15 +197,40 @@
                     hiddenInput.name = 'modify';
                     hiddenInput.value = 'true';
                     form.appendChild(hiddenInput);
-                    form.submit();
+
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Modificado',
+                                    data.message,
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'Hubo un problema al modificar el usuario.',
+                                    'error'
+                                );
+                            }
+                        });
                 }
             });
         }
 
-        function confirmarEliminacion(userId, nombreUser) {
+        function confirmarEliminacion(userId, username) {
             Swal.fire({
                 title: '¿Estás seguro?',
-                text: `¿Deseas eliminar el usuario "${nombreUser}"?`,
+                text: `¿Deseas eliminar el usuario "${username}"?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -212,15 +239,36 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.innerHTML = `
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                    <input type="hidden" name="user_id" value="${userId}">
-                    <input type="hidden" name="delete" value="true">
-            `;
-                    document.body.appendChild(form);
-                    form.submit();
+                    const form = new FormData();
+                    form.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                    form.append('user_id', userId);
+                    form.append('delete', 'true');
+
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: form,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Eliminado',
+                                    data.message,
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'Hubo un problema al eliminar el usuario.',
+                                    'error'
+                                );
+                            }
+                        });
                 }
             });
         }

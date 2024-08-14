@@ -1,46 +1,30 @@
-from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.tokens import default_token_generator
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
-from django.core.files.storage import default_storage
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.http import urlsafe_base64_decode
 from django.utils.http import urlsafe_base64_encode
-from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
-from datetime import datetime, timedelta
-from django.db.models import Avg, StdDev
 from PIS.decorators import role_required
 from django.core.mail import send_mail
-from scipy.integrate import solve_ivp
-from scipy.optimize import curve_fit
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
-from scipy.integrate import odeint
 from django.db import transaction
 from django.conf import settings
 from django.db.models import Avg
-import matplotlib.pyplot as plt
 from django.urls import reverse
 from django.db.models import Q
-from django.views import View
-from scipy.stats import norm
-from docx import Document
+from datetime import datetime
 import numpy as np
-import pdfplumber
-import openpyxl
 import logging
-import PyPDF2
 import json
 import csv
-import re
-import os
 from PIS.models import (
     Usuario,
     PeriodoAcademico,
@@ -73,7 +57,7 @@ from .forms import (
 
 
 def PaginaAyuda(request):
-    return render(request, "PaginaAyuda.html")
+    return render(request, "I_PaginaAyuda.html")
 
 
 def PaginaPrincipal(request):
@@ -212,7 +196,7 @@ User = get_user_model()
 
 def CorreoEnviado(request, uidb64, token):
     return render(
-        request, "CorreoRecuperacionEnviado.html", {"uidb64": uidb64, "token": token}
+        request, "U_CorreoRecuperacionEnviado.html", {"uidb64": uidb64, "token": token}
     )
 
 
@@ -290,7 +274,7 @@ def RecuperarContrasenia(request):
                 )
     else:
         form = RecuperarContraseniaForm()
-    return render(request, "RecuperarContrasenia.html", {"form": form})
+    return render(request, "U_RecuperarContrasenia.html", {"form": form})
 
 
 def CambiarContrasenia(request, uidb64, token):
@@ -313,7 +297,7 @@ def CambiarContrasenia(request, uidb64, token):
                     messages.error(request, error)
         else:
             form = CambiarContraseniaForm()
-        return render(request, "CambiarContrasenia.html", {"form": form})
+        return render(request, "U_CambiarContrasenia.html", {"form": form})
     else:
         messages.error(
             request, "El enlace de restablecimiento de contraseña no es válido."
@@ -440,14 +424,19 @@ def GestionUsuario(request):
                 return redirect("Gestion_Usuario")
             usuario.telefono = request.POST.get("telefono")
             usuario.save()
-            messages.success(
-                request, "Información del usuario actualizada correctamente."
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Información del usuario actualizada correctamente.",
+                }
             )
         elif "delete" in request.POST:
             user_id = request.POST.get("user_id")
             usuario = Usuario.objects.get(id=user_id)
             usuario.delete()
-            messages.success(request, "Usuario eliminado correctamente.")
+            return JsonResponse(
+                {"success": True, "message": "Usuario eliminado correctamente."}
+            )
         return redirect("Gestion_Usuario")
 
     return render(
@@ -523,14 +512,19 @@ def GestionEstudiante(request):
             materias_ids = request.POST.getlist("materia")
             estudiante.materia.set(materias_ids)
             estudiante.save()
-            messages.success(
-                request, "Información del estudiante actualizada correctamente."
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Información del estudiante actualizada correctamente.",
+                }
             )
         elif "delete" in request.POST:
             estudiante_id = request.POST.get("estudiante_id")
             estudiante = Estudiante.objects.get(id=estudiante_id)
             estudiante.delete()
-            messages.success(request, "Estudiante eliminado correctamente.")
+            return JsonResponse(
+                {"success": True, "message": "Estudiante eliminado correctamente."}
+            )
         return redirect("Gestion_Estudiante")
 
     return render(
@@ -579,12 +573,16 @@ def GestionTipoDNI(request):
             tipo_dni.nombre_tipo_dni = request.POST.get("nombre_tipo_dni")
             tipo_dni.descripcion_tipo_dni = request.POST.get("descripcion_tipo_dni")
             tipo_dni.save()
-            messages.success(request, "Tipo de DNI actualizado exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Tipo de DNI actualizado exitosamente."}
+            )
         elif "delete" in request.POST:
             tipo_dni_id = request.POST.get("tipo_dni_id")
             tipo_dni = TipoDNI.objects.get(id=tipo_dni_id)
             tipo_dni.delete()
-            messages.success(request, "Tipo de DNI eliminado exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Tipo de DNI eliminado exitosamente."}
+            )
         return redirect("Gestion_TipoDNI")
 
     return render(
@@ -621,13 +619,16 @@ def GestionGenero(request):
             genero.nombre_genero = request.POST.get("nombre_genero")
             genero.descripcion_genero = request.POST.get("descripcion_genero")
             genero.save()
-            messages.success(request, "Género actualizado exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Género actualizado exitosamente."}
+            )
         elif "delete" in request.POST:
             genero_id = request.POST.get("genero_id")
             genero = Genero.objects.get(id=genero_id)
             genero.delete()
-            messages.success(request, "Género eliminado exitosamente.")
-        return redirect("Gestion_Genero")
+            return JsonResponse(
+                {"success": True, "message": "Género eliminado exitosamente."}
+            )
 
     return render(request, "GestionGenero.html", {"generos": generos, "query": query})
 
@@ -681,12 +682,16 @@ def GestionUniversidad(request):
                     "Formato de fecha de nacimiento inválido. Utiliza el formato dd/mm/aaaa.",
                 )
             universidad.save()
-            messages.success(request, "Universidad actualizada exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Universidad actualizada exitosamente."}
+            )
         elif "delete" in request.POST:
             universidad_id = request.POST.get("universidad_id")
             universidad = Universidad.objects.get(id=universidad_id)
             universidad.delete()
-            messages.success(request, "Universidad eliminada exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Universidad eliminada exitosamente."}
+            )
         return redirect("Gestion_Universidad")
 
     return render(
@@ -746,12 +751,16 @@ def GestionFacultad(request):
             universidad = Universidad.objects.get(id=universidad_id)
             facultad.universidad = universidad
             facultad.save()
-            messages.success(request, "Facultad actualizada exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Facultad actualizada exitosamente."}
+            )
         elif "delete" in request.POST:
             facultad_id = request.POST.get("facultad_id")
             facultad = Facultad.objects.get(id=facultad_id)
             facultad.delete()
-            messages.success(request, "Facultad eliminada exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Facultad eliminada exitosamente."}
+            )
         return redirect("Gestion_Facultad")
 
     return render(
@@ -799,12 +808,16 @@ def GestionCarrera(request):
             facultad = Facultad.objects.get(id=facultad_id)
             carrera.facultad = facultad
             carrera.save()
-            messages.success(request, "Carrera actualizada exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Carrera actualizada exitosamente."}
+            )
         elif "delete" in request.POST:
             carrera_id = request.POST.get("carrera_id")
             carrera = Carrera.objects.get(id=carrera_id)
             carrera.delete()
-            messages.success(request, "Carrera eliminada exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Carrera eliminada exitosamente."}
+            )
         return redirect("Gestion_Carrera")
 
     return render(
@@ -892,12 +905,16 @@ def GestionCiclo(request):
             periodo_academico = PeriodoAcademico.objects.get(id=periodosAcademicos_id)
             ciclo.periodo_academico = periodo_academico
             ciclo.save()
-            messages.success(request, "Ciclo actualizado exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Ciclo actualizado exitosamente."}
+            )
         elif "delete" in request.POST:
             ciclo_id = request.POST.get("ciclo_id")
             ciclo = Ciclo.objects.get(id=ciclo_id)
             ciclo.delete()
-            messages.success(request, "Ciclo eliminado exitosamente.")
+            return JsonResponse(
+                {"success": True, "message": "Ciclo eliminado exitosamente."}
+            )
         return redirect("Gestion_Ciclo")
 
     return render(
@@ -970,12 +987,22 @@ def GestionPeriodoAcademico(request):
                     return redirect("Gestion_PeriodoAcademico")
             periodo_academico.estado_periodo_academico = request.POST.get("estado")
             periodo_academico.save()
-            messages.success(request, "Periodo académico actualizado exitosamente.")
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Periodo académico actualizado exitosamente.",
+                }
+            )
         elif "delete" in request.POST:
             periodo_academico_id = request.POST.get("PeriodoAcademico_id")
             periodo_academico = PeriodoAcademico.objects.get(id=periodo_academico_id)
             periodo_academico.delete()
-            messages.success(request, "Periodo académico eliminado exitosamente.")
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Periodo académico eliminado exitosamente.",
+                }
+            )
         return redirect("Gestion_PeriodoAcademico")
 
     return render(
@@ -1034,7 +1061,9 @@ def GestionMateria(request):
                 materia.ciclo = ciclo
 
                 materia.save()
-                messages.success(request, "Materia actualizada exitosamente.")
+                return JsonResponse(
+                    {"success": True, "message": "Materia actualizada exitosamente."}
+                )
 
             except (
                 PeriodoAcademico.DoesNotExist,
@@ -1050,7 +1079,9 @@ def GestionMateria(request):
             try:
                 materia = Materia.objects.get(id=materia_id)
                 materia.delete()
-                messages.success(request, "Materia eliminada exitosamente.")
+                return JsonResponse(
+                    {"success": True, "message": "Materia eliminada exitosamente."}
+                )
             except Materia.DoesNotExist:
                 messages.error(request, "Materia no encontrada.")
 
@@ -1135,7 +1166,12 @@ def GestionDatosHistoricos(request):
 
             try:
                 datos_historicos.save()
-                messages.success(request, "Dato histórico actualizado exitosamente.")
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "message": "Datos históricos actualizados exitosamente.",
+                    }
+                )
             except Exception as e:
                 messages.error(request, f"Error al actualizar: {str(e)}")
 
@@ -1143,7 +1179,12 @@ def GestionDatosHistoricos(request):
             datos_historicos_id = request.POST.get("datosHistoricos_id")
             datos_historicos = DatosHistorico.objects.get(id=datos_historicos_id)
             datos_historicos.delete()
-            messages.success(request, "Dato histórico eliminado exitosamente.")
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Datos históricos eliminados exitosamente.",
+                }
+            )
 
         return redirect("Gestion_DatosHistorico")
 

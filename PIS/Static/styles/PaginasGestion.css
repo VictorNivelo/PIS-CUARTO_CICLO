@@ -109,7 +109,7 @@ html::before {
 
 .header-logo {
     position: absolute;
-    left: 25px;
+    left: 35px;
 }
 
 .header-logo img {
@@ -120,7 +120,7 @@ html::before {
 .title-and-logo {
     display: flex;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 17px;
     justify-content: center;
 }
 
@@ -342,10 +342,19 @@ td.actions-column form {
 }
 
 td.actions-column10 {
-    width: 105px;
+    width: 110px;
 }
 
 td.actions-column10 form {
+    display: flex;
+    justify-content: center;
+}
+
+td.actions-columnH {
+    width: 60px;
+}
+
+td.actions-columnH form {
     display: flex;
     justify-content: center;
 }
@@ -460,7 +469,6 @@ input[type="date"] {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    justify-content: space-evenly;
 }
 
 .user-options a:hover {

@@ -305,9 +305,11 @@ class RecuperarContraseniaForm(forms.Form):
     )
 
     def clean_email(self):
-        email = self.cleaned_data['email']
+        email = self.cleaned_data["email"]
         if not User.objects.filter(email=email).exists():
-            raise forms.ValidationError("No existe ningún usuario con este correo electrónico.")
+            raise forms.ValidationError(
+                "No existe ningún usuario con este correo electrónico."
+            )
         return email
 
 

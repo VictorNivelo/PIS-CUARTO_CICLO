@@ -22,8 +22,8 @@
                 <img id="logo-img" src="../Static/Imagen/Iconos/Logo-UNL-mediano.png" alt="Logo">
             </div>
             <h1>Gestión de facultade</h1>
-            <div class="user-menu">
-                <div class="username" onclick="toggleUserOptions()">{{ user.first_name }} {{ user.last_name }}
+            <div class="user-menu" onclick="toggleUserOptions()">
+                <div class="username">{{ user.first_name }} {{ user.last_name }}
                     <div class="user-options" id="user-options">
                         <a href="{% url 'Perfil_Usuario' %}"><i class="fas fa-cog"></i> Configuración</a>
                         <a href="#" id="theme-toggle"><i class="fas fa-adjust"></i> Modo Oscuro</a>
@@ -43,8 +43,9 @@
                 <li class="breadcrumb-item"><a href="{% url 'Index' %}"><i class="fas fa-home"></i> Inicio</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
                         Inicio de sesión</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'Pagina_Administrador' %}"><i class="fas fa-user"></i>
-                        Página del administrador</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'Pagina_Administrador' %}"><i
+                            class="fas fa-user-shield"></i>
+                        Página-Administrador</a></li>
                 <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-cogs"></i> Gestión de facultad
                 </li>
             </ol>
@@ -171,7 +172,6 @@
             }
         });
 
-
         function confirmarModificacion(facultadId, nombreFacultad, form) {
             Swal.fire({
                 title: '¿Estás seguro?',
@@ -190,7 +190,31 @@
                     hiddenInput.value = 'true';
                     form.appendChild(hiddenInput);
 
-                    form.submit();
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Modificado',
+                                    data.message,
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'Hubo un problema al modificar la facultad.',
+                                    'error'
+                                );
+                            }
+                        });
                 }
             });
         }
@@ -207,18 +231,40 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.innerHTML = `
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                    <input type="hidden" name="facultad_id" value="${facultadId}">
-                    <input type="hidden" name="delete" value="true">
-            `;
-                    document.body.appendChild(form);
-                    form.submit();
+                    const form = new FormData();
+                    form.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                    form.append('facultad_id', facultadId);
+                    form.append('delete', 'true');
+
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: form,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Eliminado',
+                                    data.message,
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'Hubo un problema al eliminar la facultad.',
+                                    'error'
+                                );
+                            }
+                        });
                 }
             });
         }
+
 
         function confirmLogout(event) {
             event.preventDefault();
