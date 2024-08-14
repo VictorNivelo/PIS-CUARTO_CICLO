@@ -22,11 +22,12 @@
                 <img id="logo-img" src="../Static/Imagen/Iconos/Logo-UNL-mediano.png" alt="Logo">
             </div>
             <h1>Gestión de usuarios</h1>
-            <div class="user-menu">
-                <div class="username" onclick="toggleUserOptions()">{{ user.first_name }} {{ user.last_name }}
+            <div class="user-menu" onclick="toggleUserOptions()">
+                <div class="username">{{ user.first_name }} {{ user.last_name }}
                     <div class="user-options" id="user-options">
                         <a href="{% url 'Perfil_Usuario' %}"><i class="fas fa-cog"></i> Configuración</a>
                         <a href="#" id="theme-toggle"><i class="fas fa-adjust"></i> Modo Oscuro</a>
+                        <a href="{% url 'Pagina_Ayuda' %}"><i class="fas fa-question-circle"></i> Ayuda</a>
                         <a href="#" onclick="confirmLogout(event)"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
                     </div>
                 </div>
@@ -43,8 +44,9 @@
                 <li class="breadcrumb-item"><a href="{% url 'Index' %}"><i class="fas fa-home"></i> Inicio</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
                         Inicio de sesión</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'Pagina_Administrador' %}"><i class="fas fa-user"></i>
-                        Página del administrador</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'Pagina_Administrador' %}"><i
+                            class="fas fa-user-shield"></i>
+                        Página-Administrador</a></li>
                 <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-cogs"></i> Gestión de
                     usuarios
                 </li>
@@ -155,13 +157,13 @@
                                 </select>
                             </td>
                             <td class="actions-column">
-                                <div class="d-flex justify-content-center align-items-center">
+                                <div class="action-buttons">
                                     <button type="button" class="btn-guardar" name="modify"
-                                        onclick="confirmarModificacion('{{ user.id }}', '{{ user.username }}', this.form)">
+                                        onclick="confirmarModificacion('{{ usuario.id }}', '{{ usuario.username }}', this.form)">
                                         <i class="fas fa-edit"></i> Actualizar
                                     </button>
                                     <button type="button" class="btn-eliminar"
-                                        onclick="confirmarEliminacion('{{ user.id }}', '{{ user.username }}')">
+                                        onclick="confirmarEliminacion('{{ usuario.id }}', '{{ usuario.username }}')">
                                         <i class="fas fa-trash"></i> Eliminar
                                     </button>
                                 </div>
@@ -178,10 +180,10 @@
     <script src="../Static/scripts/TemaSeleccionado.js"></script>
 
     <script>
-        function confirmarModificacion(userId, nombreUser, form) {
+        function confirmarModificacion(userId, username, form) {
             Swal.fire({
                 title: '¿Estás seguro?',
-                text: `¿Deseas modificar el usuario "${nombreUser}"?`,
+                text: `¿Deseas modificar el usuario "${username}"?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -196,15 +198,39 @@
                     hiddenInput.value = 'true';
                     form.appendChild(hiddenInput);
 
-                    form.submit();
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Modificado',
+                                    data.message,
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'Hubo un problema al modificar el usuario.',
+                                    'error'
+                                );
+                            }
+                        });
                 }
             });
         }
 
-        function confirmarEliminacion(userId, nombreUser) {
+        function confirmarEliminacion(userId, username) {
             Swal.fire({
                 title: '¿Estás seguro?',
-                text: `¿Deseas eliminar el usuario "${nombreUser}"?`,
+                text: `¿Deseas eliminar el usuario "${username}"?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -213,121 +239,14 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.innerHTML = `
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                    <input type="hidden" name="user_id" value="${userId}">
-                    <input type="hidden" name="delete" value="true">
-            `;
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
-        }
+                    const form = new FormData();
+                    form.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                    form.append('user_id', userId);
+                    form.append('delete', 'true');
 
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('.btn-regresar').addEventListener('click', function (event) {
-                event.preventDefault();
-                history.back();
-            });
-
-            document.querySelectorAll('.validate-letters').forEach(input => {
-                input.addEventListener('input', function (e) {
-                    if (/[^a-zA-Z\s]/.test(this.value)) {
-                        e.preventDefault();
-                        this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Este campo solo acepta letras y espacios.',
-                        });
-                    }
-                });
-            });
-
-            document.querySelectorAll('.validate-dni, .validate-phone').forEach(input => {
-                input.addEventListener('input', function (e) {
-                    if (/[^0-9]/.test(this.value)) {
-                        e.preventDefault();
-                        this.value = this.value.replace(/[^0-9]/g, '');
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Este campo solo acepta números.',
-                        });
-                    }
-                    if (this.value.length > 10) {
-                        this.value = this.value.slice(0, 10);
-                    }
-                });
-            });
-
-            document.querySelectorAll('.validate-email').forEach(input => {
-                input.addEventListener('blur', function (e) {
-                    if (!/^\S+@\S+\.\S+$/.test(this.value)) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Por favor, ingrese un correo electrónico válido.',
-                        });
-                    }
-                });
-            });
-
-            document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    let isValid = true;
-                    let dni = this.querySelector('input[name="dni"]').value;
-                    let telefono = this.querySelector('input[name="telefono"]').value;
-
-                    if (dni.length !== 10) {
-                        isValid = false;
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'El DNI debe tener 10 dígitos.',
-                        });
-                    }
-
-                    if (telefono.length !== 10) {
-                        isValid = false;
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'El teléfono debe tener 10 dígitos.',
-                        });
-                    }
-
-                    if (!isValid) {
-                        e.preventDefault();
-                    } else {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Guardado',
-                            text: 'Usuario modificado con éxito.',
-                        });
-                    }
-                });
-            });
-
-            const importButton = document.getElementById('importButton');
-            const fileInput = document.getElementById('fileInput');
-
-            importButton.addEventListener('click', function (e) {
-                e.preventDefault();
-                fileInput.click();
-            });
-
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const formData = new FormData();
-                    formData.append('document', file);
-
-                    fetch('{% url "Importar_Usuario" %}', {
+                    fetch(window.location.href, {
                         method: 'POST',
-                        body: formData,
+                        body: form,
                         headers: {
                             'X-CSRFToken': '{{ csrf_token }}'
                         }
@@ -335,41 +254,154 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                Swal.fire({
-                                    title: 'Éxito',
-                                    text: data.message,
-                                    icon: 'success'
-                                }).then(() => {
+                                Swal.fire(
+                                    'Eliminado',
+                                    data.message,
+                                    'success'
+                                ).then(() => {
                                     location.reload();
                                 });
                             } else {
-                                let errorMessage = data.message;
-                                if (data.errors && data.errors.length > 0) {
-                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
-                                }
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: errorMessage,
-                                    icon: 'error'
-                                });
+                                Swal.fire(
+                                    'Error',
+                                    'Hubo un problema al eliminar el usuario.',
+                                    'error'
+                                );
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                title: 'Error',
-                                text: 'Hubo un problema al importar las materias',
-                                icon: 'error'
-                            });
                         });
+                }
+            });
+        }
+
+        document.querySelectorAll('.validate-letters').forEach(input => {
+            input.addEventListener('input', function (e) {
+                if (/[^a-zA-Z\s]/.test(this.value)) {
+                    e.preventDefault();
+                    this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Este campo solo acepta letras y espacios.',
+                    });
                 }
             });
         });
 
-        function toggleUserOptions() {
-            var options = document.getElementById("user-options");
-            options.style.display = options.style.display === "block" ? "none" : "block";
-        }
+        document.querySelectorAll('.validate-dni, .validate-phone').forEach(input => {
+            input.addEventListener('input', function (e) {
+                if (/[^0-9]/.test(this.value)) {
+                    e.preventDefault();
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Este campo solo acepta números.',
+                    });
+                }
+                if (this.value.length > 10) {
+                    this.value = this.value.slice(0, 10);
+                }
+            });
+        });
+
+        document.querySelectorAll('.validate-email').forEach(input => {
+            input.addEventListener('blur', function (e) {
+                if (!/^\S+@\S+\.\S+$/.test(this.value)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Por favor, ingrese un correo electrónico válido.',
+                    });
+                }
+            });
+        });
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                let isValid = true;
+                let dni = this.querySelector('input[name="dni"]').value;
+                let telefono = this.querySelector('input[name="telefono"]').value;
+                if (dni.length !== 10) {
+                    isValid = false;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'El DNI debe tener 10 dígitos.',
+                    });
+                }
+                if (telefono.length !== 10) {
+                    isValid = false;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'El teléfono debe tener 10 dígitos.',
+                    });
+                }
+                if (!isValid) {
+                    e.preventDefault();
+                } else {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Guardado',
+                        text: 'Usuario modificado con éxito.',
+                    });
+                }
+            });
+        });
+
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
+
+        importButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('document', file);
+
+                fetch('{% url "Importar_Usuario" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            let errorMessage = data.message;
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
+                            }
+                            Swal.fire({
+                                title: 'Error',
+                                text: errorMessage,
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al importar las materias',
+                            icon: 'error'
+                        });
+                    });
+            }
+        });
 
         function confirmLogout(event) {
             event.preventDefault();
@@ -389,13 +421,10 @@
             });
         }
 
-        document.addEventListener('click', function (event) {
-            var userMenu = document.querySelector('.user-menu');
-            var userOptions = document.getElementById('user-options');
-            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
-                userOptions.style.display = 'none';
-            }
-        });
+        function toggleUserOptions() {
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
+        }
     </script>
 </body>
 

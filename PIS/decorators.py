@@ -1,6 +1,4 @@
 from django.shortcuts import redirect
-from django.contrib.auth.decorators import user_passes_test
-
 
 def role_required(allowed_roles=[]):
     def decorator(view_func):

@@ -85,26 +85,45 @@
             margin-bottom: 20px;
         }
 
-        .btn-regresar {
-            padding: 10px;
+        .btn-regresar,
+        .btn-anterior {
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
-            background-color: #f0ad4e;
             color: white;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             transition: background-color 0.3s;
+            margin: 0 5px;
+        }
+
+        .btn-regresar {
+            background-color: #28a745;
         }
 
         .btn-regresar:hover {
+            background-color: #218838;
+        }
+
+        .btn-anterior {
+            background-color: #f0ad4e;
+            color: white;
+        }
+
+        .btn-anterior:hover {
             background-color: #eea236;
         }
 
-        .btn-regresar i {
+        .btn-regresar i,
+        .btn-anterior i {
             margin-right: 8px;
+        }
+
+        .btn-group {
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -113,11 +132,17 @@
     <div class="container">
         <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo" class="logo">
         <h1>Acceso Denegado</h1>
-        <p>No tienes los permisos necesarios para acceder a esta página.</p>
-        <p>Si crees que esto es un error, por favor contacta al administrador.</p>
-        <a href="{% url 'Index' %}" class="btn-regresar">
-            <i class="fas fa-home"></i> Regresar a la página principal
-        </a>
+        <p>Lo sentimos, no tienes permisos suficientes para acceder a esta página. Verifica tus credenciales o contacta
+            al soporte.</p>
+        <p>Si consideras que esto es un error, por favor contacta al administrador del sistema.</p>
+        <div class="btn-group">
+            <a href="javascript:history.back()" class="btn-anterior" aria-label="Regresar a la página anterior">
+                <i class="fas fa-arrow-left"></i> Regresar
+            </a>
+            <a href="{% url 'Index' %}" class="btn-regresar" aria-label="Regresar a la página principal">
+                <i class="fas fa-home"></i> Ir al inicio
+            </a>
+        </div>
     </div>
 </body>
 

@@ -16,15 +16,14 @@
 </head>
 
 <body>
-
     <div class="container">
         <div class="title-and-logo">
             <div class="header-logo">
                 <img id="logo-img" src="../Static/Imagen/Iconos/Logo-UNL-mediano.png" alt="Logo">
             </div>
             <h1>Gestión de facultade</h1>
-            <div class="user-menu">
-                <div class="username" onclick="toggleUserOptions()">{{ user.first_name }} {{ user.last_name }}
+            <div class="user-menu" onclick="toggleUserOptions()">
+                <div class="username">{{ user.first_name }} {{ user.last_name }}
                     <div class="user-options" id="user-options">
                         <a href="{% url 'Perfil_Usuario' %}"><i class="fas fa-cog"></i> Configuración</a>
                         <a href="#" id="theme-toggle"><i class="fas fa-adjust"></i> Modo Oscuro</a>
@@ -44,12 +43,14 @@
                 <li class="breadcrumb-item"><a href="{% url 'Index' %}"><i class="fas fa-home"></i> Inicio</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
                         Inicio de sesión</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'Pagina_Administrador' %}"><i class="fas fa-user"></i>
-                        Página del administrador</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'Pagina_Administrador' %}"><i
+                            class="fas fa-user-shield"></i>
+                        Página-Administrador</a></li>
                 <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-cogs"></i> Gestión de facultad
                 </li>
             </ol>
         </nav>
+
         <div class="actions">
             <a href="#" class="btn-regresar"><i class="fas fa-arrow-left"></i>Regresar</a>
             <form method="GET" style="flex: 1; margin-right: 5px;">
@@ -67,7 +68,7 @@
                     <tr>
                         <th>Nombre de la facultad</th>
                         <th>Abreviación</th>
-                        <th>Fecha de fundacion</th>
+                        <th>Fundacion</th>
                         <th>Universidad</th>
                         <th>Acciones</th>
                     </tr>
@@ -81,27 +82,8 @@
                             <td><input type="text" name="nombre_facultad" value="{{ facultad.nombre_facultad }}"></td>
                             <input type="hidden" name="facultad_id" value="{{ facultad.id }}">
                             <td><input type="text" name="abreviacion" value="{{ facultad.abreviacion }}"></td>
-
-                            <!-- <td><input type="text" class="datepicker" name="fecha_fundacion" value="{{ facultad.fecha_fundacion|date:'d/m/Y' }}"></td> -->
-
-                            <!-- <td><input type="text" name="fecha_fundacion_facultad"
-                                    value="{{ facultad.fecha_fundacion }}"></td> -->
                             <td class="actions-columnD"><input type="date" name="fecha_fundacion"
                                     value="{{ facultad.fecha_fundacion|date:'Y-m-d' }}"></td>
-
-                            <!-- <td>
-                                <select name="universidad">
-                                    {% for universidad in universidades %}
-                                    <option value="{{ universidad.id }}"
-                                        {% if universidad.id == facultad.universidad.id %}selected{% endif %}>
-                                        {{ universidad.id }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </td> -->
-
-                            <!-- <td><input type="text" name="universidad" value="{{ facultad.universidad }}"></td> -->
-
                             <td class="actions-column20">
                                 <select name="universidad">
                                     {% for universidad in universidades %}
@@ -112,9 +94,8 @@
                                     {% endfor %}
                                 </select>
                             </td>
-
                             <td class="actions-column">
-                                <div class="d-flex justify-content-center align-items-center">
+                                <div class="action-buttons">
                                     <button type="button" class="btn-guardar" name="modify"
                                         onclick="confirmarModificacion('{{ facultad.id }}', '{{ facultad.nombre_facultad }}', this.form)">
                                         <i class="fas fa-edit"></i> Actualizar
@@ -125,19 +106,6 @@
                                     </button>
                                 </div>
                             </td>
-
-                            <!-- <td class="actions-column">
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <button type="submit" name="modify" class="btn-guardar"><i class="fas fa-edit"></i>
-                                        Actualizar</button>
-                                    <form method="POST" style="margin: 0;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="facultad_id" value="{{ facultad.id }}">
-                                        <button type="submit" name="delete" class="btn-eliminar"><i
-                                                class="fas fa-trash"></i> Eliminar</button>
-                                    </form>
-                                </div>
-                            </td> -->
                         </form>
                     </tr>
                     {% endfor %}
@@ -150,65 +118,58 @@
     <script src="../Static/scripts/TemaSeleccionado.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('.btn-regresar').addEventListener('click', function (event) {
-                event.preventDefault();
-                history.back();
-            });
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
 
-            const importButton = document.getElementById('importButton');
-            const fileInput = document.getElementById('fileInput');
+        importButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            fileInput.click();
+        });
 
-            importButton.addEventListener('click', function (e) {
-                e.preventDefault();
-                fileInput.click();
-            });
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('document', file);
 
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const formData = new FormData();
-                    formData.append('document', file);
-
-                    fetch('{% url "Importar_Facultades" %}', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Éxito',
-                                    text: data.message,
-                                    icon: 'success'
-                                }).then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                let errorMessage = data.message;
-                                if (data.errors && data.errors.length > 0) {
-                                    errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
-                                }
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: errorMessage,
-                                    icon: 'error'
-                                });
+                fetch('{% url "Importar_Facultades" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            let errorMessage = data.message;
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += "\n\nDetalles de los errores:\n" + data.errors.join("\n");
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
                             Swal.fire({
                                 title: 'Error',
-                                text: 'Hubo un problema al importar las facultades',
+                                text: errorMessage,
                                 icon: 'error'
                             });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un problema al importar las facultades',
+                            icon: 'error'
                         });
-                }
-            });
+                    });
+            }
         });
 
         function confirmarModificacion(facultadId, nombreFacultad, form) {
@@ -229,7 +190,31 @@
                     hiddenInput.value = 'true';
                     form.appendChild(hiddenInput);
 
-                    form.submit();
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Modificado',
+                                    data.message,
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'Hubo un problema al modificar la facultad.',
+                                    'error'
+                                );
+                            }
+                        });
                 }
             });
         }
@@ -246,23 +231,40 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.innerHTML = `
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                    <input type="hidden" name="facultad_id" value="${facultadId}">
-                    <input type="hidden" name="delete" value="true">
-            `;
-                    document.body.appendChild(form);
-                    form.submit();
+                    const form = new FormData();
+                    form.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                    form.append('facultad_id', facultadId);
+                    form.append('delete', 'true');
+
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: form,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Eliminado',
+                                    data.message,
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'Hubo un problema al eliminar la facultad.',
+                                    'error'
+                                );
+                            }
+                        });
                 }
             });
         }
 
-        function toggleUserOptions() {
-            var options = document.getElementById("user-options");
-            options.style.display = options.style.display === "block" ? "none" : "block";
-        }
 
         function confirmLogout(event) {
             event.preventDefault();
@@ -282,13 +284,10 @@
             });
         }
 
-        document.addEventListener('click', function (event) {
-            var userMenu = document.querySelector('.user-menu');
-            var userOptions = document.getElementById('user-options');
-            if (!userMenu.contains(event.target) && userOptions.style.display === 'block') {
-                userOptions.style.display = 'none';
-            }
-        });
+        function toggleUserOptions() {
+            var options = document.getElementById("user-options");
+            options.style.display = options.style.display === "block" ? "none" : "block";
+        }
     </script>
 
 </body>
