@@ -15,18 +15,17 @@
 </head>
 
 <body>
-    <div class="caja">
-        <div class="header">
+    <div class="container">
+        <div class="title-and-logo">
             <div class="header-logo">
-                <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo de la Universidad">
+                <img id="logo-img" src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo">
             </div>
-            <div class="title-and-logo">
-                <h1 class="title">Predicción de deserción por carrera</h1>
-            </div>
-            <div class="user-menu">
-                <div class="username" onclick="toggleUserOptions()">{{ user.first_name }} {{ user.last_name }}
+            <h1 class="title">Predicción de deserción por carrera</h1>
+            <div class="user-menu" onclick="toggleUserOptions()">
+                <div class="username">{{ user.first_name }} {{ user.last_name }}
                     <div class="user-options" id="user-options">
                         <a href="{% url 'Perfil_Usuario' %}"><i class="fas fa-cog"></i> Configuración</a>
+                        <a href="#" id="theme-toggle"><i class="fas fa-adjust"></i>Modo Oscuro</a>
                         <a href="#" onclick="confirmLogout(event)"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
                     </div>
                 </div>
@@ -38,14 +37,16 @@
             </div>
         </div>
 
-        <ul class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'Index' %}"><i class="fas fa-home"></i> Inicio</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
-                    Inicio de sesión</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'Pagina_Secretaria' %}"><i class="fas fa-building"></i>
-                    Página-Secretaria</a></li>
-            <li class="breadcrumb-item active"><i class="fas fa-graduation-cap"></i> Predicción de Carrera</li>
-        </ul>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'Index' %}"><i class="fas fa-home"></i> Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
+                        Inicio de sesión</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'Pagina_Secretaria' %}"><i class="fas fa-user-tie"></i>
+                        Página-Secretaria</a></li>
+                <li class="breadcrumb-item active"><i class="fas fa-graduation-cap"></i> Predicción de Carrera</li>
+            </ol>
+        </nav>
 
         <form id="predictionForm" method="post">
             {% csrf_token %}
@@ -79,7 +80,7 @@
                         max="3000" required>
                 </div>
                 <div class="form-group">
-                    <label for="anio_fin"><i class="fas fa-calendar-year"></i>Año de fin:</label>
+                    <label for="anio_fin"><i class="fas fa-calendar-alt"></i>Año de fin:</label>
                     <input type="number" name="anio_fin" id="anio_fin" placeholder="Ingrese el año" min="2015"
                         max="3000" required>
                 </div>
@@ -175,6 +176,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../Static/scripts/TemaSeleccionado.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -931,8 +933,10 @@
         });
 
         function toggleUserOptions() {
-            var options = document.getElementById("user-options");
-            options.style.display = options.style.display === "block" ? "none" : "block";
+            const userOptions = document.getElementById('user-options');
+            const isExpanded = userOptions.style.display === 'block';
+            userOptions.style.display = isExpanded ? 'none' : 'block';
+            document.querySelector('.username').setAttribute('aria-expanded', !isExpanded);
         }
 
         function confirmLogout(event) {
