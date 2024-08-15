@@ -25,6 +25,7 @@ import numpy as np
 import logging
 import json
 import csv
+import os
 from PIS.models import (
     Usuario,
     PeriodoAcademico,
@@ -101,8 +102,22 @@ def SinAcceso(request):
 def PerfilUsuario(request):
     if request.method == "POST":
         if request.FILES.get("foto"):
-            request.user.foto = request.FILES["foto"]
-            request.user.save()
+            nueva_foto = request.FILES["foto"]
+            _, extension = os.path.splitext(nueva_foto.name)
+            numero = 1
+            while True:
+                nuevo_nombre = (
+                    f"{request.user.username}-Foto_Perfil-{numero}{extension}"
+                )
+                ruta_completa = os.path.join(settings.MEDIA_ROOT, nuevo_nombre)
+                if not os.path.exists(ruta_completa):
+                    break
+                numero += 1
+
+            if request.user.foto:
+                if os.path.isfile(request.user.foto.path):
+                    os.remove(request.user.foto.path)
+            request.user.foto.save(nuevo_nombre, nueva_foto, save=True)
             messages.success(request, "Imagen de perfil actualizada exitosamente.")
         return redirect("Perfil_Usuario")
 
@@ -230,7 +245,7 @@ def RecuperarContrasenia(request):
 
             subject = "Recuperación de contraseña"
             message = f"""
-            Hola {user.first_name + " " + user.last_name + " " + user.username},
+            Estimado/a {user.first_name + " " + user.last_name + " " + user.username},
 
             Has solicitado restablecer tu contraseña.
             Sigue estos pasos:
@@ -241,6 +256,9 @@ def RecuperarContrasenia(request):
             4. Haz clic en "Cambiar".
 
             Si no solicitaste este cambio, ignora este correo.
+
+            Importante:
+            Este enlace es válido por 24 horas.
 
             Saludos,
             El equipo de soporte

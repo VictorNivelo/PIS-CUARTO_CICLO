@@ -89,7 +89,7 @@ select {
     margin-top: 20px;
 }
 
-button,
+.button-group button,
 .btn-regresar,
 .btn-regresarI {
     width: 48%;
@@ -98,22 +98,22 @@ button,
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
 
-button[type="submit"],
-button:not(.btn-regresar) {
+.button-group button[type="submit"],
+.button-group button:not(.btn-regresar) {
     background-color: #4CAF50;
     color: white;
 }
 
-button[type="submit"]:hover,
-button:not(.btn-regresar):hover {
+.button-group button[type="submit"]:hover,
+.button-group button:not(.btn-regresar):hover {
     background-color: #45a049;
+    color: white;
 }
 
 .btn-regresar {
@@ -123,6 +123,7 @@ button:not(.btn-regresar):hover {
 
 .btn-regresar:hover {
     background-color: #eea236;
+    color: white;
 }
 
 .btn-regresarI {
@@ -132,6 +133,7 @@ button:not(.btn-regresar):hover {
 
 .btn-regresarI:hover {
     background-color: #218838;
+    color: white;
 }
 
 .btn-regresar i,
@@ -147,4 +149,33 @@ button:not(.btn-regresar):hover {
 
 .mensaje {
     margin-bottom: 20px;
+}
+
+.swal2-actions button {
+    width: auto !important;
+    padding: 10px 24px !important;
+    margin: 0 5px !important;
+    border-radius: 5px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+}
+
+.swal2-confirm {
+    background-color: #4CAF50 !important;
+    color: white !important;
+}
+
+.swal2-confirm:hover {
+    background-color: #45a049 !important;
+    color: white !important;
+}
+
+.swal2-cancel {
+    background-color: rgb(19, 75, 231) !important;
+    color: white !important;
+}
+
+.swal2-cancel:hover {
+    background-color: rgb(28, 58, 141) !important;
+    color: white !important;
 }
