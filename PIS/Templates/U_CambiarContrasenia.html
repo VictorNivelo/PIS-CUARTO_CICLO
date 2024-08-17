@@ -23,13 +23,33 @@
                 {% csrf_token %}
                 <h1 class="t">Cambiar Contraseña</h1>
                 <div class="form-group">
+                    <label for="{{ form.Contrasenia.id_for_label }}"><i class="fas fa-lock form-icon"></i>Nueva
+                        Contraseña:</label>
+                    <div class="password-container">
+                        {{ form.Contrasenia }}
+                        <button type="button" class="toggle-password" id="togglePassword1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.Confirmar_contrasenia.id_for_label }}"><i
+                            class="fas fa-lock form-icon"></i>Confirmar Contraseña:</label>
+                    <div class="password-container">
+                        {{ form.Confirmar_contrasenia }}
+                        <button type="button" class="toggle-password" id="togglePassword2">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- <div class="form-group">
                     <label for="{{ form.Contrasenia.id_for_label }}"><i class="fas fa-lock form-icon"></i>Nueva Contraseña:</label>
                     {{ form.Contrasenia }}
                 </div>
                 <div class="form-group">
                     <label for="{{ form.Confirmar_contrasenia.id_for_label }}"><i class="fas fa-lock form-icon"></i>Confirmar Contraseña:</label>
                     {{ form.Confirmar_contrasenia }}
-                </div>
+                </div> -->
                 <div class="button-group">
                     <button type="button" class="btn-regresar" id="regresarBtn">Regresar</button>
                     <button type="submit" id="cambiarBtn">Cambiar</button>
@@ -45,10 +65,25 @@
             const form = document.getElementById('cambiarForm');
             const regresarBtn = document.getElementById('regresarBtn');
 
+            function togglePasswordVisibility(passwordField, toggleButton) {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                toggleButton.querySelector('i').classList.toggle('fa-eye');
+                toggleButton.querySelector('i').classList.toggle('fa-eye-slash');
+            }
+
+            const togglePassword1 = document.getElementById('togglePassword1');
+            const togglePassword2 = document.getElementById('togglePassword2');
+            const password1 = document.querySelector('input[name="Contrasenia"]');
+            const password2 = document.querySelector('input[name="Confirmar_contrasenia"]');
+
+            togglePassword1.addEventListener('click', () => togglePasswordVisibility(password1, togglePassword1));
+            togglePassword2.addEventListener('click', () => togglePasswordVisibility(password2, togglePassword2));
+
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
-                const password = document.querySelector('input[name="Contrasenia"]').value;
-                const confirmPassword = document.querySelector('input[name="Confirmar_contrasenia"]').value;
+                const password = password1.value;
+                const confirmPassword = password2.value;
 
                 if (password !== confirmPassword) {
                     Swal.fire({

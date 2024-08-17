@@ -171,11 +171,36 @@ select {
 }
 
 .swal2-cancel {
-    background-color: rgb(19, 75, 231) !important;
+    background-color: rgb(48, 133, 214) !important;
     color: white !important;
 }
 
 .swal2-cancel:hover {
-    background-color: rgb(28, 58, 141) !important;
+    background-color: rgb(31, 100, 165);
     color: white !important;
+}
+
+.password-container {
+    position: relative;
+}
+
+.password-container input[type="password"],
+.password-container input[type="text"] {
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 5px;
+    top: 55%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #666;
+}
+
+.toggle-password:focus {
+    outline: none;
 }

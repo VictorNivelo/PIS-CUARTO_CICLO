@@ -3,49 +3,34 @@ from django.db import models
 
 
 class Usuario(AbstractUser):
-
     ROLES = [
         ("Personal Administrativo", "Personal Administrativo"),
         ("Secretaria", "Secretaria"),
         ("Docente", "Docente"),
     ]
-    
     genero = models.ForeignKey(
         "Genero", on_delete=models.CASCADE, verbose_name="Género"
     )
-
     fecha_nacimiento = models.DateField(verbose_name="Fecha de Nacimiento")
-
     dni = models.CharField(
         max_length=10, unique=True, db_index=True, verbose_name="DNI"
     )
-
     tipo_dni = models.ForeignKey(
         "TipoDNI", on_delete=models.CASCADE, verbose_name="Tipo de DNI"
     )
-
     telefono = models.CharField(
         max_length=10, blank=True, null=True, verbose_name="Teléfono"
     )
-
     rol = models.CharField(max_length=100, choices=ROLES, verbose_name="Rol")
-
     foto = models.ImageField(
         upload_to="Fotos/", null=True, blank=True, verbose_name="Foto"
     )
-
     first_name = models.CharField(max_length=100, verbose_name="Nombre")
-
     last_name = models.CharField(max_length=100, verbose_name="Apellido")
-
     is_active = models.BooleanField(default=True, verbose_name="Activo")
-
     is_staff = models.BooleanField(default=False, verbose_name="Staff")
-
     is_superuser = models.BooleanField(default=False, verbose_name="Superusuario")
-
     USERNAME_FIELD = "username"
-
     REQUIRED_FIELDS = [
         "first_name",
         "last_name",
@@ -195,16 +180,13 @@ class DatosHistorico(models.Model):
     materia = models.ForeignKey(
         Materia, on_delete=models.CASCADE, verbose_name="Materia"
     )
-
     periodo_academico = models.ForeignKey(
         "PeriodoAcademico", on_delete=models.CASCADE, verbose_name="Período Académico"
     )
-
     cantidad_matriculados = models.PositiveIntegerField(verbose_name="Cantidad de Matriculados")
     cantidad_aprobados = models.PositiveIntegerField(verbose_name="Cantidad de Aprobados")
     cantidad_reprobados = models.PositiveIntegerField(verbose_name="Cantidad de Reprobados")
     cantidad_desertores = models.PositiveIntegerField(verbose_name="Cantidad de Desertores")
-
     promedio_modalidad = models.FloatField(verbose_name="Promedio Modalidad")
     promedio_tipo_educacion = models.FloatField(
         verbose_name="Promedio Tipo de Educación"
@@ -246,78 +228,59 @@ class Estudiante(models.Model):
     tipo_dni = models.ForeignKey(
         "TipoDNI", on_delete=models.CASCADE, verbose_name="Tipo de DNI"
     )
-
     dni_estudiante = models.CharField(max_length=10, verbose_name="DNI")
-
     nombre_estudiante = models.CharField(max_length=100, verbose_name="Nombre")
-
     apellido_estudiante = models.CharField(max_length=100, verbose_name="Apellido")
-
     genero = models.ForeignKey(
         "Genero",
         on_delete=models.CASCADE,
         verbose_name="Género",
     )
-
     MODALIDAD_ESTUDIO_CHOICES = (
         (0, "Presencial"),
         (1, "Virtual"),
     )
-
     modalidad_estudio = models.IntegerField(
         choices=MODALIDAD_ESTUDIO_CHOICES, verbose_name="Modalidad de Estudio"
     )
-
     TIPO_EDUCACION_CHOICES = (
         (0, "Público"),
         (1, "Privado"),
     )
-
     tipo_educacion = models.IntegerField(
         choices=TIPO_EDUCACION_CHOICES, verbose_name="Tipo de Educación"
     )
-
     ORIGEN_CHOICES = (
         (0, "No Foráneo"),
         (1, "Foráneo"),
     )
-
     origen = models.IntegerField(choices=ORIGEN_CHOICES, verbose_name="Origen")
-
     TRABAJA_CHOICES = (
         (0, "No"),
         (1, "Sí"),
     )
-
     trabajo = models.IntegerField(choices=TRABAJA_CHOICES, verbose_name="Trabajo")
-
     DISCAPACIDAD_CHOICES = (
         (0, "No"),
         (1, "Sí"),
     )
-
     discapacidad = models.IntegerField(
         choices=DISCAPACIDAD_CHOICES, verbose_name="Discapacidad"
     )
-
     HIJOS_CHOICES = (
         (0, "No"),
         (1, "Sí"),
     )
-
     hijos = models.IntegerField(choices=HIJOS_CHOICES, verbose_name="Hijos")
-
     ESTADO_CHOICES = (
         ("Cursando", "Cursando"),
         ("Aprobado", "Aprobado"),
         ("Reprovado", "Reprovado"),
         ("Desertor", "Desertor"),
     )
-
     estado = models.CharField(
         choices=ESTADO_CHOICES, max_length=100, verbose_name="Estado"
     )
-
     materia = models.ManyToManyField("Materia", verbose_name="Materias")
 
     def __str__(self):

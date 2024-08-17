@@ -3,12 +3,12 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django import forms
 from .models import (
-    Usuario,
     PeriodoAcademico,
     DatosHistorico,
     Universidad,
     Estudiante,
     Facultad,
+    Usuario,
     TipoDNI,
     Carrera,
     Materia,
