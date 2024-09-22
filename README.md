@@ -7,11 +7,7 @@ Proyecto desarrollado para realizar las predicciones de deserciones estudiantile
 
 ### Integrantes:
 
-- Santiago Favian Apolo Vilela
-- Emilio Andres Bravo Herrera
 - Victor David Nivelo Yaguana
-- Elias Sebastian Poma Granda
-- Walter Alejandro Yaguana Alejandro
 
 Este proyecto tiene como objetivo principal desarrollar herramientas predictivas para identificar posibles casos de deserción estudiantil en entornos universitarios.
 
