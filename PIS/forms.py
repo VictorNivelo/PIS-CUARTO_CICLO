@@ -304,7 +304,7 @@ class RecuperarContraseniaForm(forms.Form):
         label="Correo Electrónico",
     )
 
-    def clean_email(self):
+    def limpiar_correo(self):
         email = self.cleaned_data["email"]
         if not User.objects.filter(email=email).exists():
             raise forms.ValidationError(
@@ -334,7 +334,7 @@ class CambiarContraseniaForm(forms.ModelForm):
         model = Usuario
         fields = ["Contrasenia", "Confirmar_contrasenia"]
 
-    def clean_Contrasenia(self):
+    def limpiar_Contrasenia(self):
         password = self.cleaned_data.get("Contrasenia")
         if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$", password):
             raise ValidationError(
@@ -342,7 +342,7 @@ class CambiarContraseniaForm(forms.ModelForm):
             )
         return password
 
-    def clean(self):
+    def limpiar(self):
         cleaned_data = super().clean()
         Contrasenia = cleaned_data.get("Contrasenia")
         Confirmar_contrasenia = cleaned_data.get("Confirmar_contrasenia")
@@ -641,7 +641,7 @@ class PeriodoAcademicoForm(forms.ModelForm):
             "estado_periodo_academico",
         ]
 
-    def clean(self):
+    def limpiar(self):
         cleaned_data = super().clean()
         fecha_inicio = cleaned_data.get("fecha_inicio")
         fecha_fin = cleaned_data.get("fecha_fin")
