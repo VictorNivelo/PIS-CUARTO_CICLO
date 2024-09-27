@@ -13,7 +13,7 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
-
+    
         html,
         body {
             height: 100%;
@@ -27,7 +27,7 @@
             font-family: 'Open Sans', sans-serif;
             position: relative;
         }
-
+    
         html::before {
             content: '';
             position: fixed;
@@ -38,11 +38,11 @@
             background: rgba(0, 0, 0, 0.500);
             z-index: 1;
         }
-
+    
         ::-webkit-scrollbar {
             display: none;
         }
-
+    
         .caja {
             position: relative;
             z-index: 2;
@@ -50,43 +50,38 @@
             border-radius: 10px;
             width: 100%;
             max-width: 900px;
-            /* Ajustar el ancho máximo */
             padding: 25px;
             margin: auto;
         }
-
+    
         .form-wrapper {
             padding: 20px;
         }
-
+    
         .t {
             font-family: 'Lobster', cursive;
             text-align: center;
             margin-bottom: 15px;
             color: #333;
         }
-
+    
         .form-group {
             margin-bottom: 15px;
         }
-
+    
         label {
             color: #333;
-            /* Cambiado a negro */
             font-weight: bold;
             display: flex;
             align-items: center;
         }
-
+    
         label i {
             margin-right: 10px;
-            /* Espacio entre el ícono y el texto del label */
             color: #333;
-            /* Color del ícono negro */
             font-size: 18px;
-            /* Tamaño del ícono */
         }
-
+    
         input[type="text"],
         input[type="email"],
         input[type="password"],
@@ -95,6 +90,7 @@
         input[type="tel"],
         select {
             width: 100%;
+            height: 40px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -103,30 +99,34 @@
             color: #333;
             box-sizing: border-box;
         }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        input[type="date"],
-        input[type="tel"],
+    
         select {
-            height: 40px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
         }
-
+    
         select option {
-            color: initial;
+            color: #000;
         }
-
+    
+        select option:first-child {
+            color: #999;
+        }
+    
         input::placeholder,
         select::placeholder {
             color: #aaa;
         }
-
+    
         input.has-value,
         select.has-value {
             color: #333;
         }
-
+    
         button[type="submit"],
         .btn-regresar {
             width: calc(50% - 5px);
@@ -138,47 +138,47 @@
             transition: background-color 0.3s;
             margin-top: 10px;
         }
-
+    
         button[type="submit"] {
             background-color: #4CAF50;
             color: white;
         }
-
+    
         button[type="submit"]:hover {
             background-color: #45a049;
         }
-
+    
         .btn-regresar {
             background-color: #f0ad4e;
             color: white;
         }
-
+    
         .btn-regresar:hover {
             background-color: #eea236;
         }
-
+    
         .button-group {
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
         }
-
+    
         .button-group button {
             margin-top: 0;
         }
-
+    
         ::placeholder,
         select:invalid,
         input[type="date"]:invalid {
             color: #999 !important;
         }
-
+    
         input,
         select,
         input[type="date"] {
             color: #999;
         }
-
+    
         input:focus,
         select:focus,
         input[type="date"]:focus,
@@ -187,35 +187,22 @@
         input[type="date"]:not(:invalid) {
             color: #000 !important;
         }
-
-        select option {
-            color: #000;
-        }
-
-        select option:first-child {
-            color: #999;
-        }
-
+    
         input[type="date"]:not(:valid):not(:focus) {
             color: #999;
         }
-
+    
         .col-md-4 {
             width: 33.333%;
-            padding-right: 15px;
             box-sizing: border-box;
         }
-
-        .col-md-4:nth-child(3n) {
-            padding-right: 0;
-        }
-
+    
         .row:after {
             content: "";
             display: table;
             clear: both;
         }
-
+    
         .logo {
             display: block;
             margin: 0 auto;
@@ -270,14 +257,13 @@
                         </div>
                         <div class="form-group">
                             <label for="{{ form.promedio_modalidad.id_for_label }}"><i
-                                    class="fas fa-chalkboard-teacher"></i>Porcentaje con modalidad presencial
-                                (%):</label>
+                                    class="fas fa-chalkboard-teacher"></i>% modalidad presencial:</label>
                             {{ form.promedio_modalidad }}
                             <span class="error-message" id="error_modalidad"></span>
                         </div>
                         <div class="form-group">
                             <label for="{{ form.promedio_tipo_educacion.id_for_label }}"><i
-                                    class="fas fa-school"></i>Porcentaje con educación pública (%):</label>
+                                    class="fas fa-school"></i>% con educación pública:</label>
                             {{ form.promedio_tipo_educacion }}
                             <span class="error-message" id="error_tipo_educacion"></span>
                         </div>
@@ -285,7 +271,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="{{ form.promedio_origen.id_for_label }}"><i
-                                    class="fas fa-globe-americas"></i>Porcentaje de Foráneos (%):</label>
+                                    class="fas fa-globe-americas"></i>Porcentaje de Foráneos:</label>
                             {{ form.promedio_origen }}
                             <span class="error-message" id="error_origen"></span>
                         </div>
@@ -297,7 +283,7 @@
                         </div>
                         <div class="form-group">
                             <label for="{{ form.promedio_discapacidad.id_for_label }}"><i
-                                    class="fas fa-wheelchair"></i>Porcentaje con Discapacidad (%):</label>
+                                    class="fas fa-wheelchair"></i>% con Discapacidad:</label>
                             {{ form.promedio_discapacidad }}
                             <span class="error-message" id="error_discapacidad"></span>
                         </div>

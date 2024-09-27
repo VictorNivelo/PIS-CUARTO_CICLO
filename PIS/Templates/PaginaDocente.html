@@ -16,9 +16,10 @@
 
 <body>
     <div class="container">
-        <div class="header">
+        <div class="title-and-logo">
             <div class="header-logo">
                 <img id="logo-img" src="../Static/Imagen/Iconos/Logo-UNL-mediano.png" alt="Logo">
+                <!-- <img src="../Static/Imagen/Iconos/Logo-UNL-mediano.png" alt="Logo"> -->
             </div>
             <h1>Bienvenido, docente {{ user.first_name }}</h1>
             <div class="user-menu" onclick="toggleUserOptions()">
@@ -36,15 +37,17 @@
                 {% endif %}
             </div>
         </div>
+
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'Index' %}"><i class="fas fa-home"></i> Inicio</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'Iniciar_Sesion' %}"><i class="fas fa-user-circle"></i></i>
                         Inicio de sesión</a></li>
-                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-building"></i> Página-Docente
+                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-chalkboard-teacher"></i> Página-Docente
                 </li>
             </ol>
         </nav>
+
         <div class="content-wrapper">
             <nav class="menu">
                 {% for materia in materias %}

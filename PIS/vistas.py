@@ -25,6 +25,7 @@ import numpy as np
 import logging
 import json
 import csv
+import os
 from PIS.models import (
     Usuario,
     PeriodoAcademico,
@@ -75,12 +76,10 @@ def PaginaAdministrador(request):
 def PaginaDocente(request):
     user = request.user
     materias = Materia.objects.filter(docente_encargado=user)
-
     context = {
         "user": user,
         "materias": materias,
     }
-
     return render(request, "PaginaDocente.html", context)
 
 
@@ -101,15 +100,26 @@ def SinAcceso(request):
 def PerfilUsuario(request):
     if request.method == "POST":
         if request.FILES.get("foto"):
-            request.user.foto = request.FILES["foto"]
-            request.user.save()
+            nueva_foto = request.FILES["foto"]
+            _, extension = os.path.splitext(nueva_foto.name)
+            numero = 1
+            while True:
+                nuevo_nombre = (
+                    f"{request.user.username}-Foto_Perfil-{numero}{extension}"
+                )
+                ruta_completa = os.path.join(settings.MEDIA_ROOT, nuevo_nombre)
+                if not os.path.exists(ruta_completa):
+                    break
+                numero += 1
+            if request.user.foto:
+                if os.path.isfile(request.user.foto.path):
+                    os.remove(request.user.foto.path)
+            request.user.foto.save(nuevo_nombre, nueva_foto, save=True)
             messages.success(request, "Imagen de perfil actualizada exitosamente.")
         return redirect("Perfil_Usuario")
-
     context = {"user": request.user}
     if not request.user.foto:
         context["default_image"] = "/Static/Imagen/Perfil-Predeterminado.png"
-
     return render(request, "PerfilUsuario.html", context)
 
 
@@ -141,7 +151,6 @@ def IniciarSesion(request):
     if request.method == "POST":
         form = InicioSesionForm(request, data=request.POST)
         email = request.POST.get("username")
-
         user_exists = Usuario.objects.filter(email=email).exists()
         if not user_exists:
             return JsonResponse(
@@ -150,7 +159,6 @@ def IniciarSesion(request):
                     "message": "El correo electrónico no está registrado. ¿Desea registrarse?",
                 }
             )
-
         if form.is_valid():
             username = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
@@ -181,7 +189,6 @@ def IniciarSesion(request):
             )
     else:
         form = InicioSesionForm()
-
     return render(request, "IniciarSesion.html", {"form": form})
 
 
@@ -218,19 +225,16 @@ def RecuperarContrasenia(request):
                         "message": "No se encontró un usuario con ese correo electrónico.",
                     }
                 )
-
             token = default_token_generator.make_token(user)
             uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-
             reset_url = request.build_absolute_uri(
                 reverse(
                     "Cambiar_Contrasenia", kwargs={"uidb64": uidb64, "token": token}
                 )
             )
-
             subject = "Recuperación de contraseña"
             message = f"""
-            Hola {user.first_name + " " + user.last_name + " " + user.username},
+            Estimado/a {user.first_name + " " + user.last_name + " " + user.username},
 
             Has solicitado restablecer tu contraseña.
             Sigue estos pasos:
@@ -239,13 +243,15 @@ def RecuperarContrasenia(request):
             2. Se te dirigirá a una página donde podrás ingresar tu nueva contraseña.
             3. Ingresa tu nueva contraseña y confírmala.
             4. Haz clic en "Cambiar".
-
+            
             Si no solicitaste este cambio, ignora este correo.
 
+            Importante:
+            Este enlace es válido por 24 horas.
+            
             Saludos,
             El equipo de soporte
             """
-
             try:
                 send_mail(
                     subject,
@@ -283,7 +289,6 @@ def CambiarContrasenia(request, uidb64, token):
         user = User.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
-
     if user is not None and default_token_generator.check_token(user, token):
         if request.method == "POST":
             form = CambiarContraseniaForm(request.POST)
@@ -317,7 +322,6 @@ def RegistrarUsuario(request):
         if form.is_valid():
             try:
                 user = form.save(commit=False)
-
                 if Usuario.objects.filter(username=user.username).exists():
                     return JsonResponse(
                         {
@@ -325,7 +329,6 @@ def RegistrarUsuario(request):
                             "message": "Ya existe un usuario con este correo",
                         }
                     )
-
                 if Usuario.objects.filter(dni=user.dni).exists():
                     return JsonResponse(
                         {
@@ -333,7 +336,6 @@ def RegistrarUsuario(request):
                             "message": "Ya existe Usuario con este DNI.",
                         }
                     )
-
                 num_usuarios = Usuario.objects.count()
                 if num_usuarios == 0:
                     user.is_superuser = True
@@ -344,15 +346,12 @@ def RegistrarUsuario(request):
                     user.rol = "Secretaria"
                 else:
                     user.rol = "Docente"
-
                 user.set_password(form.cleaned_data["password1"])
                 user.save()
                 login(request, user)
-
                 return JsonResponse(
                     {"status": "success", "message": "Usuario registrado exitosamente."}
                 )
-
             except Exception as e:
                 return JsonResponse(
                     {
@@ -370,11 +369,9 @@ def RegistrarUsuario(request):
                     ):
                         error = "Ya existe un usuario con este correo"
                     errors.append(error)
-
             return JsonResponse({"status": "error", "errors": errors})
     else:
         form = RegistrarUsuarioForm()
-
     return render(request, "RU-CrearUsuario.html", {"form": form})
 
 
@@ -383,11 +380,9 @@ def GestionUsuario(request):
     filter_rol = request.GET.get("rol", "")
     filter_genero = request.GET.get("genero", "")
     filter_tipo_dni = request.GET.get("tipo_dni", "")
-
     usuarios = Usuario.objects.all()
     generos = Genero.objects.all()
     tipos_dni = TipoDNI.objects.all()
-
     if query:
         usuarios = usuarios.filter(
             Q(username__icontains=query) | Q(dni__icontains=query)
@@ -398,7 +393,6 @@ def GestionUsuario(request):
         usuarios = usuarios.filter(genero_id=filter_genero)
     if filter_tipo_dni:
         usuarios = usuarios.filter(tipo_dni=filter_tipo_dni)
-
     if request.method == "POST":
         if "modify" in request.POST:
             user_id = request.POST.get("user_id")
@@ -438,7 +432,6 @@ def GestionUsuario(request):
                 {"success": True, "message": "Usuario eliminado correctamente."}
             )
         return redirect("Gestion_Usuario")
-
     return render(
         request,
         "GestionUsuario.html",
@@ -467,7 +460,6 @@ def RegistrarEstudiante(request):
                     messages.error(request, f"Error en el campo {field}: {error}")
     else:
         form = RegistrarEstudianteForm()
-
     return render(request, "RE-CrearEstudiante.html", {"form": form})
 
 
@@ -476,12 +468,10 @@ def GestionEstudiante(request):
     filter_genero = request.GET.get("genero", "")
     filter_modalidad = request.GET.get("modalidad_estudio", "")
     filter_tipo_educacion = request.GET.get("tipo_educacion", "")
-
     estudiantes = Estudiante.objects.all()
     generos = Genero.objects.all()
     tipos_dni = TipoDNI.objects.all()
     materias = Materia.objects.all()
-
     if query:
         estudiantes = estudiantes.filter(
             Q(nombre_estudiante__icontains=query) | Q(dni_estudiante__icontains=query)
@@ -492,7 +482,6 @@ def GestionEstudiante(request):
         estudiantes = estudiantes.filter(modalidad_estudio=filter_modalidad)
     if filter_tipo_educacion:
         estudiantes = estudiantes.filter(tipo_educacion=filter_tipo_educacion)
-
     if request.method == "POST":
         if "modify" in request.POST:
             estudiante_id = request.POST.get("estudiante_id")
@@ -526,7 +515,6 @@ def GestionEstudiante(request):
                 {"success": True, "message": "Estudiante eliminado correctamente."}
             )
         return redirect("Gestion_Estudiante")
-
     return render(
         request,
         "GestionEstudiante.html",
@@ -562,10 +550,8 @@ def RegistrarTipoDNI(request):
 def GestionTipoDNI(request):
     query = request.GET.get("search_query", "")
     tipos_dni = TipoDNI.objects.all()
-
     if query:
         tipos_dni = tipos_dni.filter(Q(nombre_tipo_dni__icontains=query))
-
     if request.method == "POST":
         if "modify" in request.POST:
             tipo_dni_id = request.POST.get("tipo_dni_id")
@@ -584,7 +570,6 @@ def GestionTipoDNI(request):
                 {"success": True, "message": "Tipo de DNI eliminado exitosamente."}
             )
         return redirect("Gestion_TipoDNI")
-
     return render(
         request, "GestionTipoDNI.html", {"tipos_dni": tipos_dni, "query": query}
     )
@@ -608,10 +593,8 @@ def RegistrarGenero(request):
 def GestionGenero(request):
     query = request.GET.get("search_query", "")
     generos = Genero.objects.all()
-
     if query:
         generos = generos.filter(Q(nombre_genero__icontains=query))
-
     if request.method == "POST":
         if "modify" in request.POST:
             genero_id = request.POST.get("genero_id")
@@ -629,7 +612,6 @@ def GestionGenero(request):
             return JsonResponse(
                 {"success": True, "message": "Género eliminado exitosamente."}
             )
-
     return render(request, "GestionGenero.html", {"generos": generos, "query": query})
 
 
@@ -645,21 +627,17 @@ def RegistrarUniversidad(request):
             messages.error(request, "Por favor, corrija los errores del formulario.")
     else:
         form = UniversidadForm()
-
     return render(request, "RU-CrearUniversidad.html", {"form": form})
 
 
 def GestionUniversidad(request):
     query = request.GET.get("search_query", "")
-
     universidades = Universidad.objects.all()
-
     if query:
         universidades = universidades.filter(
             Q(nombre_universidad__icontains=query)
             | Q(correo_universidad__icontains=query)
         )
-
     if request.method == "POST":
         if "modify" in request.POST:
             universidad_id = request.POST.get("universidad_id")
@@ -693,7 +671,6 @@ def GestionUniversidad(request):
                 {"success": True, "message": "Universidad eliminada exitosamente."}
             )
         return redirect("Gestion_Universidad")
-
     return render(
         request,
         "GestionUniversidad.html",
@@ -716,7 +693,6 @@ def RegistrarFacultad(request):
             messages.error(request, "Por favor, corrija los errores del formulario.")
     else:
         form = FacultadForm()
-
     return render(request, "RF-CrearFacultad.html", {"form": form})
 
 
@@ -724,10 +700,8 @@ def GestionFacultad(request):
     query = request.GET.get("search_query", "")
     facultades = Facultad.objects.all()
     universidades = Universidad.objects.all()
-
     if query:
         facultades = facultades.filter(Q(nombre_facultad__icontains=query))
-
     if request.method == "POST":
         if "modify" in request.POST:
             facultad_id = request.POST.get("facultad_id")
@@ -746,7 +720,6 @@ def GestionFacultad(request):
                     "Formato de fecha de fundación inválido. Utiliza el formato dd/mm/aaaa.",
                 )
                 return redirect("Gestion_Facultad")
-
             universidad_id = request.POST.get("universidad")
             universidad = Universidad.objects.get(id=universidad_id)
             facultad.universidad = universidad
@@ -762,7 +735,6 @@ def GestionFacultad(request):
                 {"success": True, "message": "Facultad eliminada exitosamente."}
             )
         return redirect("Gestion_Facultad")
-
     return render(
         request,
         "GestionFacultad.html",
@@ -786,7 +758,6 @@ def RegistrarCarrera(request):
             messages.error(request, "Por favor, corrija los errores del formulario.")
     else:
         form = CarreraForm()
-
     return render(request, "RC-CrearCarrera.html", {"form": form})
 
 
@@ -794,10 +765,8 @@ def GestionCarrera(request):
     query = request.GET.get("search_query", "")
     carreras = Carrera.objects.all()
     facultades = Facultad.objects.all()
-
     if query:
         carreras = carreras.filter(Q(nombre_carrera__icontains=query))
-
     if request.method == "POST":
         if "modify" in request.POST:
             carrera_id = request.POST.get("carrera_id")
@@ -819,7 +788,6 @@ def GestionCarrera(request):
                 {"success": True, "message": "Carrera eliminada exitosamente."}
             )
         return redirect("Gestion_Carrera")
-
     return render(
         request,
         "GestionCarrera.html",
@@ -843,7 +811,6 @@ def RegistrarCiclo(request):
             messages.error(request, "Por favor, corrija los errores del formulario.")
     else:
         form = CicloForm()
-
     return render(request, "RC-CrearCiclo.html", {"form": form})
 
 
@@ -852,10 +819,8 @@ def GestionCiclo(request):
     ciclos = Ciclo.objects.all()
     carreras = Carrera.objects.all()
     periodosAcademicos = PeriodoAcademico.objects.all()
-
     if query:
         ciclos = ciclos.filter(Q(nombre_ciclo__icontains=query))
-
     if request.method == "POST":
         if "modify" in request.POST:
             ciclo_id = request.POST.get("ciclo_id")
@@ -916,7 +881,6 @@ def GestionCiclo(request):
                 {"success": True, "message": "Ciclo eliminado exitosamente."}
             )
         return redirect("Gestion_Ciclo")
-
     return render(
         request,
         "GestionCiclo.html",
@@ -941,19 +905,16 @@ def RegistrarPeriodoAcademico(request):
             messages.error(request, "Por favor, corrija los errores del formulario.")
     else:
         form = PeriodoAcademicoForm()
-
     return render(request, "RPA-CrearPeriodoAcademico.html", {"form": form})
 
 
 def GestionPeriodoAcademico(request):
     query = request.GET.get("search_query", "")
     PeriodosAcademicos = PeriodoAcademico.objects.all()
-
     if query:
         PeriodosAcademicos = PeriodosAcademicos.filter(
             Q(codigo_periodo_academico__icontains=query)
         )
-
     if request.method == "POST":
         if "modify" in request.POST:
             periodo_academico_id = request.POST.get("PeriodoAcademico_id")
@@ -1004,7 +965,6 @@ def GestionPeriodoAcademico(request):
                 }
             )
         return redirect("Gestion_PeriodoAcademico")
-
     return render(
         request,
         "GestionPeriodoAcademico.html",
@@ -1024,7 +984,6 @@ def RegistrarMateria(request):
             messages.error(request, "Por favor, corrija los errores del formulario.")
     else:
         form = MateriaForm()
-
     return render(request, "RM-CrearMateria.html", {"form": form})
 
 
@@ -1034,10 +993,8 @@ def GestionMateria(request):
     ciclos = Ciclo.objects.all()
     periodosAcademicos = PeriodoAcademico.objects.all()
     docentes = Usuario.objects.filter(rol="Docente")
-
     if query:
         materias = materias.filter(Q(nombre_materia__icontains=query))
-
     if request.method == "POST":
         if "modify" in request.POST:
             materia_id = request.POST.get("materia_id")
@@ -1046,25 +1003,20 @@ def GestionMateria(request):
             except Materia.DoesNotExist:
                 messages.error(request, "Materia no encontrada.")
                 return redirect("Gestion_Materia")
-
             materia.nombre_materia = request.POST.get("nombre_materia")
             materia.numero_horas = request.POST.get("numero_horas")
             materia.unidades = request.POST.get("unidades")
             docente_encargado_id = request.POST.get("docente_encargado")
             ciclo_id = request.POST.get("ciclo")
-
             try:
                 docente = Usuario.objects.get(id=docente_encargado_id)
                 ciclo = Ciclo.objects.get(id=ciclo_id)
-
                 materia.docente_encargado = docente
                 materia.ciclo = ciclo
-
                 materia.save()
                 return JsonResponse(
                     {"success": True, "message": "Materia actualizada exitosamente."}
                 )
-
             except (
                 PeriodoAcademico.DoesNotExist,
                 Usuario.DoesNotExist,
@@ -1073,7 +1025,6 @@ def GestionMateria(request):
                 messages.error(
                     request, "Error: Uno de los objetos requeridos no existe."
                 )
-
         elif "delete" in request.POST:
             materia_id = request.POST.get("materia_id")
             try:
@@ -1084,9 +1035,7 @@ def GestionMateria(request):
                 )
             except Materia.DoesNotExist:
                 messages.error(request, "Materia no encontrada.")
-
         return redirect("Gestion_Materia")
-
     return render(
         request,
         "GestionMateria.html",
@@ -1111,7 +1060,6 @@ def RegistrarDatosHistorico(request):
             messages.error(request, "Por favor, corrija los errores del formulario.")
     else:
         form = DatosHistoricosForm()
-
     return render(request, "RDH-CrearDatosHistoricos.html", {"form": form})
 
 
@@ -1120,17 +1068,14 @@ def GestionDatosHistoricos(request):
     datosHistoricos = DatosHistorico.objects.all()
     materias = Materia.objects.all()
     periodosAcademico = PeriodoAcademico.objects.all()
-
     if query:
         datosHistoricos = datosHistoricos.filter(
             Q(cantidad_matriculados__icontains=query)
         )
-
     if request.method == "POST":
         if "modify" in request.POST:
             datos_historicos_id = request.POST.get("datosHistoricos_id")
             datos_historicos = DatosHistorico.objects.get(id=datos_historicos_id)
-
             datos_historicos.materia_id = request.POST.get("materia")
             datos_historicos.periodo_academico_id = request.POST.get(
                 "periodo_academico"
@@ -1163,7 +1108,6 @@ def GestionDatosHistoricos(request):
                 request.POST.get("promedio_discapacidad")
             )
             datos_historicos.promedio_hijos = float(request.POST.get("promedio_hijos"))
-
             try:
                 datos_historicos.save()
                 return JsonResponse(
@@ -1174,7 +1118,6 @@ def GestionDatosHistoricos(request):
                 )
             except Exception as e:
                 messages.error(request, f"Error al actualizar: {str(e)}")
-
         elif "delete" in request.POST:
             datos_historicos_id = request.POST.get("datosHistoricos_id")
             datos_historicos = DatosHistorico.objects.get(id=datos_historicos_id)
@@ -1185,9 +1128,7 @@ def GestionDatosHistoricos(request):
                     "message": "Datos históricos eliminados exitosamente.",
                 }
             )
-
         return redirect("Gestion_DatosHistorico")
-
     context = {
         "DatosHistorico": datosHistoricos,
         "periodosAcademico": periodosAcademico,
@@ -1210,10 +1151,8 @@ def get_or_create_related(model, **kwargs):
 def ImportarDatosCVS(model, csv_file):
     decoded_file = csv_file.read().decode("utf-8").splitlines()
     reader = csv.DictReader(decoded_file)
-
     created_count = 0
     errors = []
-
     with transaction.atomic():
         for row in reader:
             try:
@@ -1235,7 +1174,6 @@ def ImportarDatosCVS(model, csv_file):
                         rol=row["rol"],
                     )
                     instance.set_password(row["password"])
-
                 elif model == Estudiante:
                     tipo_dni = get_or_create_related(
                         TipoDNI, nombre_tipo_dni=row["tipo_dni"]
@@ -1255,19 +1193,16 @@ def ImportarDatosCVS(model, csv_file):
                         hijos=int(row["hijos"]),
                         estado=row["estado"],
                     )
-
                 elif model == Genero:
                     instance = Genero(
                         nombre_genero=row["nombre_genero"],
                         descripcion_genero=row["descripcion_genero"],
                     )
-
                 elif model == TipoDNI:
                     instance = TipoDNI(
                         nombre_tipo_dni=row["nombre_tipo_dni"],
                         descripcion_tipo_dni=row["descripcion_tipo_dni"],
                     )
-
                 elif model == Universidad:
                     instance = Universidad(
                         nombre_universidad=row["nombre_universidad"],
@@ -1276,7 +1211,6 @@ def ImportarDatosCVS(model, csv_file):
                         correo_universidad=row["correo_universidad"],
                         fecha_fundacion=row["fecha_fundacion"],
                     )
-
                 elif model == Facultad:
                     universidad = get_or_create_related(
                         Universidad, nombre_universidad=row["universidad"]
@@ -1286,7 +1220,6 @@ def ImportarDatosCVS(model, csv_file):
                         fecha_fundacion=row["fecha_fundacion"],
                         universidad=universidad,
                     )
-
                 elif model == Carrera:
                     facultad = get_or_create_related(
                         Facultad, nombre_facultad=row["facultad"]
@@ -1296,7 +1229,6 @@ def ImportarDatosCVS(model, csv_file):
                         duracion=int(row["duracion"]),
                         facultad=facultad,
                     )
-
                 elif model == Ciclo:
                     carrera = get_or_create_related(
                         Carrera, nombre_carrera=row["carrera"]
@@ -1307,7 +1239,6 @@ def ImportarDatosCVS(model, csv_file):
                         fecha_fin=row["fecha_fin"],
                         carrera=carrera,
                     )
-
                 elif model == Materia:
                     periodo_academico = get_or_create_related(
                         PeriodoAcademico,
@@ -1325,7 +1256,6 @@ def ImportarDatosCVS(model, csv_file):
                         docente_encargado=docente,
                         ciclo=ciclo,
                     )
-
                 elif model == PeriodoAcademico:
                     instance = PeriodoAcademico(
                         codigo_periodo_academico=row["codigo_periodo_academico"],
@@ -1333,7 +1263,6 @@ def ImportarDatosCVS(model, csv_file):
                         fecha_fin=row["fecha_fin"],
                         estado_periodo_academico=row["estado_periodo_academico"],
                     )
-
                 elif model == DatosHistorico:
                     materia = get_or_create_related(
                         Materia, nombre_materia=row["materia"]
@@ -1345,25 +1274,19 @@ def ImportarDatosCVS(model, csv_file):
                         cantidad_reprobados=int(row["cantidad_reprobados"]),
                         cantidad_desertores=int(row["cantidad_desertores"]),
                     )
-
                 else:
                     raise ValueError(f"Modelo no soportado: {model.__name__}")
-
                 instance.full_clean()
                 instance.save()
-
                 if model == Estudiante:
                     for materia_nombre in row["materias"].split(","):
                         materia = get_or_create_related(
                             Materia, nombre_materia=materia_nombre.strip()
                         )
                         instance.materia.add(materia)
-
                 created_count += 1
-
             except Exception as e:
                 errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
     return created_count, errors
 
 
@@ -1371,15 +1294,12 @@ def ImportarDatosModelo(request):
     if request.method == "POST":
         csv_file = request.FILES.get("csv_file")
         model_name = request.POST.get("model_name")
-
         if not csv_file:
             messages.error(request, "Por favor, seleccione un archivo CSV.")
             return redirect("Importar_Datos")
-
         if not model_name:
             messages.error(request, "Por favor, seleccione un modelo.")
             return redirect("Importar_Datos")
-
         model_map = {
             "usuario": Usuario,
             "estudiante": Estudiante,
@@ -1392,12 +1312,10 @@ def ImportarDatosModelo(request):
             "materia": Materia,
             "periodoAcademico": PeriodoAcademico,
         }
-
         model = model_map.get(model_name.lower())
         if not model:
             messages.error(request, "Modelo no válido seleccionado.")
             return redirect("Importar_Datos")
-
         try:
             created_count, errors = ImportarDatosCVS(model, csv_file)
             if errors:
@@ -1408,9 +1326,7 @@ def ImportarDatosModelo(request):
             )
         except Exception as e:
             messages.error(request, f"Error durante la importación: {str(e)}")
-
         return redirect("Importar_Datos")
-
     return render(request, "ImportarDatos.html")
 
 
@@ -1426,16 +1342,12 @@ def ImportarUsuario(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1456,14 +1368,11 @@ def ImportarUsuario(request):
                         rol=row["rol"],
                     )
                     instance.set_password(row["password"])
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -1491,16 +1400,12 @@ def ImportarEstudiante(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1522,7 +1427,6 @@ def ImportarEstudiante(request):
                         hijos=int(row["hijos"]),
                         estado=row["estado"],
                     )
-
                     instance.full_clean()
                     instance.save()
                     for materia_nombre in row["materias"].split(","):
@@ -1530,12 +1434,9 @@ def ImportarEstudiante(request):
                             Materia, nombre_materia=materia_nombre.strip()
                         )
                         instance.materia.add(materia)
-
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -1563,16 +1464,13 @@ def ImportarGenero(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
 
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1580,14 +1478,11 @@ def ImportarGenero(request):
                         nombre_genero=row["nombre_genero"],
                         descripcion_genero=row["descripcion_genero"],
                     )
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -1615,16 +1510,12 @@ def ImportarTipoDNI(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1632,14 +1523,11 @@ def ImportarTipoDNI(request):
                         nombre_tipo_dni=row["nombre_tipo_dni"],
                         descripcion_tipo_dni=row["descripcion_tipo_dni"],
                     )
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -1667,16 +1555,12 @@ def ImportarUniversidades(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1687,14 +1571,11 @@ def ImportarUniversidades(request):
                         correo_universidad=row["correo_universidad"],
                         fecha_fundacion=row["fecha_fundacion"],
                     )
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -1722,16 +1603,12 @@ def ImportarFacultades(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1744,14 +1621,11 @@ def ImportarFacultades(request):
                         fecha_fundacion=row["fecha_fundacion"],
                         universidad=universidad,
                     )
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -1779,16 +1653,12 @@ def ImportarCarreras(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1800,14 +1670,11 @@ def ImportarCarreras(request):
                         duracion=int(row["duracion"]),
                         facultad=facultad,
                     )
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -1835,16 +1702,12 @@ def ImportarCiclos(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1861,14 +1724,11 @@ def ImportarCiclos(request):
                         periodo_academico=periodo_academico,
                         carrera=carrera,
                     )
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -1896,16 +1756,12 @@ def ImportarMaterias(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1920,14 +1776,11 @@ def ImportarMaterias(request):
                         docente_encargado=docente,
                         ciclo=ciclo,
                     )
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -1955,16 +1808,12 @@ def ImportarPeriodoAcademicos(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -1974,14 +1823,11 @@ def ImportarPeriodoAcademicos(request):
                         fecha_fin=row["fecha_fin"],
                         estado_periodo_academico=row["estado_periodo_academico"],
                     )
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -2009,16 +1855,12 @@ def ImportarDatoHistoricos(request):
                 "errors": ["Método no permitido o archivo no proporcionado"],
             }
         )
-
     csv_file = request.FILES["document"]
-
     try:
         decoded_file = csv_file.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file)
-
         created_count = 0
         errors = []
-
         with transaction.atomic():
             for row in reader:
                 try:
@@ -2043,14 +1885,11 @@ def ImportarDatoHistoricos(request):
                         promedio_discapacidad=float(row["promedio_discapacidad"]),
                         promedio_hijos=float(row["promedio_hijos"]),
                     )
-
                     instance.full_clean()
                     instance.save()
                     created_count += 1
-
                 except Exception as e:
                     errors.append(f"Error en la fila {reader.line_num}: {str(e)}")
-
         if errors:
             return JsonResponse(
                 {
@@ -2164,12 +2003,10 @@ def RealizarPrediccion(request):
         materia_id = request.POST.get("materia")
         anio_inicio = int(request.POST.get("anio_inicio"))
         anio_fin = int(request.POST.get("anio_fin"))
-
         try:
             datos_historicos = DatosHistorico.objects.filter(
                 materia_id=materia_id
             ).order_by("periodo_academico__fecha_inicio")
-
             datos_historicos_lista = list(
                 datos_historicos.values(
                     "periodo_academico__fecha_inicio__year",
@@ -2186,7 +2023,6 @@ def RealizarPrediccion(request):
                     "promedio_hijos",
                 )
             )
-
             stats = datos_historicos.aggregate(
                 Avg("cantidad_matriculados"),
                 Avg("cantidad_aprobados"),
@@ -2199,9 +2035,7 @@ def RealizarPrediccion(request):
                 Avg("promedio_discapacidad"),
                 Avg("promedio_hijos"),
             )
-
             params = [0.2, 0.1, 0.6, 0.2, 0.3, 0.1, 0.2, 0.1, 0.05, 0.05]
-
             y0 = np.array(
                 [
                     stats["cantidad_matriculados__avg"] or 0,
@@ -2216,29 +2050,22 @@ def RealizarPrediccion(request):
                     stats["promedio_hijos__avg"] or 0,
                 ]
             )
-
             t = np.linspace(
                 0, anio_fin - anio_inicio + 1, (anio_fin - anio_inicio + 1) * 2
             )
-
             sol = RungeKutta(SistemaEcuaciones, y0, t, args=(params,))
-
             ruido = np.random.normal(0, 0.02, sol.shape)
             sol_con_ruido = sol + ruido * sol
-
             sol_con_ruido = np.clip(sol_con_ruido, 0, 100)
-
             for i in range(len(sol_con_ruido)):
                 total = sol_con_ruido[i, 1] + sol_con_ruido[i, 2] + sol_con_ruido[i, 3]
                 if total > sol_con_ruido[i, 0]:
                     factor = sol_con_ruido[i, 0] / total
                     sol_con_ruido[i, 1:4] *= factor
-
             años = list(range(anio_inicio, anio_fin + 1))
             periodos = []
             for año in años:
                 periodos.extend([f"{año}-1", f"{año}-2"])
-
             predicciones = {
                 "años": años,
                 "periodos": periodos,
@@ -2254,13 +2081,10 @@ def RealizarPrediccion(request):
                 "hijos": sol_con_ruido[:, 9].tolist(),
                 "datosHistoricos": datos_historicos_lista,
             }
-
             return JsonResponse(predicciones)
-
         except Exception as e:
             logger.error(f"Error en RealizarPrediccion: {str(e)}", exc_info=True)
             return JsonResponse({"error": str(e)}, status=500)
-
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
 
@@ -2270,7 +2094,6 @@ def PrediccionMateria(request):
     ciclos = Ciclo.objects.all()
     materias = Materia.objects.all()
     datosHistoricos = DatosHistorico.objects.all()
-
     context = {
         "facultades": facultades,
         "carreras": carreras,
@@ -2278,7 +2101,6 @@ def PrediccionMateria(request):
         "materias": materias,
         "datosHistoricos": datosHistoricos,
     }
-
     return render(request, "PrediccionMateria.html", context)
 
 
@@ -2287,14 +2109,12 @@ def RealizarPrediccionCiclo(request):
         ciclo_id = request.POST.get("ciclo")
         anio_inicio = int(request.POST.get("anio_inicio"))
         anio_fin = int(request.POST.get("anio_fin"))
-
         try:
             materias = Materia.objects.filter(ciclo_id=ciclo_id)
             datos_historicos = DatosHistorico.objects.filter(
                 materia__in=materias,
                 periodo_academico__fecha_inicio__year__gte=anio_inicio,
             ).order_by("periodo_academico__fecha_inicio")
-
             datos_agrupados = {}
             for dato in datos_historicos:
                 año = dato.periodo_academico.fecha_inicio.year
@@ -2329,7 +2149,6 @@ def RealizarPrediccionCiclo(request):
                 datos_agrupados[periodo]["hijos"] += dato.promedio_hijos
                 datos_agrupados[periodo]["count"] += 1
                 datos_agrupados[periodo]["materias"].add(dato.materia.nombre_materia)
-
             for periodo in datos_agrupados:
                 count = datos_agrupados[periodo]["count"]
                 for key in [
@@ -2346,7 +2165,6 @@ def RealizarPrediccionCiclo(request):
                 datos_agrupados[periodo]["materias"] = list(
                     datos_agrupados[periodo]["materias"]
                 )
-
             periodos = sorted(datos_agrupados.keys())
             if periodos:
                 y0 = np.array(
@@ -2365,28 +2183,23 @@ def RealizarPrediccionCiclo(request):
                 )
             else:
                 y0 = np.array([200, 160, 20, 20, 50, 50, 50, 50, 5, 5])
-
             params = [0.2, 0.1, 0.6, 0.2, 0.3, 0.1, 0.2, 0.1, 0.05, 0.05]
             t = np.linspace(
                 0, anio_fin - anio_inicio + 1, (anio_fin - anio_inicio + 1) * 2
             )
             sol = RungeKutta(SistemaEcuaciones, y0, t, args=(params,))
-
             ruido = np.random.normal(0, 0.02, sol.shape)
             sol_con_ruido = sol + ruido * sol
             sol_con_ruido = np.clip(sol_con_ruido, 0, 100)
-
             for i in range(len(sol_con_ruido)):
                 total = sol_con_ruido[i, 1] + sol_con_ruido[i, 2] + sol_con_ruido[i, 3]
                 if total > sol_con_ruido[i, 0]:
                     factor = sol_con_ruido[i, 0] / total
                     sol_con_ruido[i, 1:4] *= factor
-
             años = list(range(anio_inicio, anio_fin + 1))
             periodos_prediccion = []
             for año in años:
                 periodos_prediccion.extend([f"{año}_Marzo", f"{año}_Septiembre"])
-
             datos_historicos_formateados = []
             for periodo, datos in datos_agrupados.items():
                 datos_historicos_formateados.append(
@@ -2400,7 +2213,6 @@ def RealizarPrediccionCiclo(request):
                         "desertores": datos["desertores"],
                     }
                 )
-
             predicciones = {
                 "años": años,
                 "periodos": periodos_prediccion,
@@ -2423,13 +2235,10 @@ def RealizarPrediccionCiclo(request):
                     )
                 ),
             }
-
             return JsonResponse(predicciones)
-
         except Exception as e:
             logger.error(f"Error en RealizarPrediccionCiclo: {str(e)}", exc_info=True)
             return JsonResponse({"error": str(e)}, status=500)
-
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
 
@@ -2438,14 +2247,12 @@ def PrediccionCiclo(request):
     carreras = Carrera.objects.all()
     ciclos = Ciclo.objects.all()
     datosHistoricos = DatosHistorico.objects.all()
-
     context = {
         "facultades": facultades,
         "carreras": carreras,
         "ciclos": ciclos,
         "datosHistoricos": datosHistoricos,
     }
-
     return render(request, "PrediccionCiclo.html", context)
 
 
@@ -2454,12 +2261,10 @@ def RealizarPrediccionCarrera(request):
         carrera_id = request.POST.get("carrera")
         anio_inicio = int(request.POST.get("anio_inicio"))
         anio_fin = int(request.POST.get("anio_fin"))
-
         try:
             datos_historicos = DatosHistorico.objects.filter(
                 materia__ciclo__carrera_id=carrera_id
             ).order_by("periodo_academico__fecha_inicio")
-
             datos_historicos_lista = list(
                 datos_historicos.values(
                     "periodo_academico__fecha_inicio__year",
@@ -2476,7 +2281,6 @@ def RealizarPrediccionCarrera(request):
                     "promedio_hijos",
                 )
             )
-
             stats = datos_historicos.aggregate(
                 Avg("cantidad_matriculados"),
                 Avg("cantidad_aprobados"),
@@ -2489,9 +2293,7 @@ def RealizarPrediccionCarrera(request):
                 Avg("promedio_discapacidad"),
                 Avg("promedio_hijos"),
             )
-
             params = [0.2, 0.1, 0.6, 0.2, 0.3, 0.1, 0.2, 0.1, 0.05, 0.05]
-
             y0 = np.array(
                 [
                     stats["cantidad_matriculados__avg"] or 0,
@@ -2506,29 +2308,22 @@ def RealizarPrediccionCarrera(request):
                     stats["promedio_hijos__avg"] or 0,
                 ]
             )
-
             t = np.linspace(
                 0, anio_fin - anio_inicio + 1, (anio_fin - anio_inicio + 1) * 2
             )
-
             sol = RungeKutta(SistemaEcuaciones, y0, t, args=(params,))
-
             ruido = np.random.normal(0, 0.02, sol.shape)
             sol_con_ruido = sol + ruido * sol
-
             sol_con_ruido = np.clip(sol_con_ruido, 0, 100)
-
             for i in range(len(sol_con_ruido)):
                 total = sol_con_ruido[i, 1] + sol_con_ruido[i, 2] + sol_con_ruido[i, 3]
                 if total > sol_con_ruido[i, 0]:
                     factor = sol_con_ruido[i, 0] / total
                     sol_con_ruido[i, 1:4] *= factor
-
             años = list(range(anio_inicio, anio_fin + 1))
             periodos = []
             for año in años:
                 periodos.extend([f"{año}-1", f"{año}-2"])
-
             predicciones = {
                 "años": años,
                 "periodos": periodos,
@@ -2544,15 +2339,12 @@ def RealizarPrediccionCarrera(request):
                 "hijos": sol_con_ruido[:, 9].tolist(),
                 "datosHistoricos": datos_historicos_lista,
             }
-
             return JsonResponse(predicciones)
-
         except Exception as e:
             logger.error(
                 f"Error en RealizarPrediccionPorCarrera: {str(e)}", exc_info=True
             )
             return JsonResponse({"error": str(e)}, status=500)
-
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
 
@@ -2560,13 +2352,11 @@ def PrediccionCarrera(request):
     facultades = Facultad.objects.all()
     carreras = Carrera.objects.all()
     datosHistoricos = DatosHistorico.objects.all()
-
     context = {
         "facultades": facultades,
         "carreras": carreras,
         "datosHistoricos": datosHistoricos,
     }
-
     return render(request, "PrediccionCarrera.html", context)
 
 

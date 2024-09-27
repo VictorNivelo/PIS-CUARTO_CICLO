@@ -43,7 +43,7 @@
             display: none;
         }
 
-        .caja {
+        .contenedor {
             position: relative;
             z-index: 2;
             background: rgba(255, 255, 255, 0.9);
@@ -208,11 +208,47 @@
             margin: 0 auto;
             max-width: 250px;
         }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-container input[type="password"],
+        .password-container input[type="text"] {
+            width: 100%;
+            padding-right: 40px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 5px;
+            top: 55%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .toggle-password:focus {
+            outline: none;
+        }
+
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+        }
     </style>
 </head>
 
 <body onload="recordarPaginaAnterior()">
-    <div class="caja">
+    <div class="contenedor">
         <img src="../Static/Imagen/Iconos/Logo-mediano.png" alt="Logo" class="logo">
         <div class="form-wrapper">
             <form id="registerForm" action="{% url 'Registrar_Usuario' %}" method="POST">
@@ -262,13 +298,33 @@
                         <div class="form-group">
                             <label for="{{ form.password1.id_for_label }}"><i class="fas fa-lock"></i>
                                 Contraseña:</label>
+                            <div class="password-container">
+                                {{ form.password1 }}
+                                <button type="button" class="toggle-password" id="togglePassword1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.password2.id_for_label }}"><i class="fas fa-lock"></i> Confirmar
+                                Contraseña:</label>
+                            <div class="password-container">
+                                {{ form.password2 }}
+                                <button type="button" class="toggle-password" id="togglePassword2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- <div class="form-group">
+                            <label for="{{ form.password1.id_for_label }}"><i class="fas fa-lock"></i>
+                                Contraseña:</label>
                             {{ form.password1 }}
                         </div>
                         <div class="form-group">
                             <label for="{{ form.password2.id_for_label }}"><i class="fas fa-lock"></i> Confirmar
                                 Contraseña:</label>
                             {{ form.password2 }}
-                        </div>
+                        </div> -->
                     </div>
                 </div>
 
@@ -283,6 +339,23 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function togglePasswordVisibility(passwordField, toggleButton) {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                toggleButton.querySelector('i').classList.toggle('fa-eye');
+                toggleButton.querySelector('i').classList.toggle('fa-eye-slash');
+            }
+
+            const togglePassword1 = document.getElementById('togglePassword1');
+            const togglePassword2 = document.getElementById('togglePassword2');
+            const password1 = document.getElementById('id_password1');
+            const password2 = document.getElementById('id_password2');
+
+            togglePassword1.addEventListener('click', () => togglePasswordVisibility(password1, togglePassword1));
+            togglePassword2.addEventListener('click', () => togglePasswordVisibility(password2, togglePassword2));
+        });
+
         document.getElementById('btnRegresar').addEventListener('click', function () {
             Swal.fire({
                 title: '¿Estás seguro?',
@@ -500,7 +573,6 @@
                     });
                 });
         };
-
         window.onload = recordarPaginaAnterior;
     </script>
 </body>
